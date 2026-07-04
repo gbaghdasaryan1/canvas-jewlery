@@ -9,7 +9,6 @@ const VALID_SHAPES = new Set(["rectangle", "heart", "circle", "skyline"]);
 export function DesignPage() {
   const setShape = useDesigner((s) => s.setShape);
 
-  // Preselect the form when arriving from a collection card (/design?shape=…).
   useEffect(() => {
     const q = new URLSearchParams(window.location.search).get("shape");
     if (q && VALID_SHAPES.has(q)) setShape(q as Shape);
