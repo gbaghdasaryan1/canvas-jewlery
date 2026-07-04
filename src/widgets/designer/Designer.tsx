@@ -2,7 +2,6 @@ import { useMemo, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
 import { useElevation } from "@/entities/terrain/api/useElevation";
 import { METALS, buildShapeMesh, toShapeParams } from "@/entities/ring/model/types";
-import { useStreets } from "@/entities/streets/api/useStreets";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useCity } from "@/entities/city/api/useCity";
@@ -12,13 +11,11 @@ import { estimatePrice, priceFromVolume, formatAMD } from "@/shared/lib/pricing"
 import { composeHeightField } from "@/shared/lib/heightField";
 import { Panel } from "@/shared/ui/Panel";
 import { TerrainMap } from "@/widgets/terrain-map/TerrainMap";
-import { ReliefPreview } from "@/widgets/relief-preview/ReliefPreview";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
 import { CityViewer } from "@/widgets/city-viewer/CityViewer";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
-import { Readout } from "./Readout";
 import type { Shape } from "@/entities/ring/model/types";
 
 const SHAPE_LABEL: Record<Shape, string> = {
@@ -46,12 +43,12 @@ function Step({ n, title, hint, children }: { n: number; title: string; hint: st
 export function Designer() {
   const {
     lat, lng, name, shape, areaKm, width, relief, thickness, smooth,
-    showStreets, showBuildings, metal, setShowStreets, setShowBuildings,
+    showBuildings, metal,
   } = useDesigner();
   const isSkyline = shape === "skyline";
   const elevation = useElevation(lat, lng, areaKm);
   const terrain = elevation.data ?? null;
-  const streets = useStreets(lat, lng, areaKm, showStreets);
+  // const streets = useStreets(lat, lng, areaKm, showStreets);
   const buildings = useBuildings(lat, lng, areaKm, showBuildings);
   const city = useCity(lat, lng, areaKm, isSkyline);
 

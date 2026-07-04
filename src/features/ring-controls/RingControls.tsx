@@ -1,5 +1,5 @@
 import { useDesigner } from "@/app/store";
-import { METALS, type Metal, type Shape } from "@/entities/ring/model/types";
+import { type Shape } from "@/entities/ring/model/types";
 
 const SHAPES: { id: Shape; label: string }[] = [
   { id: "rectangle", label: "Rectangle" },
@@ -35,12 +35,6 @@ function Range({ label, value, min, max, step, current, onChange }: RangeProps) 
     </div>
   );
 }
-
-const METAL_SWATCH: Record<Metal, string> = {
-  gold: "linear-gradient(135deg,#f4dca0,#c6a15b 55%,#8a6c33)",
-  silver: "linear-gradient(135deg,#f1f3f4,#c4c7cb 55%,#8a8e92)",
-  platinum: "linear-gradient(135deg,#fbfdff,#d7dadf 55%,#9aa0a8)",
-};
 
 export function RingControls() {
   const s = useDesigner();
