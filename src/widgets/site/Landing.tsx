@@ -1,0 +1,38 @@
+import { LandingHeader } from "./LandingHeader";
+import { HomeHero } from "./HomeHero";
+import { Collections } from "./Collections";
+import { Gallery } from "./Gallery";
+import { HowItWorks } from "./HowItWorks";
+
+/** The marketing landing page at /. */
+export function Landing() {
+  return (
+    <div className="home">
+      <LandingHeader />
+      <HomeHero />
+      <Collections />
+      <Gallery />
+      <HowItWorks />
+
+      <section className="home-final">
+        <div className="wrap home-final-inner">
+          <h2 className="home-h2">Your place, made to keep.</h2>
+          <p className="section-sub">It takes about a minute to design. Nothing to install.</p>
+          <a className="btn-primary lg" href="/design">Start designing</a>
+        </div>
+      </section>
+
+      <footer className="home-foot">
+        <div className="wrap home-foot-inner">
+          <div>
+            <div className="home-brand" style={{ marginBottom: 8 }}>CAIRN</div>
+            <div>Bespoke topographic jewelry · made to order</div>
+          </div>
+          <div className="mono">
+            Elevation © Copernicus DEM · Maps © Mapbox / OpenStreetMap
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,0 +1,32 @@
+:root {
+  --ink: #13110c;
+  --graphite: #1a1813;
+  --panel: #201d16;
+  --panel-2: #262218;
+  --line: rgba(198, 161, 91, 0.16);
+  --line-soft: rgba(233, 236, 240, 0.08);
+  --gold: #c6a15b;
+  --champagne: #e7ce97;
+  --platinum: #d7dadf;
+  --silver: #c4c7cb;
+  --mist: #cbc3b3;
+  --faint: #8e8674;
+  --ivory: #f3edde;
+
+  /* Light / editorial palette (landing) — subtle, warm neutrals */
+  --paper: #f5f2ec;
+  --paper-2: #ece7dd;
+  --card: #ffffff;
+  --paper-line: rgba(36, 31, 24, 0.10);
+  --ink-1: #23201a; /* headings on light */
+  --ink-2: #5a5446; /* body on light */
+  --ink-3: #938c7c; /* muted on light */
+  --bronze: #a4855a; /* soft metallic accent */
+  --bronze-2: #c2a271;
+  --sage: #8c9a86; /* quiet secondary accent */
+
+  --display: "Fraunces", Georgia, serif;
+  --body: "Hanken Grotesk", system-ui, sans-serif;
+  --mono: "Space Mono", ui-monospace, monospace;
+  --r: 14px;
+}
