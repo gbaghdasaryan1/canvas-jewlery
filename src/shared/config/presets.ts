@@ -11,10 +11,10 @@ export interface Preset {
 /** Famous peaks and landforms — coordinates pinned to the exact summit or most dramatic point. */
 export const PRESETS: Preset[] = [
   // Himalaya / Karakoram
-  { name: "Everest",       lat:  27.9881, lng:  86.9250, areaKm: 6 },
-  { name: "K2",            lat:  35.8808, lng:  76.5133, areaKm: 5 },
+  { name: "Everest",       lat:  27.9881, lng:  86.9250, areaKm: 26.2 },
+  { name: "K2",            lat:  35.8808, lng:  76.5133, areaKm: 13.6 },
   // Europe
-  { name: "Matterhorn",    lat:  45.9765, lng:   7.6587, areaKm: 2 },
+  { name: "Matterhorn",    lat:  45.9765, lng:   7.6587, areaKm: 10.7 },
   { name: "Mont Blanc",    lat:  45.8326, lng:   6.8652, areaKm: 4 },
   // Caucasus
   { name: "Mt Ararat",     lat:  39.7022, lng:  44.2998, areaKm: 6 },

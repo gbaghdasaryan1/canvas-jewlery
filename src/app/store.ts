@@ -34,11 +34,11 @@ export const useDesigner = create<DesignerState>((set) => ({
   lng: 86.925,
   name: "Mount Everest",
   shape: "rectangle",
-  areaKm: 4,
-  width: 24, // mm — plaque side
-  relief: 2.0, // mm — max relief height
-  thickness: 1.5, // mm — base thickness
-  smooth: 2,
+  areaKm: 40,
+  width: 18, // mm — plaque side
+  relief: 4.6, // mm — max relief height
+  thickness: 0.5, // mm — base thickness
+  smooth: 0,
   showStreets: false,
   showBuildings: false,
   metal: "gold",

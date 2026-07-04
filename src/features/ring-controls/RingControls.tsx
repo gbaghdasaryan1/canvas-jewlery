@@ -71,21 +71,7 @@ export function RingControls() {
         <Range label="Sample area" value={`${s.areaKm} km`} min={0.3} max={64} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
       </div>
 
-      {/* <div className="field" style={{ marginTop: 22 }}>
-        <label>Metal</label>
-        <div className="metals">
-          {(Object.keys(METALS) as Metal[]).map((m) => (
-            <button
-              key={m}
-              className={`metal ${s.metal === m ? "active" : ""}`}
-              onClick={() => s.setMetal(m)}
-            >
-              <span className="sw" style={{ background: METAL_SWATCH[m] }} />
-              {METALS[m].label}
-            </button>
-          ))}
-        </div>
-      </div> */}
+
     </>
   );
 }

@@ -404,7 +404,7 @@ body { -webkit-tap-highlight-color: transparent; }
   border-radius: var(--r); padding: 16px 18px; }
 .dz-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .dz-price { font-family: var(--display); font-size: 26px; color: var(--ivory); }
-.dz-place { color: var(--faint); font-size: 12px; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+.dz-place { color: var(--ivory); font-size: 15px; letter-spacing: 0.02em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dz-price-sub { color: var(--faint); font-size: 11px; margin-top: 4px; letter-spacing: 0.03em; }
 .dz-cta { display: flex; gap: 10px; margin-top: 14px; }
 .dz-order { flex: 1; }
@@ -488,7 +488,8 @@ body { -webkit-tap-highlight-color: transparent; }
   .design-app .dz-buy { box-shadow: 0 -16px 34px -16px rgba(35,32,26,0.4); border-top-color: var(--paper-line); }
 }
 .design-app .dz-price { color: var(--ink-1); }
-.design-app .dz-place, .design-app .dz-price-sub { color: var(--ink-3); }
+.design-app .dz-place { color: var(--ink-1); }
+.design-app .dz-price-sub { color: var(--ink-3); }
 
 /* map panel + map (lighter) */
 .design-app .panel { background: var(--card); border-color: var(--paper-line); }

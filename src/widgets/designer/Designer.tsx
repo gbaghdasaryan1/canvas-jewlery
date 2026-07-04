@@ -122,15 +122,10 @@ export function Designer() {
           </div>
 
           <div className="dz-buy">
-            <div className="dz-price-row">
-              <div className="dz-price">{price ? formatAMD(price.amd) : "Calculating…"}</div>
-              <div className="dz-place mono">{name}</div>
-            </div>
-            <div className="dz-price-sub mono">
-              {price ? `${price.grams.toFixed(1)} g silver · ` : ""}made to order in 3–4 weeks
-            </div>
+            <div className="dz-place mono">{name}</div>
+            <div className="dz-price-sub mono">made to order in 3–4 weeks</div>
             <div className="dz-cta">
-              <button className="btn-primary lg dz-order" onClick={order} disabled={!price}>
+              <button className="btn-primary lg dz-order" onClick={order}>
                 Order this piece
               </button>
               <ExportButton />
