@@ -9,13 +9,5 @@ export default defineConfig({
   },
   server: {
     port: 5174,
-    proxy: {
-      // Intercepts any frontend request starting with '/maps-api'
-      '/maps-api': {
-        target: 'https://googleapis.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/maps-api/, '')
-      }
-    }
-  }
+  },
 });

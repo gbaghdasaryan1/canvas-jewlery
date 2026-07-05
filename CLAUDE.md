@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev        # dev server at http://localhost:5173
+npm run dev        # dev server at http://localhost:5174 (port set in vite.config.ts)
 npm run build      # tsc --noEmit + vite production build
 npm run typecheck  # type-check only, no emit
 npm run preview    # preview the production build locally
@@ -15,36 +15,41 @@ There is no linter or test runner configured.
 
 ## Architecture
 
-This is a **Feature-Sliced Design (FSD)** React app. The `@` alias resolves to `src/`.
+This is a **Feature-Sliced Design (FSD)** React app (Vite + React 18 + TS). The `@` alias resolves to `src/`. Lower layers must not import from higher ones: `shared` → `entities` → `features` → `widgets` → `app`.
 
 ```
 src/
-  app/       Zustand store (useDesigner), React Query provider, root App
-  shared/    Design tokens, lib (ringGeometry, stl, format), config (GRID, PRESETS), reusable UI
-  entities/  terrain (fetch, procedural fallback, hook, types), ring (metals, params, size math)
-  features/  location-search, ring-controls, stl-export
-  widgets/   designer, terrain-map, ring-viewer, relief-preview, site sections (hero, how-it-works…)
+  app/       App (path-based routing: "/" → Landing, "/design" → DesignPage),
+             useDesigner Zustand store, React Query provider
+  shared/    config (PRESETS, GRID), lib (ringGeometry, heightField, smooth,
+             pricing, stl, overpass, format), design tokens, Panel UI
+  entities/  terrain (procedural elevation), buildings & streets (Overpass/OSM),
+             ring (metals, Shape, design-input → geometry params)
+  features/  location-search (Google Geocoder), ring-controls, stl-export
+  widgets/   designer, terrain-map (Google Maps), ring-viewer (r3f),
+             relief-preview (2D canvas), site/ (landing sections)
 ```
 
-**Data flow: location → elevation → mesh → render/export**
+**Product**: the user picks a place on a map and gets a cast-metal **relief piece** in one of three shapes (`Shape` in `entities/ring/model/types.ts`): `rectangle` ("plaque"), `heart`, `circle` ("disc"). The `ring` naming in entities/lib is historical — a wrap-around ring-band builder (`buildRingMesh`) still exists in `ringGeometry.ts` but the app renders slab/fan plaques via `buildShapeMesh`.
 
-1. The user picks a point on a Leaflet map (`widgets/terrain-map`). Coordinates go into `useDesigner` (Zustand store in `app/store.ts`).
-2. `entities/terrain/api/useElevation` calls `fetchElevation`, which samples a `GRID×GRID` (28×28) patch from the Open-Meteo Copernicus DEM API. Requests are chunked at 100 coordinates (API limit). On any failure the function falls back to `proceduralTerrain` (deterministic, seeded by lat/lng) — the UI shows a source badge ("DEM" vs "Procedural").
-3. `shared/lib/ringGeometry.buildRingMesh` normalizes the heightfield, applies a cosine-eased seam blend (`seamBlend` fraction), and builds a **watertight indexed mesh** (inner surface + outer surface + two rims). The y-axis is the finger axis so the ring stands upright by default.
-4. `widgets/ring-viewer` feeds the `BufferGeometry` to `@react-three/fiber` with PBR metal materials defined in `entities/ring/model/types.METALS`.
-5. `shared/lib/stl.ts` serializes the same mesh as a **binary STL** for 3D printing or casting.
+**Data flow: location → heightfield → mesh → render / STL / price**
 
-**Key constants** (in `shared/config/presets.ts`):
-- `GRID = 28` — elevation samples per axis (28×28 = 784 points, 8 chunks of 100 to the API)
-- `PRESETS` — famous high-relief locations used as starting points
+1. `widgets/terrain-map/MapView` (Google Maps via @react-google-maps/api) or `features/location-search` (Google Geocoder) writes `lat/lng/name` into `useDesigner` (`app/store.ts`), which holds all design inputs (shape, areaKm, width, relief, thickness, smooth, overlays, metal). The SDK is loaded once through `shared/lib/googleMaps.useGoogleMaps()` — every consumer goes through that hook (or `whenGoogleReady()` outside React). Requires `VITE_GOOGLE_MAPS_API_KEY` (see `.env.example`); without it the map renders a notice.
+2. `entities/terrain/api/useElevation` → `fetchElevation` samples real elevations from the **Google Elevation service** (Maps JS SDK, 256-location chunks). If the SDK never loads (no key, offline) or a request fails, it falls back to deterministic pseudo-terrain seeded by the coordinate (`lib/procedural.ts`); the `TerrainSource` badge distinguishes `"dem"` vs `"demo"`.
+3. Optional city overlays come from the **Overpass API** (`shared/lib/overpass.ts` — tries 4 public mirrors in turn with a 30 s timeout each). `entities/buildings` fetches footprints and `rasterizeBuildings` stamps their heights into a GRID-aligned raster; `entities/streets` fetches road polylines but they are drawn only on the 2D `relief-preview` canvas, never into the mesh.
+4. `shared/lib/heightField.composeHeightField` = terrain + building raster → normalize to 0..1 → `smoothGrid` (separable 1-2-1 blur, `smooth` iterations). This one function feeds the 3D viewer, the STL export, and pricing, so they always agree.
+5. `entities/ring/model/types.toShapeParams` maps design inputs to `SlabParams` (mm); `buildShapeMesh` dispatches to `buildSlabMesh` / `buildHeartMesh` / `buildCircleMesh` in `shared/lib/ringGeometry.ts` — all produce **watertight indexed meshes** (`RingMeshData`).
+6. `widgets/ring-viewer` renders it with @react-three/fiber and PBR metals from `METALS`; `shared/lib/stl.ts` serializes the same mesh to **binary STL**; `shared/lib/pricing.ts` computes exact mesh volume (divergence theorem) → grams of silver → price in AMD with per-metal factors.
 
-**Ring geometry parameters** (`entities/ring/model/types.toRingParams`):
-- `thickness = 1.5 mm`, `amp = 1.7 × relief`, `circSteps = 240`, `widthSteps = 26`, `seamBlend = 0.09`
-- US ring size → inner radius: `(11.63 + 0.8128 × size) / 2` mm
+**Key constants**
 
-## Known stubs
+- `GRID = 55` (`shared/config/presets.ts`) — heightfield samples per axis; every grid-shaped `Float32Array` in the app is GRID×GRID row-major (row = lat, col = lng, row 0 = south).
+- `PRESETS` — famous locations with a tuned `areaKm` window; `city: true` presets auto-enable the buildings overlay.
+- Pricing knobs (`shared/lib/pricing.ts`): `SILVER_DENSITY`, `AMD_PER_GRAM_SILVER = 4000`, `METAL_PRICE_FACTOR` (silver 1×, gold 3.2×, platinum 4×).
 
-- "Re-read terrain" button and pricing/checkout flow are not wired up.
-- Wearability guard (auto-reject flat terrain) is warned in the Readout but not enforced.
-- STL is geometrically manifold but lacks sizing pass, minimum-feature-width check, and comfort-fit inner profile for production casting.
-- Nominatim geocoder and OSM tiles are rate-limited — a keyed provider is needed for production.
+## Known stubs / caveats
+
+- Ordering is a `mailto:` link composed in `Designer.tsx` — no real checkout.
+- Map, search, and elevation all need `VITE_GOOGLE_MAPS_API_KEY` with billing enabled; without it everything degrades (map notice, procedural terrain).
+- Public Overpass mirrors (buildings/streets) are keyless and rate-limited — fine for dev, flaky under load.
+- STL is manifold but has no minimum-feature-width check for casting.

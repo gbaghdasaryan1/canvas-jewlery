@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDesigner } from "@/app/store";
 import { PRESETS } from "@/shared/config/presets";
+import { useGoogleMaps } from "@/shared/lib/googleMaps";
 
 export function LocationSearch() {
   const { lat, lng, areaKm, setLocation, setAreaKm, setShowBuildings } = useDesigner();
+  const { isLoaded } = useGoogleMaps();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -39,22 +41,25 @@ export function LocationSearch() {
     setBusy(true);
     setMsg(null);
     try {
-      // Nominatim — free, keyless OpenStreetMap geocoder.
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(term)}`,
-        { headers: { Accept: "application/json" } }
-      );
-      const data = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
+      // Google Geocoder via the Maps JS SDK — same script the map loads,
+      // so no extra key exposure and no CORS concerns.
+      if (!isLoaded) {
+        setMsg("Map is still loading — try again in a moment.");
+        return;
+      }
+      const geocoder = new google.maps.Geocoder();
+      const { results } = await geocoder.geocode({ address: term });
 
-      if (data.length > 0) {
-        const result = data[0];
-        const name = result.display_name.split(",")[0];
-        setLocation(parseFloat(result.lat), parseFloat(result.lon), name);
+      if (results.length > 0) {
+        const result = results[0];
+        const loc = result.geometry.location;
+        const name = result.formatted_address.split(",")[0];
+        setLocation(loc.lat(), loc.lng(), name);
       } else {
         setMsg(`No place found for “${term}”.`);
       }
     } catch {
-      setMsg("Search unavailable here — use a place below.");
+      setMsg(`No place found for “${term}”.`);
     } finally {
       setBusy(false);
     }

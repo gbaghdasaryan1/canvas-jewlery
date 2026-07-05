@@ -10,7 +10,7 @@ metal render → printable STL**.
 
 - **Vite + React 18 + TypeScript**
 - **@react-three/fiber + drei** — the 3D ring viewer
-- **react-leaflet** — point picking on a real map
+- **@react-google-maps/api** — Google Maps point picking, geocoding, elevation
 - **Zustand** — design parameters
 - **@tanstack/react-query** — cached elevation fetching
 - **Feature-Sliced Design** layout
@@ -19,15 +19,16 @@ metal render → printable STL**.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+cp .env.example .env   # then set VITE_GOOGLE_MAPS_API_KEY
+npm run dev      # http://localhost:5174
 npm run build    # type-check + production build
 ```
 
 ## How it works
 
 1. `entities/terrain/api/fetchElevation` samples a GRID×GRID patch around the chosen
-   coordinate from the **Open-Meteo elevation API** (Copernicus DEM). On any network
-   failure it falls back to deterministic, location-seeded procedural terrain, so the
+   coordinate from the **Google Elevation service**. On any failure (no API key,
+   offline) it falls back to deterministic, location-seeded procedural terrain, so the
    app always renders something — the source badge tells you which you're seeing.
 2. `shared/lib/ringGeometry` normalizes the heightfield and wraps it into a **watertight
    band** (inner + outer surfaces + rims), easing the wrap seam so the ends meet cleanly.
@@ -52,5 +53,6 @@ src/
 - The "Re-read terrain" and pricing flows are stubs; wire to a real quote/checkout.
 - STL export produces a manifold band, but production casting needs a sizing pass,
   minimum-feature-width checks, and an inner comfort-fit profile.
-- Nominatim search and OSM tiles require network and are rate-limited; for production,
-  use a keyed geocoder and your own tile/DEM provider.
+- Map, search, and elevation require `VITE_GOOGLE_MAPS_API_KEY` (Maps JavaScript,
+  Geocoding, and Elevation APIs enabled, billing on). Streets/buildings overlays
+  use the keyless OSM Overpass API and are rate-limited.

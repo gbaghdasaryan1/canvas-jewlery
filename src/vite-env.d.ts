@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 
-// No environment variables are required — the app runs fully on keyless
-// OpenStreetMap APIs (tiles, Nominatim, Overpass).
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface ImportMetaEnv {}
+interface ImportMetaEnv {
+  /** Google Maps JS API key (Maps JavaScript + Geocoding + Elevation). */
+  readonly VITE_GOOGLE_MAPS_API_KEY?: string;
+}
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;

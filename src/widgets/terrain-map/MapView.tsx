@@ -1,25 +1,8 @@
-import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useCallback, useEffect, useRef } from "react";
+import { GoogleMap, Marker } from "@react-google-maps/api";
+import { GOOGLE_MAPS_API_KEY, useGoogleMaps } from "@/shared/lib/googleMaps";
 
-// OpenStreetMap tiles — keyless, no billing, works for anyone who clones the repo.
-//
-// PRODUCTION: OSM's public tile server is fine for dev but has a fair-use policy
-// and is NOT for production load. For launch, swap the url + attribution below to
-// a hosted provider with a free tier (Carto, Stadia Maps, MapTiler). The Leaflet
-// code stays identical — only the tile URL/attribution change.
-const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const ATTRIBUTION = "&copy; OpenStreetMap contributors";
-
-// A styled dot via L.divIcon, NOT the default marker — this sidesteps Leaflet's
-// broken marker-image paths under Vite/bundlers. Styled by `.cairn-pin` in global.css.
-const PIN = L.divIcon({
-  className: "cairn-pin",
-  html: "<span></span>",
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
+const containerStyle = { width: "100%", height: "100%" };
 
 export interface MapViewProps {
   lat: number;
@@ -31,59 +14,93 @@ export interface MapViewProps {
 }
 
 /**
- * Keeps the map centered on external lat/lng changes (search, presets, nudge,
- * manual coordinate edits). MapContainer's `center` is only the initial value,
- * so we drive later moves imperatively via useMap().
- */
-function Recenter({ lat, lng }: { lat: number; lng: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
-  }, [lat, lng, map]);
-  return null;
-}
-
-/** Click-to-place selection + optional debounced center reporting. */
-function MapEvents({ onSelect, onCenterChange }: Pick<MapViewProps, "onSelect" | "onCenterChange">) {
-  const timer = useRef<number | undefined>(undefined);
-  const map = useMapEvents({
-    click(e) {
-      onSelect(e.latlng.lat, e.latlng.lng);
-    },
-    moveend() {
-      if (!onCenterChange) return;
-      window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(() => {
-        const c = map.getCenter();
-        onCenterChange(c.lat, c.lng);
-      }, 200);
-    },
-  });
-  return null;
-}
-
-/**
- * Self-contained, keyless Leaflet map. Fills its container — the container
- * (`.map-canvas`) supplies an explicit height, which Leaflet requires or it
- * renders blank.
+ * Google Maps point picker. Fills its container — `.map-canvas` supplies the
+ * explicit height. Requires VITE_GOOGLE_MAPS_API_KEY (Maps JavaScript API).
  */
 export function MapView({ lat, lng, onSelect, onCenterChange }: MapViewProps) {
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const idleTimer = useRef<number | undefined>(undefined);
+  const { isLoaded, loadError } = useGoogleMaps();
+
+  // Keep the map centered on external lat/lng changes (search, presets,
+  // nudge, manual coordinate edits) without remounting.
+  useEffect(() => {
+    mapRef.current?.setCenter({ lat, lng });
+  }, [lat, lng]);
+
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+  }, []);
+
+  const onMapUnmount = useCallback(() => {
+    mapRef.current = null;
+  }, []);
+
+  const handleClick = useCallback(
+    (e: google.maps.MapMouseEvent) => {
+      if (e.latLng) onSelect(e.latLng.lat(), e.latLng.lng());
+    },
+    [onSelect],
+  );
+
+  const handleDragEnd = useCallback(
+    (e: google.maps.MapMouseEvent) => {
+      if (e.latLng) onSelect(e.latLng.lat(), e.latLng.lng());
+    },
+    [onSelect],
+  );
+
+  const handleIdle = useCallback(() => {
+    if (!onCenterChange) return;
+    window.clearTimeout(idleTimer.current);
+    idleTimer.current = window.setTimeout(() => {
+      const c = mapRef.current?.getCenter();
+      if (c) onCenterChange(c.lat(), c.lng());
+    }, 200);
+  }, [onCenterChange]);
+
+  if (!GOOGLE_MAPS_API_KEY) {
+    return (
+      <div className="map-canvas map-fallback mono">
+        Set VITE_GOOGLE_MAPS_API_KEY in .env to enable the map.
+      </div>
+    );
+  }
+  if (loadError) {
+    return <div className="map-canvas map-fallback mono">Google Maps failed to load.</div>;
+  }
+  if (!isLoaded) {
+    return <div className="map-canvas map-fallback mono">Loading map…</div>;
+  }
+
   return (
-    <MapContainer center={[lat, lng]} zoom={11} className="map-canvas">
-      <TileLayer url={TILE_URL} attribution={ATTRIBUTION} maxZoom={19} />
-      <Marker
-        position={[lat, lng]}
-        icon={PIN}
-        draggable
-        eventHandlers={{
-          dragend(e) {
-            const p = (e.target as L.Marker).getLatLng();
-            onSelect(p.lat, p.lng);
-          },
+    <div className="map-canvas">
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={{ lat, lng }}
+        zoom={11}
+        onLoad={onMapLoad}
+        onUnmount={onMapUnmount}
+        onClick={handleClick}
+        onIdle={handleIdle}
+        options={{
+          mapTypeControl: true,
+          mapTypeId: "terrain",
+          streetViewControl: false,
+          fullscreenControl: true,
+          // One finger scrolls the page; two fingers pan the map. Keeps the
+          // map from trapping page scroll on touch devices.
+          gestureHandling: "cooperative",
+          zoomControl: true,
         }}
-      />
-      <Recenter lat={lat} lng={lng} />
-      <MapEvents onSelect={onSelect} onCenterChange={onCenterChange} />
-    </MapContainer>
+      >
+        <Marker
+          position={{ lat, lng }}
+          title="Selected location"
+          draggable
+          onDragEnd={handleDragEnd}
+        />
+      </GoogleMap>
+    </div>
   );
 }

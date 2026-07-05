@@ -48,11 +48,7 @@ h1.display em { font-style: italic; color: var(--champagne); }
 .viewer { background: radial-gradient(120% 120% at 50% 18%, #2a2519, #15130d 70%); }
 
 .map-canvas { height: 380px; width: 100%; background: #0e0d0a; filter: saturate(0.72) brightness(0.92); overflow: hidden; }
-.leaflet-container { font-family: var(--mono) !important; background: #0e0d0a; }
-.leaflet-control-attribution { background: rgba(19, 17, 12, 0.7) !important; color: #7d7666 !important; font-size: 9px !important; }
-.leaflet-control-attribution a { color: #9d9683 !important; }
-.leaflet-bar a { background: var(--panel-2) !important; color: var(--mist) !important; border-color: var(--line) !important; }
-.cairn-pin span { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--champagne); border: 2px solid #15130d; box-shadow: 0 0 0 2px var(--gold), 0 0 12px rgba(231, 206, 151, 0.6); }
+.map-fallback { display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 12px; }
 
 .stage { height: 380px; width: 100%; }
 .stage-msg, .flat-warn, .search-msg { font-family: var(--mono); color: var(--faint); }
