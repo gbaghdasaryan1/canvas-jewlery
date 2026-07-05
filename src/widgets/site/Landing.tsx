@@ -29,7 +29,7 @@ export function Landing() {
             <div>Bespoke topographic jewelry · made to order</div>
           </div>
           <div className="mono">
-            Elevation © Copernicus DEM · Maps © Mapbox / OpenStreetMap
+            Map data © OpenStreetMap contributors
           </div>
         </div>
       </footer>

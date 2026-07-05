@@ -12,7 +12,6 @@ const OPTIONS: Option[] = [
   { shape: "rectangle", title: "Terrain Plaque", blurb: "A clean rectangular relief of your landscape.", tone: "stone", seed: 11 },
   { shape: "heart", title: "Heart Keepsake", blurb: "The place you love, shaped like it.", tone: "bronze", seed: 23 },
   { shape: "circle", title: "Round Locket", blurb: "A soft disc of mountains or coastline.", tone: "sage", seed: 41 },
-  { shape: "skyline", title: "City Skyline", blurb: "Your city's buildings, streets and rivers in 3D.", tone: "silver", seed: 5 },
 ];
 
 /** Jewelry options — the themed forms a customer can create. */

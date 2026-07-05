@@ -4,15 +4,12 @@ import { useElevation } from "@/entities/terrain/api/useElevation";
 import { METALS, buildShapeMesh, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
-import { useCity } from "@/entities/city/api/useCity";
-import { buildCityMesh } from "@/entities/city/lib/buildCityMesh";
 import { GRID } from "@/shared/config/presets";
-import { estimatePrice, priceFromVolume, formatAMD } from "@/shared/lib/pricing";
+import { estimatePrice, formatAMD } from "@/shared/lib/pricing";
 import { composeHeightField } from "@/shared/lib/heightField";
 import { Panel } from "@/shared/ui/Panel";
 import { TerrainMap } from "@/widgets/terrain-map/TerrainMap";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
-import { CityViewer } from "@/widgets/city-viewer/CityViewer";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
@@ -22,7 +19,6 @@ const SHAPE_LABEL: Record<Shape, string> = {
   rectangle: "plaque",
   heart: "heart",
   circle: "disc",
-  skyline: "skyline",
 };
 
 function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
@@ -45,20 +41,9 @@ export function Designer() {
     lat, lng, name, shape, areaKm, width, relief, thickness, smooth,
     showBuildings, metal,
   } = useDesigner();
-  const isSkyline = shape === "skyline";
   const elevation = useElevation(lat, lng, areaKm);
   const terrain = elevation.data ?? null;
-  // const streets = useStreets(lat, lng, areaKm, showStreets);
   const buildings = useBuildings(lat, lng, areaKm, showBuildings);
-  const city = useCity(lat, lng, areaKm, isSkyline);
-
-  const cityMesh = useMemo(
-    () =>
-      isSkyline && city.data
-        ? buildCityMesh(city.data, { lat, lng, areaKm, plateMm: width, baseMm: thickness, vScale: relief })
-        : null,
-    [isSkyline, city.data, lat, lng, areaKm, width, thickness, relief],
-  );
 
   const structures = useMemo(
     () =>
@@ -78,10 +63,9 @@ export function Designer() {
   );
 
   const price = useMemo(() => {
-    if (isSkyline) return cityMesh ? priceFromVolume(cityMesh.volumeMm3, metal) : null;
     if (!heightNorm) return null;
     return estimatePrice(buildShapeMesh(shape, heightNorm, params), metal);
-  }, [isSkyline, cityMesh, heightNorm, shape, params, metal]);
+  }, [heightNorm, shape, params, metal]);
 
   function order() {
     const subject = encodeURIComponent(`CAIRN — ${name} ${SHAPE_LABEL[shape]}`);
@@ -95,17 +79,7 @@ export function Designer() {
     window.location.href = `mailto:hello@cairn.studio?subject=${subject}&body=${body}`;
   }
 
-  const viewer = isSkyline ? (
-    city.isLoading && !cityMesh ? (
-      <div className="stage-msg mono">Building city…</div>
-    ) : city.isError ? (
-      <div className="stage-msg mono">Couldn't reach the map data — try again.</div>
-    ) : city.data && city.data.buildings.length === 0 ? (
-      <div className="stage-msg mono">No buildings here — search a city (e.g. Manhattan, Dubai).</div>
-    ) : (
-      <CityViewer mesh={cityMesh} />
-    )
-  ) : elevation.isLoading && !terrain ? (
+  const viewer = elevation.isLoading && !terrain ? (
     <div className="stage-msg mono">Reading terrain…</div>
   ) : (
     <RingViewer heightNorm={heightNorm} shape={shape} params={params} metal={metal} />

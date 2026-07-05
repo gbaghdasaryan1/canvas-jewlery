@@ -3,7 +3,7 @@ import { useDesigner } from "@/app/store";
 import type { Shape } from "@/entities/ring/model/types";
 import { Designer } from "./Designer";
 
-const VALID_SHAPES = new Set(["rectangle", "heart", "circle", "skyline"]);
+const VALID_SHAPES = new Set(["rectangle", "heart", "circle"]);
 
 /** The standalone design experience at /design. */
 export function DesignPage() {
@@ -35,7 +35,7 @@ export function DesignPage() {
 
       <footer className="design-foot">
         <div className="wrap mono">
-          CAIRN · made to order · elevation © Copernicus DEM · buildings © Mapbox / OpenStreetMap
+          CAIRN · made to order · map data © OpenStreetMap contributors
         </div>
       </footer>
     </div>

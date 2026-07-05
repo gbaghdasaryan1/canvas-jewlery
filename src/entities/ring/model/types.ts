@@ -10,7 +10,7 @@ import {
 export type Metal = "gold" | "silver" | "platinum";
 
 /** The physical form the terrain is rendered into. */
-export type Shape = "rectangle" | "heart" | "circle" | "skyline";
+export type Shape = "rectangle" | "heart" | "circle";
 
 export interface MetalSpec {
   label: string;

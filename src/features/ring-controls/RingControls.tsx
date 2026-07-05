@@ -5,7 +5,6 @@ const SHAPES: { id: Shape; label: string }[] = [
   { id: "rectangle", label: "Rectangle" },
   { id: "heart", label: "Heart" },
   { id: "circle", label: "Circle" },
-  { id: "skyline", label: "Skyline" },
 ];
 
 interface RangeProps {

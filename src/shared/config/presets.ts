@@ -4,7 +4,7 @@ export interface Preset {
   lng: number;
   /** Optimal terrain window for this location (overrides the UI slider default). */
   areaKm?: number;
-  /** City centres: turn the buildings layer on so the skyline is sculpted in. */
+  /** City centres: turn on the OSM buildings overlay so footprints sculpt the relief. */
   city?: boolean;
 }
 
@@ -26,7 +26,7 @@ export const PRESETS: Preset[] = [
   // North America
   { name: "Grand Canyon",  lat:  36.2051, lng:-113.0545, areaKm: 4 },
   { name: "Half Dome",     lat:  37.7459, lng:-119.5332, areaKm: 2 },
-  // Cities — skyline sculpted from building footprints (buildings layer auto-on)
+  // Cities — OSM building footprints sculpted onto the relief (buildings layer auto-on)
   { name: "Manhattan",     lat:  40.7549, lng: -73.9840, areaKm: 2.5, city: true },
   { name: "Dubai Marina",  lat:  25.0805, lng:  55.1403, areaKm: 2.5, city: true },
   { name: "Hong Kong",     lat:  22.2799, lng: 114.1588, areaKm: 2.5, city: true },
