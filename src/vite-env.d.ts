@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_GOOGLE_MAPS_API_KEY: string;
+  /** Mapbox token — used only for the optional 3D Skyline (buildings/streets). */
+  readonly VITE_MAPBOX_TOKEN?: string;
 }
 
 interface ImportMeta {

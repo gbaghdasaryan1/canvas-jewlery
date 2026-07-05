@@ -39,22 +39,17 @@ export function LocationSearch() {
     setBusy(true);
     setMsg(null);
     try {
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        setMsg("Google Maps API key not configured.");
-        return;
-      }
-
+      // Nominatim — free, keyless OpenStreetMap geocoder.
       const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(term)}&key=${apiKey}`
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(term)}`,
+        { headers: { Accept: "application/json" } }
       );
-      const data = (await res.json()) as { results: Array<{ formatted_address: string; geometry: { location: { lat: number; lng: number } } }> };
+      const data = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
 
-      if (data.results && data.results.length > 0) {
-        const result = data.results[0];
-        const location = result.geometry.location;
-        const name = result.formatted_address.split(",")[0];
-        setLocation(location.lat, location.lng, name);
+      if (data.length > 0) {
+        const result = data[0];
+        const name = result.display_name.split(",")[0];
+        setLocation(parseFloat(result.lat), parseFloat(result.lon), name);
       } else {
         setMsg(`No place found for “${term}”.`);
       }
@@ -114,10 +109,10 @@ export function LocationSearch() {
       <div className="nudgerow mono">
         <span className="nudge-label">Move</span>
         <div className="nudgepad">
-          <button className="nudge n" onClick={() => nudge(1, 0)} title="North" aria-label="Move north">↑</button>
-          <button className="nudge w" onClick={() => nudge(0, -1)} title="West" aria-label="Move west">←</button>
-          <button className="nudge e" onClick={() => nudge(0, 1)} title="East" aria-label="Move east">→</button>
-          <button className="nudge s" onClick={() => nudge(-1, 0)} title="South" aria-label="Move south">↓</button>
+          <button className="nudge n" onClick={() => nudge(0.5, 0)} title="North" aria-label="Move north">↑</button>
+          <button className="nudge w" onClick={() => nudge(0, -0.5)} title="West" aria-label="Move west">←</button>
+          <button className="nudge e" onClick={() => nudge(0, 0.5)} title="East" aria-label="Move east">→</button>
+          <button className="nudge s" onClick={() => nudge(-0.5, 0)} title="South" aria-label="Move south">↓</button>
         </div>
       </div>
       <div className="chips">

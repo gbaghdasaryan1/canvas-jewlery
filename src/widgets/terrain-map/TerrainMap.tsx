@@ -1,69 +1,64 @@
-import { useCallback, useEffect, useRef } from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { useDesigner } from "@/app/store";
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
+// Free OpenStreetMap tiles — no API key required.
+const TILE_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+// A divIcon (styled by `.cairn-pin` in global.css) avoids Leaflet's default
+// marker-image asset paths, which break under bundlers.
+const PIN = L.divIcon({
+  className: "cairn-pin",
+  html: "<span></span>",
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+});
 
 export function TerrainMap() {
   const { lat, lng, setLocation } = useDesigner();
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const elRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
+  // Keep the latest setLocation reachable from the click handler without
+  // re-initializing the map.
+  const setLocationRef = useRef(setLocation);
+  setLocationRef.current = setLocation;
 
-  const onMapLoad = useCallback(
-    (map: google.maps.Map) => {
-      mapRef.current = map;
-      map.setCenter({ lat, lng });
-    },
-    [lat, lng]
-  );
-
+  // Initialize the map once.
   useEffect(() => {
-    if (mapRef.current && isLoaded) {
-      mapRef.current.setCenter({ lat, lng });
-    }
-  }, [lat, lng, isLoaded]);
+    if (!elRef.current || mapRef.current) return;
 
-  const handleMapClick = useCallback(
-    (e: google.maps.MapMouseEvent) => {
-      if (e.latLng) {
-        const newLat = e.latLng.lat();
-        const newLng = e.latLng.lng();
-        setLocation(newLat, newLng, "Custom location");
-      }
-    },
-    [setLocation]
-  );
+    const map = L.map(elRef.current, { center: [lat, lng], zoom: 11 });
+    L.tileLayer(TILE_URL, { maxZoom: 19, attribution: ATTRIBUTION }).addTo(map);
 
-  if (!isLoaded) {
-    return <div className="map-canvas">Loading Google Maps...</div>;
-  }
+    const marker = L.marker([lat, lng], { icon: PIN }).addTo(map);
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      setLocationRef.current(e.latlng.lat, e.latlng.lng, "Custom location");
+    });
 
-  return (
-    <div className="map-canvas">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={{ lat, lng }}
-        zoom={11}
-        onLoad={onMapLoad}
-        onClick={handleMapClick}
-        options={{
-          mapTypeControl: true,
-          streetViewControl: true, // pegman → drag onto the map for 360° Street View
-          fullscreenControl: true,
-          // One finger scrolls the page; two fingers pan the map. Keeps the map
-          // from trapping page scroll on touch devices.
-          gestureHandling: "cooperative",
-          zoomControl: true,
-        }}
-      >
-        <Marker position={{ lat, lng }} title="Selected location" />
-      </GoogleMap>
-    </div>
-  );
+    // Ensure Leaflet measures the container after layout settles.
+    setTimeout(() => map.invalidateSize(), 0);
+
+    mapRef.current = map;
+    markerRef.current = marker;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reflect location changes from search, presets, nudge, or coordinate edits.
+  useEffect(() => {
+    if (!mapRef.current || !markerRef.current) return;
+    markerRef.current.setLatLng([lat, lng]);
+    mapRef.current.setView([lat, lng], mapRef.current.getZoom());
+  }, [lat, lng]);
+
+  return <div className="map-canvas" ref={elRef} />;
 }
