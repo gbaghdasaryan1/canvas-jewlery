@@ -76,16 +76,16 @@ export function ReliefPreview({
         const sh = Math.max(0, (nx * lx + ny * ly + 1 * lz) / il);
         const t = (e - terrain.min) / span;
         const o = (py * S + px) * 4;
-        img.data[o] = 30 + t * 150 + sh * 70;
-        img.data[o + 1] = 26 + t * 120 + sh * 60;
-        img.data[o + 2] = 18 + t * 60 + sh * 40;
+        img.data[o] = 24 + t * 125 + sh * 60;
+        img.data[o + 1] = 27 + t * 135 + sh * 65;
+        img.data[o + 2] = 32 + t * 148 + sh * 72;
         img.data[o + 3] = 255;
       }
     ctx.putImageData(img, 0, 0);
 
     // contour ticks
     ctx.save();
-    ctx.fillStyle = "#e7ce97";
+    ctx.fillStyle = "#dfe5ec";
     ctx.globalAlpha = 0.4;
     const levels = 7;
     for (let L = 1; L < levels; L++) {
@@ -114,7 +114,7 @@ export function ReliefPreview({
       // Buildings: filled footprints, lightly shaded by height.
       if (buildings && buildings.length) {
         ctx.save();
-        ctx.strokeStyle = "rgba(60,48,30,0.5)";
+        ctx.strokeStyle = "rgba(38,44,52,0.5)";
         ctx.lineWidth = 0.6 * scale;
         for (const b of buildings) {
           ctx.beginPath();
@@ -125,7 +125,7 @@ export function ReliefPreview({
           }
           ctx.closePath();
           const tone = Math.min(1, b.height / 80); // taller -> a touch lighter
-          ctx.fillStyle = `rgba(${198 + tone * 40},${178 + tone * 36},${150 + tone * 30},0.82)`;
+          ctx.fillStyle = `rgba(${170 + tone * 34},${177 + tone * 34},${186 + tone * 34},0.82)`;
           ctx.fill();
           ctx.stroke();
         }
@@ -145,9 +145,9 @@ export function ReliefPreview({
         ctx.save();
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        ctx.strokeStyle = "rgba(16,12,7,0.6)";
+        ctx.strokeStyle = "rgba(10,13,17,0.6)";
         for (const st of streets) { trace(st); ctx.lineWidth = (roadWidth(st.cls) + 1.3) * scale; ctx.stroke(); }
-        ctx.strokeStyle = "rgba(243,237,222,0.92)";
+        ctx.strokeStyle = "rgba(238,241,245,0.92)";
         for (const st of streets) { trace(st); ctx.lineWidth = roadWidth(st.cls) * scale; ctx.stroke(); }
         ctx.restore();
       }

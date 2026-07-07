@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { useDesigner } from "@/app/store";
-import { PRESETS } from "@/shared/config/presets";
+import { PRESETS, type Preset } from "@/shared/config/presets";
 import { useGoogleMaps } from "@/shared/lib/googleMaps";
 
-export function LocationSearch() {
+interface LocationSearchProps {
+  /** Preset chips to offer (defaults to all). */
+  presets?: Preset[];
+  placeholder?: string;
+}
+
+export function LocationSearch({
+  presets = PRESETS,
+  placeholder = "Search a place — e.g. Matterhorn, Yosemite Valley…",
+}: LocationSearchProps) {
   const { lat, lng, areaKm, setLocation, setAreaKm, setShowBuildings } = useDesigner();
   const { isLoaded } = useGoogleMaps();
   const [q, setQ] = useState("");
@@ -75,7 +84,7 @@ export function LocationSearch() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && search()}
-          placeholder="Search a place — e.g. Matterhorn, Yosemite Valley…"
+          placeholder={placeholder}
           autoComplete="off"
         />
         <button className="btn" style={{ padding: "11px 18px" }} onClick={search} disabled={busy}>
@@ -121,7 +130,7 @@ export function LocationSearch() {
         </div>
       </div>
       <div className="chips">
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <button
             key={p.name}
             className={`chip ${isActive(p.lat, p.lng) ? "active" : ""}`}

@@ -1,5 +1,3 @@
-import { GRID } from "@/shared/config/presets";
-
 export interface RingParams {
   /** inner radius in mm (from ring size) */
   innerRadius: number;
@@ -39,20 +37,23 @@ export function ringSizeToInnerRadius(usSize: number): number {
   return (11.63 + 0.8128 * usSize) / 2;
 }
 
-/** Bilinear sample of a GRID×GRID normalized heightmap (row-major). */
+/** Bilinear sample of a square N×N normalized heightmap (row-major).
+    N is inferred from the array length, so callers can pass any resolution
+    (55×55 for the live views, denser rasters for STL export). */
 function sampleGrid(h: Float32Array, fu: number, fv: number): number {
-  const x = Math.min(Math.max(fu, 0), 1) * (GRID - 1);
-  const y = Math.min(Math.max(fv, 0), 1) * (GRID - 1);
+  const N = Math.round(Math.sqrt(h.length));
+  const x = Math.min(Math.max(fu, 0), 1) * (N - 1);
+  const y = Math.min(Math.max(fv, 0), 1) * (N - 1);
   const x0 = Math.floor(x);
   const y0 = Math.floor(y);
-  const x1 = Math.min(x0 + 1, GRID - 1);
-  const y1 = Math.min(y0 + 1, GRID - 1);
+  const x1 = Math.min(x0 + 1, N - 1);
+  const y1 = Math.min(y0 + 1, N - 1);
   const tx = x - x0;
   const ty = y - y0;
-  const a = h[y0 * GRID + x0];
-  const b = h[y0 * GRID + x1];
-  const c = h[y1 * GRID + x0];
-  const d = h[y1 * GRID + x1];
+  const a = h[y0 * N + x0];
+  const b = h[y0 * N + x1];
+  const c = h[y1 * N + x0];
+  const d = h[y1 * N + x1];
   return (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty;
 }
 
@@ -196,7 +197,7 @@ export function buildSlabMesh(heightNorm: Float32Array, p: SlabParams): RingMesh
 }
 
 /** Normalized heart outline (fits a unit box, centred on origin) at angle step. */
-function heartBoundary(steps: number): Array<{ x: number; z: number }> {
+export function heartBoundary(steps: number): Array<{ x: number; z: number }> {
   const raw: Array<{ x: number; y: number }> = [];
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (let a = 0; a < steps; a++) {
@@ -216,7 +217,7 @@ function heartBoundary(steps: number): Array<{ x: number; z: number }> {
 }
 
 /** Normalized circular outline (radius 0.5, centred on origin). */
-function circleBoundary(steps: number): Array<{ x: number; z: number }> {
+export function circleBoundary(steps: number): Array<{ x: number; z: number }> {
   const out: Array<{ x: number; z: number }> = [];
   for (let a = 0; a < steps; a++) {
     const t = (a / steps) * Math.PI * 2;

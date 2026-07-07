@@ -5,7 +5,7 @@ import { fetchBuildings, type BuildingPolygon } from "./fetchBuildings";
 export function useBuildings(lat: number, lng: number, areaKm: number, enabled: boolean) {
   return useQuery<BuildingPolygon[]>({
     queryKey: ["buildings", lat.toFixed(4), lng.toFixed(4), areaKm],
-    queryFn: () => fetchBuildings(lat, lng, areaKm),
+    queryFn: ({ signal }) => fetchBuildings(lat, lng, areaKm, signal),
     enabled,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 30,

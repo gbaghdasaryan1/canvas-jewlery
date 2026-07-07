@@ -1,10 +1,6 @@
 import { useDesigner } from "@/app/store";
-import { useElevation } from "@/entities/terrain/api/useElevation";
 import { buildShapeMesh, toShapeParams, type Shape } from "@/entities/ring/model/types";
-import { useBuildings } from "@/entities/buildings/api/useBuildings";
-import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
-import { GRID } from "@/shared/config/presets";
-import { composeHeightField } from "@/shared/lib/heightField";
+import type { RingMeshData } from "@/shared/lib/ringGeometry";
 import { downloadSTL } from "@/shared/lib/stl";
 import { slugify } from "@/shared/lib/format";
 
@@ -14,26 +10,33 @@ const SUFFIX: Record<Shape, string> = {
   circle: "disc",
 };
 
-export function ExportButton() {
-  const { lat, lng, shape, areaKm, width, relief, thickness, smooth, showBuildings, name } =
-    useDesigner();
-  const { data: terrain } = useElevation(lat, lng, areaKm);
-  const { data: buildings } = useBuildings(lat, lng, areaKm, showBuildings);
+interface ExportButtonProps {
+  /** Composed 0..1 heightfield — the same one the viewer renders. */
+  heightNorm: Float32Array | null;
+  /** Optional filename tag, e.g. "skyline" → cairn-yerevan-skyline-plaque.stl */
+  tag?: string;
+  /** Optional mesh built on demand just for the STL (e.g. the skyline's
+      vector city mesh, so the file matches the canvas exactly). Falls back
+      to the heightfield relief mesh. */
+  exportMesh?: () => RingMeshData | null;
+}
+
+export function ExportButton({ heightNorm, tag, exportMesh }: ExportButtonProps) {
+  const { shape, width, relief, thickness, name } = useDesigner();
 
   function exportStl() {
-    const fileName = `cairn-${slugify(name)}-${SUFFIX[shape]}.stl`;
-    if (!terrain) return;
-    const structures =
-      showBuildings && buildings?.length
-        ? rasterizeBuildings(buildings, lat, lng, areaKm, GRID)
-        : null;
-    const height = composeHeightField(terrain.data, terrain.min, terrain.max, structures, smooth);
-    const mesh = buildShapeMesh(shape, height, toShapeParams(shape, { width, relief, thickness }));
+    const mesh =
+      exportMesh?.() ??
+      (heightNorm
+        ? buildShapeMesh(shape, heightNorm, toShapeParams(shape, { width, relief, thickness }))
+        : null);
+    if (!mesh) return;
+    const fileName = `cairn-${slugify(name)}-${tag ? `${tag}-` : ""}${SUFFIX[shape]}.stl`;
     downloadSTL(mesh, fileName);
   }
 
   return (
-    <button className="btn" onClick={exportStl} disabled={!terrain}>
+    <button className="btn" onClick={exportStl} disabled={!heightNorm}>
       Download STL
     </button>
   );

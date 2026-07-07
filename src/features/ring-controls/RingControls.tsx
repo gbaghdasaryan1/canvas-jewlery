@@ -35,7 +35,14 @@ function Range({ label, value, min, max, step, current, onChange }: RangeProps) 
   );
 }
 
-export function RingControls() {
+interface RingControlsProps {
+  /** Bounds for the "Sample area" slider — skylines need a much tighter
+      window than terrain (Overpass payloads blow up past a few km). */
+  areaMin?: number;
+  areaMax?: number;
+}
+
+export function RingControls({ areaMin = 0.3, areaMax = 614 }: RingControlsProps) {
   const s = useDesigner();
   return (
     <>
@@ -67,7 +74,7 @@ export function RingControls() {
         <Range label="Relief depth" value={`${s.relief.toFixed(1)} mm`} min={0.4} max={8} step={0.2} current={s.relief} onChange={s.setRelief} />
         <Range label="Base thickness" value={`${s.thickness.toFixed(1)} mm`} min={0.5} max={4} step={0.1} current={s.thickness} onChange={s.setThickness} />
         <Range label="Smoothing" value={s.smooth === 0 ? "Sharp" : `${s.smooth}×`} min={0} max={6} step={0.2} current={s.smooth} onChange={s.setSmooth} />
-        <Range label="Sample area" value={`${s.areaKm} km`} min={0.3} max={64} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
+        <Range label="Sample area" value={`${s.areaKm} km`} min={areaMin} max={areaMax} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
       </div>
 
 

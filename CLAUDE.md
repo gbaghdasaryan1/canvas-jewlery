@@ -19,8 +19,8 @@ This is a **Feature-Sliced Design (FSD)** React app (Vite + React 18 + TS). The 
 
 ```
 src/
-  app/       App (path-based routing: "/" → Landing, "/design" → DesignPage),
-             useDesigner Zustand store, React Query provider
+  app/       App (path-based routing: "/" → Landing, "/design" → DesignPage,
+             "/skylines" → SkylinePage), useDesigner Zustand store, React Query provider
   shared/    config (PRESETS, GRID), lib (ringGeometry, heightField, smooth,
              pricing, stl, overpass, format), design tokens, Panel UI
   entities/  terrain (procedural elevation), buildings & streets (Overpass/OSM),
@@ -36,7 +36,8 @@ src/
 
 1. `widgets/terrain-map/MapView` (Google Maps via @react-google-maps/api) or `features/location-search` (Google Geocoder) writes `lat/lng/name` into `useDesigner` (`app/store.ts`), which holds all design inputs (shape, areaKm, width, relief, thickness, smooth, overlays, metal). The SDK is loaded once through `shared/lib/googleMaps.useGoogleMaps()` — every consumer goes through that hook (or `whenGoogleReady()` outside React). Requires `VITE_GOOGLE_MAPS_API_KEY` (see `.env.example`); without it the map renders a notice.
 2. `entities/terrain/api/useElevation` → `fetchElevation` samples real elevations from the **Google Elevation service** (Maps JS SDK, 256-location chunks). If the SDK never loads (no key, offline) or a request fails, it falls back to deterministic pseudo-terrain seeded by the coordinate (`lib/procedural.ts`); the `TerrainSource` badge distinguishes `"dem"` vs `"demo"`.
-3. Optional city overlays come from the **Overpass API** (`shared/lib/overpass.ts` — tries 4 public mirrors in turn with a 30 s timeout each). `entities/buildings` fetches footprints and `rasterizeBuildings` stamps their heights into a GRID-aligned raster; `entities/streets` fetches road polylines but they are drawn only on the 2D `relief-preview` canvas, never into the mesh.
+3. Optional city overlays come from the **Overpass API** (`shared/lib/overpass.ts` — tries 4 public mirrors in turn with a 30 s timeout each). `entities/buildings` fetches footprints and `rasterizeBuildings` stamps their heights into a GRID-aligned raster; `entities/streets` fetches road polylines (`rasterizeStreets` stamps them into a GRID mask for skylines; on /design they are drawn only on the 2D `relief-preview` canvas).
+   - **/skylines** (`widgets/designer/SkylinePage` + `SkylineDesigner`) skips terrain entirely: buildings + streets from Overpass → `composeCityField` (ground 0, street ridges, gamma-eased building heights) → same shapes/viewer/STL/order. Elevation is never fetched there. The location picker is **Mapbox GL JS** (`widgets/city-map/CityMap` + `cityMapStyle.ts` — a custom silver-themed style over the `mapbox://mapbox.mapbox-streets-v8` vector tileset with 3D `fill-extrusion` buildings; needs `VITE_MAPBOX_TOKEN`). Mapbox tiles are display-only — the castable mesh always comes from OSM/Overpass.
 4. `shared/lib/heightField.composeHeightField` = terrain + building raster → normalize to 0..1 → `smoothGrid` (separable 1-2-1 blur, `smooth` iterations). This one function feeds the 3D viewer, the STL export, and pricing, so they always agree.
 5. `entities/ring/model/types.toShapeParams` maps design inputs to `SlabParams` (mm); `buildShapeMesh` dispatches to `buildSlabMesh` / `buildHeartMesh` / `buildCircleMesh` in `shared/lib/ringGeometry.ts` — all produce **watertight indexed meshes** (`RingMeshData`).
 6. `widgets/ring-viewer` renders it with @react-three/fiber and PBR metals from `METALS`; `shared/lib/stl.ts` serializes the same mesh to **binary STL**; `shared/lib/pricing.ts` computes exact mesh volume (divergence theorem) → grams of silver → price in AMD with per-metal factors.

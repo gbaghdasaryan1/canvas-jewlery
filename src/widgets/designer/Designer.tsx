@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useDeferredValue, useMemo, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
 import { useElevation } from "@/entities/terrain/api/useElevation";
 import { METALS, buildShapeMesh, toShapeParams } from "@/entities/ring/model/types";
@@ -7,6 +7,7 @@ import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings"
 import { GRID } from "@/shared/config/presets";
 import { estimatePrice, formatAMD } from "@/shared/lib/pricing";
 import { composeHeightField } from "@/shared/lib/heightField";
+import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 import { Panel } from "@/shared/ui/Panel";
 import { TerrainMap } from "@/widgets/terrain-map/TerrainMap";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
@@ -21,7 +22,7 @@ const SHAPE_LABEL: Record<Shape, string> = {
   circle: "disc",
 };
 
-function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
+export function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
   return (
     <section className="dz-step">
       <header className="dz-step-head">
@@ -41,16 +42,23 @@ export function Designer() {
     lat, lng, name, shape, areaKm, width, relief, thickness, smooth,
     showBuildings, metal,
   } = useDesigner();
-  const elevation = useElevation(lat, lng, areaKm);
+  // Debounce the location inputs feeding the network queries: dragging the
+  // "Sample area" slider or mashing the nudge pad would otherwise fire a
+  // full elevation run (~3k points) + an Overpass request per tick.
+  const qLat = useDebouncedValue(lat, 350);
+  const qLng = useDebouncedValue(lng, 350);
+  const qAreaKm = useDebouncedValue(areaKm, 450);
+
+  const elevation = useElevation(qLat, qLng, qAreaKm);
   const terrain = elevation.data ?? null;
-  const buildings = useBuildings(lat, lng, areaKm, showBuildings);
+  const buildings = useBuildings(qLat, qLng, qAreaKm, showBuildings);
 
   const structures = useMemo(
     () =>
       showBuildings && buildings.data?.length
-        ? rasterizeBuildings(buildings.data, lat, lng, areaKm, GRID)
+        ? rasterizeBuildings(buildings.data, qLat, qLng, qAreaKm, GRID)
         : null,
-    [showBuildings, buildings.data, lat, lng, areaKm],
+    [showBuildings, buildings.data, qLat, qLng, qAreaKm],
   );
 
   const heightNorm = useMemo(
@@ -62,12 +70,17 @@ export function Designer() {
     [shape, width, relief, thickness],
   );
 
-  const price = useMemo(() => {
-    if (!heightNorm) return null;
-    return estimatePrice(buildShapeMesh(shape, heightNorm, params), metal);
-  }, [heightNorm, shape, params, metal]);
+  // Let React deprioritize the mesh rebuild while a slider is mid-drag —
+  // the controls stay responsive and the 3D view catches up right after.
+  const viewerHeightNorm = useDeferredValue(heightNorm);
+  const viewerParams = useDeferredValue(params);
 
   function order() {
+    // Price is only needed for the order email, so the mesh + volume
+    // integral run once here instead of on every slider tick.
+    const price = heightNorm
+      ? estimatePrice(buildShapeMesh(shape, heightNorm, params), metal)
+      : null;
     const subject = encodeURIComponent(`CAIRN — ${name} ${SHAPE_LABEL[shape]}`);
     const body = encodeURIComponent(
       `I'd like to order this piece:\n\n` +
@@ -82,7 +95,7 @@ export function Designer() {
   const viewer = elevation.isLoading && !terrain ? (
     <div className="stage-msg mono">Reading terrain…</div>
   ) : (
-    <RingViewer heightNorm={heightNorm} shape={shape} params={params} metal={metal} />
+    <RingViewer heightNorm={viewerHeightNorm} shape={shape} params={viewerParams} metal={metal} />
   );
 
   return (
@@ -102,7 +115,7 @@ export function Designer() {
               <button className="btn-primary lg dz-order" onClick={order}>
                 Order this piece
               </button>
-              <ExportButton />
+              <ExportButton heightNorm={heightNorm} />
             </div>
           </div>
         </aside>

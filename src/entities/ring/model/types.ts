@@ -31,21 +31,23 @@ export interface DesignInput {
   thickness: number; // base thickness in mm
 }
 
-/** Map user-facing design inputs to concrete relief-plaque geometry parameters (mm). */
-export function toSlabParams({ width, relief, thickness }: DesignInput): SlabParams {
+/** Map user-facing design inputs to concrete relief-plaque geometry parameters
+    (mm). `res` sets the top-surface vertex density — the live viewer uses the
+    GRID default; STL export may pass a denser value. */
+export function toSlabParams({ width, relief, thickness }: DesignInput, res: number = GRID - 1): SlabParams {
   return {
     width, // mm: plate side is exactly the slider value
     depth: width,
     base: Math.max(0.5, thickness), // mm: user-set solid base thickness
     amp: relief, // mm: relief height above the base
-    resX: GRID - 1,
-    resZ: GRID - 1,
+    resX: res,
+    resZ: res,
   };
 }
 
 /** Geometry parameters for the given shape from the user's design inputs. */
-export function toShapeParams(_shape: Shape, input: DesignInput): SlabParams {
-  return toSlabParams(input);
+export function toShapeParams(_shape: Shape, input: DesignInput, res?: number): SlabParams {
+  return toSlabParams(input, res);
 }
 
 /** Build the watertight mesh for the given shape. */

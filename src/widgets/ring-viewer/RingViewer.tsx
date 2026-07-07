@@ -14,19 +14,19 @@ function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
   // Studio sky-to-floor gradient
   const sky = ctx.createLinearGradient(0, 0, 0, H);
   sky.addColorStop(0.00, "#ffffff");
-  sky.addColorStop(0.06, "#fff8f2");
-  sky.addColorStop(0.22, "#e0d0b4");
-  sky.addColorStop(0.42, "#8a8078");
-  sky.addColorStop(0.62, "#48403a");
-  sky.addColorStop(0.82, "#18140f");
-  sky.addColorStop(1.00, "#080604");
+  sky.addColorStop(0.06, "#f4f7fa");
+  sky.addColorStop(0.22, "#c8cfd7");
+  sky.addColorStop(0.42, "#7c8289");
+  sky.addColorStop(0.62, "#3d4249");
+  sky.addColorStop(0.82, "#121519");
+  sky.addColorStop(1.00, "#050607");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, W, H);
 
   // Key-light bloom centred at top for a sharp specular hot-spot
   const bloom = ctx.createRadialGradient(W * 0.5, 0, 0, W * 0.5, 0, H * 0.28);
   bloom.addColorStop(0.00, "rgba(255,255,255,1.0)");
-  bloom.addColorStop(0.25, "rgba(255,252,245,0.7)");
+  bloom.addColorStop(0.25, "rgba(248,251,254,0.7)");
   bloom.addColorStop(1.00, "rgba(255,255,255,0.0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, W, H * 0.28);

@@ -36,3 +36,34 @@ export function composeHeightField(
   for (let i = 0; i < d.length; i++) norm[i] = (d[i] - lo) / span;
   return smoothGrid(norm, smooth);
 }
+
+/**
+ * Compose the normalized (0..1) heightfield for a city skyline piece — no
+ * terrain underneath. Ground sits at 0, streets read as low raised ridges,
+ * and buildings rise with their real height (gamma-eased so low-rise blocks
+ * stay visible next to skyscrapers). Pure, so the viewer, the STL export and
+ * pricing share one source of truth.
+ */
+export function composeCityField(
+  buildingHeights: Float32Array | null,
+  streetMask: Float32Array | null,
+  smooth: number,
+): Float32Array {
+  const n = buildingHeights?.length ?? streetMask?.length ?? 0;
+  const out = new Float32Array(n);
+  if (n === 0) return out;
+
+  let maxH = 0;
+  if (buildingHeights) for (let i = 0; i < n; i++) if (buildingHeights[i] > maxH) maxH = buildingHeights[i];
+
+  const STREET_H = 0.1; // street ridge height (fraction of full relief)
+  const BASE = 0.24; // even a 1-storey building clears the streets
+  const GAMMA = 0.6;
+
+  for (let i = 0; i < n; i++) {
+    const b = buildingHeights?.[i] ?? 0;
+    if (b > 0 && maxH > 0) out[i] = BASE + (1 - BASE) * Math.pow(b / maxH, GAMMA);
+    else if (streetMask && streetMask[i] > 0) out[i] = STREET_H;
+  }
+  return smoothGrid(out, smooth);
+}

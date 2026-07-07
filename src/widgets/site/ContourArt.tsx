@@ -3,11 +3,11 @@
  * imagery without any external image assets. Deterministic from `seed`.
  */
 const TONES: Record<string, [string, string, string]> = {
-  gold:   ["#efe7d3", "#d8c39a", "#8a6f42"],
+  gold:   ["#f0f2f5", "#dbe0e6", "#7f8892"],
   silver: ["#eef0f2", "#d3d7db", "#8f959b"],
-  bronze: ["#ecdcc6", "#cdae86", "#8a6a44"],
-  sage:   ["#e4e8dd", "#c3ccb6", "#78856b"],
-  stone:  ["#ece7dd", "#d3cabb", "#8b8271"],
+  bronze: ["#e8ebee", "#c2c9d1", "#6f7a86"],
+  sage:   ["#e4e8e6", "#c0ccc7", "#6f8279"],
+  stone:  ["#eceef0", "#d0d4d9", "#83898f"],
 };
 
 function mulberry32(a: number) {

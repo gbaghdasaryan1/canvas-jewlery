@@ -1,18 +1,30 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDesigner } from "@/app/store";
+import { PRESETS } from "@/shared/config/presets";
 import type { Shape } from "@/entities/ring/model/types";
-import { Designer } from "./Designer";
+import { SkylineDesigner } from "./SkylineDesigner";
 
 const VALID_SHAPES = new Set(["rectangle", "heart", "circle"]);
+const DEFAULT_CITY = PRESETS.find((p) => p.city)!;
 
-/** The standalone design experience at /design. */
-export function DesignPage() {
+/** The standalone skyline design experience at /skylines. */
+export function SkylinePage() {
   const setShape = useDesigner((s) => s.setShape);
+  const setLocation = useDesigner((s) => s.setLocation);
+  const setAreaKm = useDesigner((s) => s.setAreaKm);
+  // Don't mount the designer until the city defaults are in the store —
+  // otherwise its queries fire once for the boot location (a mountain) and
+  // that throwaway Overpass round-trip races the real one.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // The store boots on a mountain — start skylines on a city instead.
+    setLocation(DEFAULT_CITY.lat, DEFAULT_CITY.lng, DEFAULT_CITY.name);
+    setAreaKm(DEFAULT_CITY.areaKm ?? 0.3);
     const q = new URLSearchParams(window.location.search).get("shape");
     if (q && VALID_SHAPES.has(q)) setShape(q as Shape);
-  }, [setShape]);
+    setReady(true);
+  }, [setShape, setLocation, setAreaKm]);
 
   return (
     <div className="design-app">
@@ -26,13 +38,13 @@ export function DesignPage() {
             </svg>
             CAIRN
           </a>
-          <span className="design-tagline mono">Design your piece</span>
-          <a className="design-back" href="/skylines">Skylines →</a>
+          <span className="design-tagline mono">Design your skyline</span>
+          <a className="design-back" href="/design">Terrain →</a>
           <a className="design-back" href="/">← Home</a>
         </div>
       </header>
 
-      <Designer />
+      {ready && <SkylineDesigner />}
 
       <footer className="design-foot">
         <div className="wrap mono">

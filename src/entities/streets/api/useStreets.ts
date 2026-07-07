@@ -5,7 +5,7 @@ import { fetchStreets, type StreetLine } from "./fetchStreets";
 export function useStreets(lat: number, lng: number, areaKm: number, enabled: boolean) {
   return useQuery<StreetLine[]>({
     queryKey: ["streets", lat.toFixed(4), lng.toFixed(4), areaKm],
-    queryFn: () => fetchStreets(lat, lng, areaKm),
+    queryFn: ({ signal }) => fetchStreets(lat, lng, areaKm, signal),
     enabled,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 30,

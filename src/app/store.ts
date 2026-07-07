@@ -41,7 +41,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   smooth: 0,
   showStreets: false,
   showBuildings: false,
-  metal: "gold",
+  metal: "silver",
   setLocation: (lat, lng, name) => set({ lat, lng, name }),
   setShape: (shape) => set({ shape }),
   setAreaKm: (areaKm) => set({ areaKm }),

@@ -16,6 +16,7 @@ export async function fetchStreets(
   lat: number,
   lng: number,
   areaKm: number,
+  signal?: AbortSignal,
 ): Promise<StreetLine[]> {
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -29,7 +30,7 @@ export async function fetchStreets(
     `(${s},${w},${n},${e}););` +
     `out geom;`;
 
-  const json = await overpass(query);
+  const json = await overpass(query, signal);
   const out: StreetLine[] = [];
   for (const el of json.elements ?? []) {
     if (el.type !== "way" || !el.geometry || el.geometry.length < 2) continue;

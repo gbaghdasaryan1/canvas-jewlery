@@ -5,6 +5,14 @@ export interface BuildingPolygon {
   ring: Array<[number, number]>;
   /** estimated height in metres (for subtle shading) */
   height: number;
+  /** true for lattice/landmark towers (Eiffel & co) — extruding their
+      footprint as a straight prism looks wrong, so renderers taper them */
+  tower?: boolean;
+}
+
+/** man_made=tower / building=tower / tower:type — landmark towers. */
+function isTower(tags: Record<string, string> | undefined): boolean {
+  return !!tags && (tags["man_made"] === "tower" || tags.building === "tower" || !!tags["tower:type"]);
 }
 
 /** Best-effort building height from OSM tags (metres). */
@@ -30,6 +38,7 @@ export async function fetchBuildings(
   lat: number,
   lng: number,
   areaKm: number,
+  signal?: AbortSignal,
 ): Promise<BuildingPolygon[]> {
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -41,13 +50,14 @@ export async function fetchBuildings(
     `(way["building"](${s},${w},${n},${e}););` +
     `out geom;`;
 
-  const json = await overpass(query);
+  const json = await overpass(query, signal);
   const out: BuildingPolygon[] = [];
   for (const el of json.elements ?? []) {
     if (el.type !== "way" || !el.geometry || el.geometry.length < 3) continue;
     out.push({
       ring: el.geometry.map((g) => [g.lat, g.lon] as [number, number]),
       height: estimateHeight(el.tags),
+      tower: isTower(el.tags),
     });
   }
   return out;
