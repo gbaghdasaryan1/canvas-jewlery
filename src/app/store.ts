@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Metal, Shape } from "@/entities/ring/model/types";
+import type { HangPlace, JewelryType, Metal, Shape } from "@/entities/ring/model/types";
 
 interface DesignerState {
   // location
@@ -7,6 +7,11 @@ interface DesignerState {
   lng: number;
   name: string;
   // design inputs
+  jewelryType: JewelryType;
+  hangPlace: HangPlace; // pendant only — where the bail attaches
+  hangSize: number; // pendant only — bail loop scale multiplier
+  hangRotation: number; // pendant only — bail loop yaw offset, degrees
+  hangHorizontal: boolean; // pendant only — rotate bail 90° for chain attachment
   shape: Shape;
   areaKm: number;
   width: number;
@@ -18,6 +23,11 @@ interface DesignerState {
   metal: Metal;
   // actions
   setLocation: (lat: number, lng: number, name: string) => void;
+  setJewelryType: (t: JewelryType) => void;
+  setHangPlace: (h: HangPlace) => void;
+  setHangSize: (v: number) => void;
+  setHangRotation: (v: number) => void;
+  setHangHorizontal: (v: boolean) => void;
   setShape: (s: Shape) => void;
   setAreaKm: (v: number) => void;
   setWidth: (v: number) => void;
@@ -33,6 +43,11 @@ export const useDesigner = create<DesignerState>((set) => ({
   lat: 27.9881,
   lng: 86.925,
   name: "Mount Everest",
+  jewelryType: "pendant",
+  hangPlace: "top",
+  hangSize: 1,
+  hangRotation: 0,
+  hangHorizontal: false,
   shape: "rectangle",
   areaKm: 40,
   width: 18, // mm — plaque side
@@ -43,6 +58,11 @@ export const useDesigner = create<DesignerState>((set) => ({
   showBuildings: false,
   metal: "silver",
   setLocation: (lat, lng, name) => set({ lat, lng, name }),
+  setJewelryType: (jewelryType) => set({ jewelryType }),
+  setHangPlace: (hangPlace) => set({ hangPlace }),
+  setHangSize: (hangSize) => set({ hangSize }),
+  setHangRotation: (hangRotation) => set({ hangRotation }),
+  setHangHorizontal: (hangHorizontal) => set({ hangHorizontal }),
   setShape: (shape) => set({ shape }),
   setAreaKm: (areaKm) => set({ areaKm }),
   setWidth: (width) => set({ width }),

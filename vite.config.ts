@@ -9,5 +9,6 @@ export default defineConfig({
   },
   server: {
     port: 5174,
+    allowedHosts: ["host.docker.internal"],
   },
 });

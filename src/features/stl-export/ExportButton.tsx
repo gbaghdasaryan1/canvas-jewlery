@@ -1,6 +1,7 @@
 import { useDesigner } from "@/app/store";
-import { buildShapeMesh, toShapeParams, type Shape } from "@/entities/ring/model/types";
-import type { RingMeshData } from "@/shared/lib/ringGeometry";
+import { buildShapeMesh, hangAnchor, toShapeParams, type Shape } from "@/entities/ring/model/types";
+import { mergeMeshData, type RingMeshData } from "@/shared/lib/ringGeometry";
+import { buildBailMesh } from "@/shared/lib/bailCurve";
 import { downloadSTL } from "@/shared/lib/stl";
 import { slugify } from "@/shared/lib/format";
 
@@ -22,15 +23,31 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ heightNorm, tag, exportMesh }: ExportButtonProps) {
-  const { shape, width, relief, thickness, name } = useDesigner();
+  const {
+    shape, width, relief, thickness, name,
+    jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal,
+  } = useDesigner();
 
   function exportStl() {
-    const mesh =
+    let mesh =
       exportMesh?.() ??
       (heightNorm
         ? buildShapeMesh(shape, heightNorm, toShapeParams(shape, { width, relief, thickness }))
         : null);
     if (!mesh) return;
+    // Pendants keep the hang loop in the file — same placement the viewer
+    // previews (both exporters share this frame: mm, plate bottom at y = 0).
+    if (jewelryType === "pendant") {
+      mesh = mergeMeshData(mesh, buildBailMesh({
+        hang: hangAnchor(shape, hangPlace),
+        width,
+        depth: width,
+        base: Math.max(0.5, thickness),
+        hangSize,
+        hangRotation,
+        hangHorizontal,
+      }));
+    }
     const fileName = `cairn-${slugify(name)}-${tag ? `${tag}-` : ""}${SUFFIX[shape]}.stl`;
     downloadSTL(mesh, fileName);
   }

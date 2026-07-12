@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
 import { useElevation } from "@/entities/terrain/api/useElevation";
-import { METALS, buildShapeMesh, toShapeParams } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, hangAnchor, hangPlaceLabel, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { GRID } from "@/shared/config/presets";
@@ -39,7 +39,7 @@ export function Step({ n, title, hint, children }: { n: number; title: string; h
 
 export function Designer() {
   const {
-    lat, lng, name, shape, areaKm, width, relief, thickness, smooth,
+    lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, shape, areaKm, width, relief, thickness, smooth,
     showBuildings, metal,
   } = useDesigner();
   // Debounce the location inputs feeding the network queries: dragging the
@@ -81,10 +81,12 @@ export function Designer() {
     const price = heightNorm
       ? estimatePrice(buildShapeMesh(shape, heightNorm, params), metal)
       : null;
-    const subject = encodeURIComponent(`CAIRN — ${name} ${SHAPE_LABEL[shape]}`);
+    const subject = encodeURIComponent(`CAIRN — ${name} ${SHAPE_LABEL[shape]} ${jewelryType}`);
     const body = encodeURIComponent(
       `I'd like to order this piece:\n\n` +
       `Place: ${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})\n` +
+      `Type: ${jewelryType}\n` +
+      (jewelryType === "pendant" ? `Hanging point: ${hangPlaceLabel(hangPlace)}\n` : "") +
       `Form: ${SHAPE_LABEL[shape]}\n` +
       `Metal: ${METALS[metal].label}\n` +
       `Estimate: ${price ? formatAMD(price.amd) : "—"}\n`,
@@ -95,7 +97,16 @@ export function Designer() {
   const viewer = elevation.isLoading && !terrain ? (
     <div className="stage-msg mono">Reading terrain…</div>
   ) : (
-    <RingViewer heightNorm={viewerHeightNorm} shape={shape} params={viewerParams} metal={metal} />
+    <RingViewer
+      heightNorm={viewerHeightNorm}
+      shape={shape}
+      params={viewerParams}
+      metal={metal}
+      hang={jewelryType === "pendant" ? hangAnchor(shape, hangPlace) : null}
+      hangSize={hangSize}
+      hangRotation={hangRotation}
+      hangHorizontal={hangHorizontal}
+    />
   );
 
   return (
@@ -104,7 +115,7 @@ export function Designer() {
         {/* Left — live preview + price/CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">Your {SHAPE_LABEL[shape]} · <b>{METALS[metal].label}</b></div>
+            <div className="cap">Your {SHAPE_LABEL[shape]} {jewelryType} · <b>{METALS[metal].label}</b></div>
             <div className="stage">{viewer}</div>
           </div>
 

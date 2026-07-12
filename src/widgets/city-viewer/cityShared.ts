@@ -1,5 +1,8 @@
-import { heartBoundary, circleBoundary } from "@/shared/lib/ringGeometry";
+import polygonClipping from "polygon-clipping";
+import { heartBoundary, circleBoundary, FRAME_MM, FRAME_HEIGHT_MM } from "@/shared/lib/ringGeometry";
 import type { Shape } from "@/entities/ring/model/types";
+
+export { FRAME_MM, FRAME_HEIGHT_MM };
 
 /**
  * Geometry helpers shared by the on-screen city view (CityViewer) and the STL
@@ -34,6 +37,38 @@ export const ROAD_STYLES: Record<string, RoadStyle> = {
 export const RECT_OUTLINE: Pt[] = [
   { x: -0.5, z: -0.5 }, { x: 0.5, z: -0.5 }, { x: 0.5, z: 0.5 }, { x: -0.5, z: 0.5 },
 ];
+
+/**
+ * Offset a closed outline inward by `d` (normalized units) using per-vertex
+ * miter offsets. Works for any winding; the miter is clamped so sharp cusps
+ * (the heart notch) don't spike. The result bounds the city content inside
+ * the raised frame band.
+ */
+export function insetOutline(outline: Pt[], d: number): Pt[] {
+  const n = outline.length;
+  let area = 0;
+  for (let i = 0; i < n; i++) {
+    const a = outline[i], b = outline[(i + 1) % n];
+    area += a.x * b.z - b.x * a.z;
+  }
+  const s = area >= 0 ? 1 : -1;
+  const inward = (a: Pt, b: Pt): Pt => {
+    const dx = b.x - a.x, dz = b.z - a.z;
+    const len = Math.hypot(dx, dz) || 1;
+    return { x: (-dz / len) * s, z: (dx / len) * s };
+  };
+  const out: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const prev = outline[(i - 1 + n) % n], cur = outline[i], next = outline[(i + 1) % n];
+    const n1 = inward(prev, cur), n2 = inward(cur, next);
+    let mx = n1.x + n2.x, mz = n1.z + n2.z;
+    const ml = Math.hypot(mx, mz);
+    if (ml < 1e-6) { mx = n2.x; mz = n2.z; } else { mx /= ml; mz /= ml; }
+    const cos = Math.max(mx * n1.x + mz * n1.z, 0.25);
+    out.push({ x: cur.x + (mx * d) / cos, z: cur.z + (mz * d) / cos });
+  }
+  return out;
+}
 
 /**
  * Stepped taper for landmark towers (man_made=tower — Eiffel & co). Extruding
@@ -89,9 +124,40 @@ export function insidePoly(x: number, z: number, poly: Pt[]): boolean {
 }
 
 export function makeInside(shape: Shape, outline: Pt[]) {
-  const isRect = shape === "rectangle";
-  return (x: number, z: number) =>
-    isRect ? Math.abs(x) <= 0.5 && Math.abs(z) <= 0.5 : insidePoly(x, z, outline);
+  if (shape === "rectangle") {
+    let hx = 0, hz = 0;
+    for (const p of outline) {
+      hx = Math.max(hx, Math.abs(p.x));
+      hz = Math.max(hz, Math.abs(p.z));
+    }
+    return (x: number, z: number) => Math.abs(x) <= hx && Math.abs(z) <= hz;
+  }
+  return (x: number, z: number) => insidePoly(x, z, outline);
+}
+
+/**
+ * Intersection of a footprint ring with the plate outline (both in the
+ * normalized plane). Buildings straddling the edge come back sliced at the
+ * boundary — full height, cut footprint — instead of being dropped. Handles
+ * the concave heart correctly. Returns 0..n rings.
+ */
+export function clipRingToOutline(ring: Pt[], outline: Pt[]): Pt[][] {
+  try {
+    const res = polygonClipping.intersection(
+      [[ring.map((p) => [p.x, p.z] as [number, number])]],
+      [[outline.map((p) => [p.x, p.z] as [number, number])]],
+    );
+    return res
+      .map((poly) => {
+        const r = poly[0].map(([x, z]) => ({ x, z }));
+        const first = r[0], last = r[r.length - 1];
+        if (r.length > 1 && first.x === last.x && first.z === last.z) r.pop();
+        return r;
+      })
+      .filter((r) => r.length >= 3);
+  } catch {
+    return []; // degenerate ring — skip it rather than crash the frame
+  }
 }
 
 /** Point where the segment from the inside point (ix,iz) toward the outside

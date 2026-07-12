@@ -5,9 +5,13 @@ import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import type { Shape } from "@/entities/ring/model/types";
 import {
+  FRAME_HEIGHT_MM,
+  FRAME_MM,
   ROAD_DEFAULT,
   ROAD_STYLES,
   TOWER_PROFILE,
+  clipRingToOutline,
+  insetOutline,
   makeClipToBoundary,
   makeHeightScale,
   makeInside,
@@ -49,7 +53,10 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
   const streetRidgeMm = Math.min(Math.max(0.1 * reliefMm, 0.25), 0.5);
 
   const outline = shapeOutline(shape);
-  const inside = makeInside(shape, outline);
+  // City content stops at the inner edge of the raised frame band (same
+  // clipping the canvas uses).
+  const innerOutline = insetOutline(outline, FRAME_MM / widthMm);
+  const inside = makeInside(shape, innerOutline);
   const clipToBoundary = makeClipToBoundary(inside);
 
   const dLat = areaKm / 111;
@@ -64,8 +71,10 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
 
   // Closed vertical prism over a normalized-plane polygon, y0..y1 in mm.
   // Same mapping as CityViewer: shape.y = -z so rotateX(-π/2) restores +z.
-  const prism = (pts: Pt[], y0: number, y1: number) => {
-    const s = new THREE.Shape(pts.map((p) => new THREE.Vector2(p.x * widthMm, -p.z * widthMm)));
+  const prism = (pts: Pt[], y0: number, y1: number, holes?: Pt[][]) => {
+    const toV2 = (p: Pt) => new THREE.Vector2(p.x * widthMm, -p.z * widthMm);
+    const s = new THREE.Shape(pts.map(toV2));
+    for (const h of holes ?? []) s.holes.push(new THREE.Path(h.map(toV2)));
     const g = new THREE.ExtrudeGeometry(s, { depth: y1 - y0, bevelEnabled: false });
     g.rotateX(-Math.PI / 2);
     g.translate(0, y0, 0);
@@ -78,21 +87,20 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
   // Solids above sink half-way into the plate so the shells always overlap
   // (no coplanar faces, robust boolean union downstream).
   const sunk = base * 0.5;
+  // Raised frame wall along the whole outline: FRAME_MM thick,
+  // FRAME_HEIGHT_MM tall.
+  prism(outline, sunk, base + FRAME_HEIGHT_MM, [innerOutline]);
 
   if (buildings?.length) {
     for (const b of buildings) {
-      // Strict clip, identical to the canvas: whole footprint inside or skip.
-      let allIn = true;
-      const pts: Pt[] = [];
-      for (const [la, lo] of b.ring) {
-        const p = { x: nx(lo), z: nz(la) };
-        if (!inside(p.x, p.z)) { allIn = false; break; }
-        pts.push(p);
-      }
-      if (!allIn || pts.length < 3) continue;
+      const pts: Pt[] = b.ring.map(([la, lo]) => ({ x: nx(lo), z: nz(la) }));
+      if (pts.length < 3) continue;
+      const allIn = pts.every((p) => inside(p.x, p.z));
       const h = Math.max(heightScale(b.height) * reliefMm, MIN_BUILDING_MM);
       if (b.tower) {
         // Landmark tower: stacked tapered slices (see TOWER_PROFILE).
+        // Spires stay strict (no half-spires at the plate edge).
+        if (!allIn) continue;
         let cx = 0, cz = 0;
         for (const p of pts) { cx += p.x; cz += p.z; }
         cx /= pts.length; cz /= pts.length;
@@ -102,8 +110,16 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
           // Slices overlap slightly so the shells union cleanly.
           prism(sliced, i === 0 ? sunk : base + t0 * h - 0.05, base + t1 * h);
         }
-      } else {
-        prism(pts, sunk, base + h);
+        continue;
+      }
+      // Buildings straddling the plate edge are sliced at the outline (same
+      // as the canvas) — full height, cut footprint — instead of dropped.
+      const rings = allIn ? [pts] : clipRingToOutline(pts, innerOutline);
+      // building:part volumes start at min_height; overlap 0.05 mm into the
+      // volume below so the shells union cleanly.
+      const y0 = b.minHeight ? heightScale(b.minHeight) * reliefMm : 0;
+      for (const ring of rings) {
+        prism(ring, y0 > 0 ? base + y0 - 0.05 : sunk, base + Math.max(h, y0 + 0.1));
       }
     }
   }

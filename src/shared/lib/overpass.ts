@@ -34,6 +34,9 @@ function rememberWinner(url: string) {
 export interface OverpassWay {
   type: string;
   geometry?: Array<{ lat: number; lon: number }>;
+  /** present on node elements */
+  lat?: number;
+  lon?: number;
   tags?: Record<string, string>;
 }
 

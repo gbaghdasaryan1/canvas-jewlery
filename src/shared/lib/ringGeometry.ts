@@ -32,6 +32,25 @@ export interface RingMeshData {
   indices: Uint32Array;
 }
 
+/** Concatenate indexed meshes into one shell set (indices re-offset). */
+export function mergeMeshData(...parts: RingMeshData[]): RingMeshData {
+  const positions = new Float32Array(parts.reduce((n, p) => n + p.positions.length, 0));
+  const indices = new Uint32Array(parts.reduce((n, p) => n + p.indices.length, 0));
+  let vo = 0, io = 0;
+  for (const p of parts) {
+    positions.set(p.positions, vo * 3);
+    for (let i = 0; i < p.indices.length; i++) indices[io + i] = p.indices[i] + vo;
+    vo += p.positions.length / 3;
+    io += p.indices.length;
+  }
+  return { positions, indices };
+}
+
+/** Raised frame wall around every plaque: band width in mm. */
+export const FRAME_MM = 1;
+/** Frame wall height in mm above the base — static, independent of relief. */
+export const FRAME_HEIGHT_MM = 4;
+
 /** US ring size -> inner radius in mm. */
 export function ringSizeToInnerRadius(usSize: number): number {
   return (11.63 + 0.8128 * usSize) / 2;
@@ -149,12 +168,16 @@ export function buildSlabMesh(heightNorm: Float32Array, p: SlabParams): RingMesh
   const bot = (i: number, j: number) => botOffset + j * VX + i;
 
   // Top surface: terrain-displaced. Row j -> north–south (v), col i -> east–west (u).
+  // Vertices within FRAME_MM of an edge rise to FRAME_HEIGHT_MM — the frame wall.
   for (let j = 0; j < VZ; j++) {
     const z = (j / NZ - 0.5) * p.depth;
     for (let i = 0; i < VX; i++) {
       const x = (i / NX - 0.5) * p.width;
-      const h = sampleGrid(heightNorm, i / NX, j / NZ);
-      positions.push(x, p.base + p.amp * h, z);
+      const edge = Math.min(p.width / 2 - Math.abs(x), p.depth / 2 - Math.abs(z));
+      const y = edge <= FRAME_MM
+        ? p.base + FRAME_HEIGHT_MM
+        : p.base + p.amp * sampleGrid(heightNorm, i / NX, j / NZ);
+      positions.push(x, y, z);
     }
   }
   // Bottom surface: flat at y = 0.
@@ -247,8 +270,25 @@ function buildFanPlaque(
   for (const pt of outline) { cx += pt.x; cz += pt.z; }
   cx /= A; cz /= A;
 
+  // Distance (mm) from a point to the outline — vertices within FRAME_MM of
+  // the boundary rise to FRAME_HEIGHT_MM, forming the frame wall.
+  const outMm = outline.map((q) => ({ x: q.x * p.width, z: q.z * p.depth }));
+  const distToOutline = (px: number, pz: number): number => {
+    let best = Infinity;
+    for (let i = 0; i < outMm.length; i++) {
+      const a = outMm[i], b = outMm[(i + 1) % outMm.length];
+      const dx = b.x - a.x, dz = b.z - a.z;
+      const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (pz - a.z) * dz) / (dx * dx + dz * dz || 1)));
+      const d = Math.hypot(a.x + dx * t - px, a.z + dz * t - pz);
+      if (d < best) best = d;
+    }
+    return best;
+  };
+
   const yOf = (nx: number, nz: number) =>
-    p.base + p.amp * sampleGrid(heightNorm, nx + 0.5, nz + 0.5);
+    distToOutline(nx * p.width, nz * p.depth) <= FRAME_MM
+      ? p.base + FRAME_HEIGHT_MM
+      : p.base + p.amp * sampleGrid(heightNorm, nx + 0.5, nz + 0.5);
 
   // Vertex layout: [topCentre, top rings(1..R)×A, botCentre, bot rings(1..R)×A].
   const topRing = (k: number, a: number) => 1 + (k - 1) * A + a;
@@ -301,11 +341,13 @@ function buildFanPlaque(
       const p0 = botRing(k, a), p1 = botRing(k, a2), p2 = botRing(k + 1, a), p3 = botRing(k + 1, a2);
       indices.push(p0, p2, p1, p1, p2, p3);
     }
-  // Outer wall (top ring R -> bottom ring R), outward.
+  // Outer wall (top ring R -> bottom ring R). Both outlines run
+  // counterclockwise in the x–z plane, so this winding faces outward —
+  // the reverse order faces the wall inward and it gets backface-culled.
   for (let a = 0; a < A; a++) {
     const a2 = (a + 1) % A;
     const t0 = topRing(R, a), t1 = topRing(R, a2), b0 = botRing(R, a), b1 = botRing(R, a2);
-    indices.push(t0, b0, t1, t1, b0, b1);
+    indices.push(t0, t1, b0, t1, b1, b0);
   }
 
   return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };

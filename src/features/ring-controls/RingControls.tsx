@@ -1,11 +1,13 @@
 import { useDesigner } from "@/app/store";
-import { type Shape } from "@/entities/ring/model/types";
+import { HANG_PLACES, JEWELRY_TYPES, hangPlaceLabel, type Shape } from "@/entities/ring/model/types";
 
 const SHAPES: { id: Shape; label: string }[] = [
   { id: "rectangle", label: "Rectangle" },
   { id: "heart", label: "Heart" },
   { id: "circle", label: "Circle" },
 ];
+
+const capitalize = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 interface RangeProps {
   label: string;
@@ -47,6 +49,79 @@ export function RingControls({ areaMin = 0.3, areaMax = 614 }: RingControlsProps
   return (
     <>
       <div className="field">
+        <label>Jewelry type</label>
+        <div className="metals">
+          {JEWELRY_TYPES.map((t) => (
+            <button
+              key={t}
+              className={`metal ${s.jewelryType === t ? "active" : ""}`}
+              onClick={() => s.setJewelryType(t)}
+            >
+              {capitalize(t)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {s.jewelryType === "pendant" && (
+        <>
+          <div className="field" style={{ marginTop: 18 }}>
+            <label>Hanging point</label>
+            <div className="metals">
+              {/* One button loops the bail clockwise around every side and corner. */}
+              <button
+                className="metal active"
+                onClick={() =>
+                  s.setHangPlace(
+                    HANG_PLACES[(HANG_PLACES.indexOf(s.hangPlace) + 1) % HANG_PLACES.length],
+                  )
+                }
+              >
+                ↻ {capitalize(hangPlaceLabel(s.hangPlace))}
+              </button>
+            </div>
+            <div className="ctl-grid" style={{ marginTop: 12 }}>
+              <Range
+                label="Loop size"
+                value={`${s.hangSize.toFixed(2)}×`}
+                min={0.5}
+                max={2}
+                step={0.05}
+                current={s.hangSize}
+                onChange={s.setHangSize}
+              />
+              <Range
+                label="Loop rotation"
+                value={`${s.hangRotation}°`}
+                min={-45}
+                max={45}
+                step={1}
+                current={s.hangRotation}
+                onChange={s.setHangRotation}
+              />
+            </div>
+          </div>
+          <div className="field" style={{ marginTop: 12 }}>
+            <label>Chain loop</label>
+            <div className="metals">
+              <button
+                className={`metal ${!s.hangHorizontal ? "active" : ""}`}
+                onClick={() => s.setHangHorizontal(false)}
+              >
+                Pendant
+              </button>
+              <button
+                className={`metal ${s.hangHorizontal ? "active" : ""}`}
+                onClick={() => s.setHangHorizontal(true)}
+              >
+                Chain
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="field" style={{ marginTop: 18 }}>
         <label>Shape</label>
         <div className="metals">
           {SHAPES.map((sh) => (

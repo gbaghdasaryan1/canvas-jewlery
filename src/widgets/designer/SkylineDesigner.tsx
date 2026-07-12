@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { useDesigner } from "@/app/store";
-import { METALS, buildShapeMesh, toShapeParams } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, hangAnchor, hangPlaceLabel, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useStreets } from "@/entities/streets/api/useStreets";
@@ -34,7 +34,7 @@ const CITY_PRESETS = PRESETS.filter((p) => p.city);
  * as raised ridges (both via the Overpass API). No terrain underneath.
  */
 export function SkylineDesigner() {
-  const { lat, lng, name, shape, areaKm, width, relief, thickness, smooth, metal, setLocation } =
+  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, shape, areaKm, width, relief, thickness, smooth, metal, setLocation } =
     useDesigner();
 
   // Same debounce windows as Designer — dragging "Sample area" or mashing the
@@ -92,10 +92,12 @@ export function SkylineDesigner() {
     const price = heightNorm
       ? estimatePrice(buildShapeMesh(shape, heightNorm, params), metal)
       : null;
-    const subject = encodeURIComponent(`CAIRN — ${name} skyline ${SHAPE_LABEL[shape]}`);
+    const subject = encodeURIComponent(`CAIRN — ${name} skyline ${SHAPE_LABEL[shape]} ${jewelryType}`);
     const body = encodeURIComponent(
       `I'd like to order this piece:\n\n` +
       `Place: ${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})\n` +
+      `Type: ${jewelryType}\n` +
+      (jewelryType === "pendant" ? `Hanging point: ${hangPlaceLabel(hangPlace)}\n` : "") +
       `Form: skyline ${SHAPE_LABEL[shape]}\n` +
       `Metal: ${METALS[metal].label}\n` +
       `Estimate: ${price ? formatAMD(price.amd) : "—"}\n`,
@@ -106,6 +108,8 @@ export function SkylineDesigner() {
   // Stage view: "map" renders the fetched city in the Mapbox map's style
   // (same colors, three.js); "metal" shows the cast piece.
   const [stageView, setStageView] = useState<"map" | "metal">("map");
+
+  const hang = jewelryType === "pendant" ? hangAnchor(shape, hangPlace) : null;
 
   const loading = (buildings.isLoading || streets.isLoading) && !heightNorm;
   const empty = !loading && !buildings.isLoading && !streets.isLoading && !heightNorm;
@@ -124,9 +128,22 @@ export function SkylineDesigner() {
       widthMm={width}
       thicknessMm={thickness}
       reliefMm={relief}
+      hang={hang}
+      hangSize={hangSize}
+      hangRotation={hangRotation}
+      hangHorizontal={hangHorizontal}
     />
   ) : (
-    <RingViewer heightNorm={viewerHeightNorm} shape={shape} params={viewerParams} metal={metal} />
+    <RingViewer
+      heightNorm={viewerHeightNorm}
+      shape={shape}
+      params={viewerParams}
+      metal={metal}
+      hang={hang}
+      hangSize={hangSize}
+      hangRotation={hangRotation}
+      hangHorizontal={hangHorizontal}
+    />
   );
 
   return (
@@ -135,7 +152,7 @@ export function SkylineDesigner() {
         {/* Left — live preview + CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">Your skyline {SHAPE_LABEL[shape]} · <b>{METALS[metal].label}</b></div>
+            <div className="cap">Your skyline {jewelryType} · <b>{METALS[metal].label}</b></div>
             <div className="relief-toggles">
               <button
                 className={`relief-toggle mono ${stageView === "map" ? "on" : ""}`}
