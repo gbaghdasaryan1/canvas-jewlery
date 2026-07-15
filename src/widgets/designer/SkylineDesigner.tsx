@@ -37,6 +37,11 @@ export function SkylineDesigner() {
   const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, shape, areaKm, width, relief, thickness, smooth, metal, setLocation } =
     useDesigner();
 
+  // Stage view: "map" renders the fetched city in the Mapbox map's style
+  // (same colors, three.js); "metal" shows the cast piece.
+  const [stageView, setStageView] = useState<"map" | "metal">("map");
+  const [layerMode, setLayerMode] = useState<"all" | "buildings" | "streets">("all");
+
   // Same debounce windows as Designer — dragging "Sample area" or mashing the
   // nudge pad must not fire an Overpass request per tick.
   const qLat = useDebouncedValue(lat, 350);
@@ -59,11 +64,12 @@ export function SkylineDesigner() {
     [streets.data, qLat, qLng, qAreaKm],
   );
 
-  const heightNorm = useMemo(
-    () =>
-      buildingField || streetField ? composeCityField(buildingField, streetField, smooth) : null,
-    [buildingField, streetField, smooth],
-  );
+  const heightNorm = useMemo(() => {
+    const bField = layerMode !== "streets" ? buildingField : null;
+    const sField = layerMode !== "buildings" ? streetField : null;
+    return bField || sField ? composeCityField(bField, sField, smooth) : null;
+  }, [buildingField, streetField, smooth, layerMode]);
+
   const params = useMemo(
     () => toShapeParams(shape, { width, relief, thickness }),
     [shape, width, relief, thickness],
@@ -72,12 +78,15 @@ export function SkylineDesigner() {
   const viewerHeightNorm = useDeferredValue(heightNorm);
   const viewerParams = useDeferredValue(params);
 
+  const activeBuildings = layerMode !== "streets" ? buildings.data ?? null : null;
+  const activeStreets = layerMode !== "buildings" ? streets.data ?? null : null;
+
   // The STL is built from the same vector data + clipping the canvas renders,
   // so the downloaded file matches what's on screen exactly.
   function exportMesh() {
     return buildCityMesh({
-      buildings: buildings.data ?? null,
-      streets: streets.data ?? null,
+      buildings: activeBuildings,
+      streets: activeStreets,
       shape,
       lat: qLat,
       lng: qLng,
@@ -105,22 +114,26 @@ export function SkylineDesigner() {
     window.location.href = `mailto:hello@cairn.studio?subject=${subject}&body=${body}`;
   }
 
-  // Stage view: "map" renders the fetched city in the Mapbox map's style
-  // (same colors, three.js); "metal" shows the cast piece.
-  const [stageView, setStageView] = useState<"map" | "metal">("map");
-
   const hang = jewelryType === "pendant" ? hangAnchor(shape, hangPlace) : null;
 
-  const loading = (buildings.isLoading || streets.isLoading) && !heightNorm;
-  const empty = !loading && !buildings.isLoading && !streets.isLoading && !heightNorm;
+  const relevantLoading =
+    (layerMode !== "streets" && buildings.isLoading) ||
+    (layerMode !== "buildings" && streets.isLoading);
+  const loading = relevantLoading && !heightNorm;
+  const empty =
+    !loading &&
+    !(layerMode !== "streets" && buildings.isLoading) &&
+    !(layerMode !== "buildings" && streets.isLoading) &&
+    !heightNorm;
+
   const viewer = loading ? (
     <div className="stage-msg mono">Reading the city…</div>
   ) : empty ? (
     <div className="stage-msg mono">No buildings or streets here — try a city spot.</div>
   ) : stageView === "map" ? (
     <CityViewer
-      buildings={buildings.data ?? null}
-      streets={streets.data ?? null}
+      buildings={activeBuildings}
+      streets={activeStreets}
       shape={shape}
       lat={qLat}
       lng={qLng}
@@ -203,6 +216,14 @@ export function SkylineDesigner() {
           </Step>
 
           <Step n={2} title="Shape &amp; finish" hint="Pick a form, then fine-tune the relief and metal.">
+            <div style={{ marginBottom: "0.75rem" }}>
+              <div className="mono" style={{ fontSize: "0.72rem", opacity: 0.6, marginBottom: "0.4rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Render layers</div>
+              <div className="relief-toggles">
+                <button className={`relief-toggle mono ${layerMode === "all" ? "on" : ""}`} onClick={() => setLayerMode("all")}>All</button>
+                <button className={`relief-toggle mono ${layerMode === "buildings" ? "on" : ""}`} onClick={() => setLayerMode("buildings")}>Buildings</button>
+                <button className={`relief-toggle mono ${layerMode === "streets" ? "on" : ""}`} onClick={() => setLayerMode("streets")}>Streets</button>
+              </div>
+            </div>
             <RingControls areaMin={0.1} areaMax={5} />
           </Step>
         </div>

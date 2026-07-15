@@ -124,7 +124,7 @@ function RingMesh({ heightNorm, shape, params, metal, hang, hangSize = 1, hangRo
   // into the wall, round end out. Same metal as the piece. Preview-only —
   // not part of the exported mesh.
   const bailR = params.width * 0.075 * hangSize;
-  const bailTube = bailR * 0.4;
+  const bailTube = bailR * 0.3;
   const bailCurve = useMemo(() => new DropBailCurve(bailR), [bailR]);
   const outLen = hang ? Math.hypot(hang.x, hang.z) || 1 : 1;
   const ox = hang ? hang.x / outLen : 0;

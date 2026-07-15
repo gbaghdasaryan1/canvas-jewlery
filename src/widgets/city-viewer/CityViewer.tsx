@@ -8,9 +8,12 @@ import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import type { Shape } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import {
+  FRAME_HEIGHT_MM,
+  FRAME_MM,
   ROAD_DEFAULT,
   ROAD_STYLES,
   TOWER_PROFILE,
+  insetOutline,
   makeClipToBoundary,
   makeHeightScale,
   makeInside,
@@ -209,6 +212,7 @@ export function CityViewer({
   // scale (thickness mm relative to the plate side), growing downward so the
   // city surface stays at y = 0.
   const plateH = (thicknessMm / widthMm) * WORLD;
+  const frameH = (FRAME_HEIGHT_MM / widthMm) * WORLD;
   const groundGeo = useMemo(() => {
     const s = new THREE.Shape();
     outline.forEach((p, i) => {
@@ -224,6 +228,16 @@ export function CityViewer({
     const pts = [...outline, outline[0]].map((p) => new THREE.Vector3(p.x * WORLD, 0.01, p.z * WORLD));
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, [outline]);
+  const frameGeo = useMemo(() => {
+    const innerOutline = insetOutline(outline, FRAME_MM / widthMm);
+    const toV2 = (p: Pt) => new THREE.Vector2(p.x * WORLD, -p.z * WORLD);
+    const s = new THREE.Shape(outline.map(toV2));
+    s.holes.push(new THREE.Path(innerOutline.map(toV2)));
+    const geo = new THREE.ExtrudeGeometry(s, { depth: frameH, bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2);
+    geo.computeVertexNormals();
+    return geo;
+  }, [outline, widthMm, frameH]);
 
   // Pendant bail — the same drop loop RingViewer shows on the metal piece,
   // here in the map's plate silver so the hang point previews in this view
@@ -239,6 +253,7 @@ export function CityViewer({
   useEffect(() => () => roadGeo?.dispose(), [roadGeo]);
   useEffect(() => () => groundGeo.dispose(), [groundGeo]);
   useEffect(() => () => rimGeo.dispose(), [rimGeo]);
+  useEffect(() => () => frameGeo.dispose(), [frameGeo]);
 
   return (
     <Canvas
@@ -253,6 +268,9 @@ export function CityViewer({
       <mesh geometry={groundGeo} position={[0, -0.01, 0]}>
         <meshLambertMaterial color={GROUND} />
       </mesh>
+      <mesh geometry={frameGeo}>
+        <meshLambertMaterial color={GROUND} />
+      </mesh>
       <lineLoop geometry={rimGeo}>
         <lineBasicMaterial color={RIM} />
       </lineLoop>
@@ -260,7 +278,7 @@ export function CityViewer({
         <mesh
           position={[
             hang.x * WORLD + ox * bailR * 0.75,
-            -plateH / 2,
+            (frameH - plateH) / 2,
             hang.z * WORLD + oz * bailR * 0.75,
           ]}
           // YXZ: roll upright around the tip axis first, then yaw outward —

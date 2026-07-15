@@ -20,7 +20,8 @@ This is a **Feature-Sliced Design (FSD)** React app (Vite + React 18 + TS). The 
 ```
 src/
   app/       App (path-based routing: "/" → Landing, "/design" → DesignPage,
-             "/skylines" → SkylinePage), useDesigner Zustand store, React Query provider
+             "/skylines" → SkylinePage, "/pendant" → PendantPage),
+             useDesigner Zustand store, React Query provider
   shared/    config (PRESETS, GRID), lib (ringGeometry, heightField, smooth,
              pricing, stl, overpass, format), design tokens, Panel UI
   entities/  terrain (procedural elevation), buildings & streets (Overpass/OSM),
@@ -41,6 +42,13 @@ src/
 4. `shared/lib/heightField.composeHeightField` = terrain + building raster → normalize to 0..1 → `smoothGrid` (separable 1-2-1 blur, `smooth` iterations). This one function feeds the 3D viewer, the STL export, and pricing, so they always agree.
 5. `entities/ring/model/types.toShapeParams` maps design inputs to `SlabParams` (mm); `buildShapeMesh` dispatches to `buildSlabMesh` / `buildHeartMesh` / `buildCircleMesh` in `shared/lib/ringGeometry.ts` — all produce **watertight indexed meshes** (`RingMeshData`).
 6. `widgets/ring-viewer` renders it with @react-three/fiber and PBR metals from `METALS`; `shared/lib/stl.ts` serializes the same mesh to **binary STL**; `shared/lib/pricing.ts` computes exact mesh volume (divergence theorem) → grams of silver → price in AMD with per-metal factors.
+
+**/pendant — image → pendant designer** (independent of the map/terrain flow)
+
+- `widgets/pendant-designer` (styled-components UI, react-konva canvas) + `usePendant` store (`model/store.ts`, own undo/redo history of `{config, object}` snapshots — `beginEdit()` once per drag gesture, then updates with `record=false`).
+- Pipeline (`features/image-segmentation`, all client-side, every stage lazy-loaded with a fallback): `@imgly/background-removal` (ONNX wasm; falls back to border chroma-key) → OpenCV.js contours (`@techstark/opencv-js`, v5 default export is a **thenable**; falls back to mask bbox) → Potrace wasm SVG (falls back to polygon path). UI consumes only the `ImageSegmentationService` interface from `createSegmentationService()` — swap providers there.
+- Geometry (`entities/pendant`): mm y-down space, origin = pendant centre. `resolveHole` clamps the chain hole inside the shape and walks it up until it clears the object; freeform outline = main contour offset by border (`shared/lib/geo2d.offsetPolygon`) unioned with a tab circle around the hole. `pendant3d.buildPendantGeometry` (THREE extrude) exists for a future 3D/STL step but is not mounted.
+- Exports (`features/pendant-export`): SVG in real mm, PNG via Konva stage (blob URL — big data: URLs are blocked for anchor downloads), DXF **placeholder**, JSON project.
 
 **Key constants**
 

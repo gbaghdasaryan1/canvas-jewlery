@@ -47,9 +47,9 @@ export function mergeMeshData(...parts: RingMeshData[]): RingMeshData {
 }
 
 /** Raised frame wall around every plaque: band width in mm. */
-export const FRAME_MM = 1;
+export const FRAME_MM = 1.2;
 /** Frame wall height in mm above the base — static, independent of relief. */
-export const FRAME_HEIGHT_MM = 4;
+export const FRAME_HEIGHT_MM = 3;
 
 /** US ring size -> inner radius in mm. */
 export function ringSizeToInnerRadius(usSize: number): number {
