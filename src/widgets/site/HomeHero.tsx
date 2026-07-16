@@ -8,18 +8,21 @@ export function HomeHero() {
         <div className="home-hero-copy">
           <div className="eyebrow">Bespoke topographic jewelry</div>
           <h1 className="home-hero-title">
-            Wear the ground<br />you <em>stood on.</em>
+            Turn Your Favorite<br />Place Into <em>Art</em>
           </h1>
-          <p className="home-hero-lede">
-            Choose any place on Earth — a summit, a coastline, the city where you met.
-            We read its real terrain and shape it into a pendant you can hold.
-          </p>
-          <div className="home-hero-cta">
-            <a className="btn-primary lg" href="/design">Start designing</a>
-            <a className="btn-ghost lg" href="#collections">Explore collections</a>
+          <div className="home-hero-moments">
+            <p>From the mountain where you proposed.</p>
+            <p>The city where you met.</p>
+            <p>The home you'll never forget.</p>
           </div>
-          <div className="home-hero-meta mono">
-            Real elevation data · recycled metals · made to order
+          <div className="home-hero-cta">
+            <a className="btn-primary lg" href="/design">Start Designing</a>
+            <a className="btn-ghost lg" href="#gallery">Explore Gallery</a>
+          </div>
+          <div className="home-hero-trust">
+            <span>✓ Crafted from real geographic data</span>
+            <span>✓ Available in Silver, Gold &amp; Platinum</span>
+            <span>✓ Worldwide shipping</span>
           </div>
         </div>
 

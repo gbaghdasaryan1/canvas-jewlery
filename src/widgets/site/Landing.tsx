@@ -1,5 +1,6 @@
 import { LandingHeader } from "./LandingHeader";
 import { HomeHero } from "./HomeHero";
+import { HeroStory } from "./HeroStory";
 import { Collections } from "./Collections";
 import { Gallery } from "./Gallery";
 import { HowItWorks } from "./HowItWorks";
@@ -10,6 +11,7 @@ export function Landing() {
     <div className="home">
       <LandingHeader />
       <HomeHero />
+      <HeroStory />
       <Collections />
       <Gallery />
       <HowItWorks />
