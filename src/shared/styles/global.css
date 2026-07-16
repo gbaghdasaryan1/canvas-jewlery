@@ -85,7 +85,7 @@ h1.display em { font-style: italic; color: var(--champagne); }
 .reliefrow { display: flex; gap: 14px; margin-top: 16px; align-items: stretch; }
 .reliefwrap { position: relative; flex: none; width: 132px; height: 132px; }
 .relief { width: 132px; height: 132px; flex: none; border-radius: 10px; border: 1px solid var(--line); background: #0c0e11; display: block; }
-.relief-toggles { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.relief-toggles { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
 .relief-toggle { font-size: 10px; letter-spacing: 0.03em; cursor: pointer;
   color: var(--mist); background: rgba(13,11,8,0.7); border: 1px solid var(--line); padding: 3px 7px; border-radius: 6px; transition: 0.15s; }
 .relief-toggle:hover { border-color: var(--gold); color: var(--ivory); }
@@ -418,6 +418,8 @@ body { -webkit-tap-highlight-color: transparent; }
 /* Left: sticky preview + price/CTA */
 .dz-preview { position: sticky; top: 78px; display: flex; flex-direction: column; gap: 14px; }
 .dz-stage .stage { height: 460px; }
+/* Secondary "print geometry" view — same silver finish, shorter than the hero. */
+.dz-stl .stage { height: 240px; }
 .dz-buy { background: linear-gradient(180deg, var(--panel), var(--graphite)); border: 1px solid var(--line);
   border-radius: var(--r); padding: 16px 18px; }
 .dz-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }

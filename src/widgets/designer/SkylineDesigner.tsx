@@ -14,6 +14,7 @@ import { CityMap } from "@/widgets/city-map/CityMap";
 import { CityViewer } from "@/widgets/city-viewer/CityViewer";
 import { buildCityMesh } from "@/widgets/city-viewer/buildCityMesh";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
+import { StlPreview } from "@/widgets/stl-preview/StlPreview";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
@@ -39,8 +40,8 @@ export function SkylineDesigner() {
 
   // Stage view: "map" renders the fetched city in the Mapbox map's style
   // (same colors, three.js); "metal" shows the cast piece.
-  const [stageView, setStageView] = useState<"map" | "metal">("map");
-  const [layerMode, setLayerMode] = useState<"all" | "buildings" | "streets">("all");
+  const [stageView] = useState<"map" | "metal">("map");
+  const [layerMode, setLayerMode] = useState<"all" | "buildings" | "streets">("streets");
 
   // Same debounce windows as Designer — dragging "Sample area" or mashing the
   // nudge pad must not fire an Overpass request per tick.
@@ -94,6 +95,7 @@ export function SkylineDesigner() {
       widthMm: width,
       baseMm: Math.max(0.5, thickness),
       reliefMm: relief,
+      solidFloor: layerMode !== "streets",
     });
   }
 
@@ -145,6 +147,7 @@ export function SkylineDesigner() {
       hangSize={hangSize}
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
+      solidFloor={layerMode !== "streets"}
     />
   ) : (
     <RingViewer
@@ -166,21 +169,32 @@ export function SkylineDesigner() {
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
             <div className="cap">Your skyline {jewelryType} · <b>{METALS[metal].label}</b></div>
-            <div className="relief-toggles">
-              <button
-                className={`relief-toggle mono ${stageView === "map" ? "on" : ""}`}
-                onClick={() => setStageView("map")}
-              >
-                Map view
-              </button>
-              <button
-                className={`relief-toggle mono ${stageView === "metal" ? "on" : ""}`}
-                onClick={() => setStageView("metal")}
-              >
-                Metal
-              </button>
-            </div>
+
             <div className="stage">{viewer}</div>
+          </div>
+
+          <div className="panel viewer dz-stl">
+            <div className="cap">STL preview · <b>print geometry</b></div>
+            <div className="stage">
+              {heightNorm ? (
+                <StlPreview
+                  shape={shape}
+                  heightNorm={heightNorm}
+                  width={width}
+                  relief={relief}
+                  thickness={thickness}
+                  jewelryType={jewelryType}
+                  hangPlace={hangPlace}
+                  hangSize={hangSize}
+                  hangRotation={hangRotation}
+                  hangHorizontal={hangHorizontal}
+                  exportMesh={exportMesh}
+                  metal={metal}
+                />
+              ) : (
+                <div className="stage-msg mono">No mesh yet</div>
+              )}
+            </div>
           </div>
 
           <div className="dz-buy">
@@ -216,8 +230,8 @@ export function SkylineDesigner() {
           </Step>
 
           <Step n={2} title="Shape &amp; finish" hint="Pick a form, then fine-tune the relief and metal.">
-            <div style={{ marginBottom: "0.75rem" }}>
-              <div className="mono" style={{ fontSize: "0.72rem", opacity: 0.6, marginBottom: "0.4rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Render layers</div>
+            <div className="field">
+              <label>Render layers</label>
               <div className="relief-toggles">
                 <button className={`relief-toggle mono ${layerMode === "all" ? "on" : ""}`} onClick={() => setLayerMode("all")}>All</button>
                 <button className={`relief-toggle mono ${layerMode === "buildings" ? "on" : ""}`} onClick={() => setLayerMode("buildings")}>Buildings</button>

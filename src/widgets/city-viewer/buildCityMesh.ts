@@ -5,7 +5,6 @@ import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import type { Shape } from "@/entities/ring/model/types";
 import {
-  FRAME_HEIGHT_MM,
   FRAME_MM,
   ROAD_DEFAULT,
   ROAD_STYLES,
@@ -32,6 +31,9 @@ export interface CityMeshInput {
   baseMm: number;
   /** max relief height, mm — tallest building reaches this (matches canvas) */
   reliefMm: number;
+  /** When false, the solid base plate is omitted — only the frame and the
+      streets/buildings remain (matches the canvas's hollow-floor mode). */
+  solidFloor?: boolean;
 }
 
 const MIN_BUILDING_MM = 0.25; // castability floor for tiny buildings
@@ -44,7 +46,7 @@ const MIN_BUILDING_MM = 0.25; // castability floor for tiny buildings
  * plate (standard multi-shell STL; slicers and casting prep union them).
  */
 export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
-  const { buildings, streets, shape, lat, lng, areaKm, widthMm, baseMm, reliefMm } = input;
+  const { buildings, streets, shape, lat, lng, areaKm, widthMm, baseMm, reliefMm, solidFloor = true } = input;
   if (!buildings?.length && !streets?.length) return null;
   // Same soft-knee vertical scale as the canvas (see makeHeightScale).
   const heightScale = makeHeightScale(buildings?.map((b) => b.height) ?? []);
@@ -58,6 +60,15 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
   const innerOutline = insetOutline(outline, FRAME_MM / widthMm);
   const inside = makeInside(shape, innerOutline);
   const clipToBoundary = makeClipToBoundary(inside);
+  // With no base plate (hollow streets), the streets must reach into the frame
+  // so they fuse with it into one printable solid — clip them to the MIDDLE of
+  // the frame band (half the frame width in) rather than the inner edge. That
+  // overlaps the frame wall enough to connect, but stops short of the outer
+  // edge so streets never poke past the frame. With a solid plate the base
+  // already ties everything together, so streets stay off the frame there.
+  const streetOutline = insetOutline(outline, (FRAME_MM * 0.5) / widthMm);
+  const streetInside = solidFloor ? inside : makeInside(shape, streetOutline);
+  const streetClip = solidFloor ? clipToBoundary : makeClipToBoundary(streetInside);
 
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -81,15 +92,17 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
     geoms.push(g);
   };
 
-  // Base plate (rectangle / heart / disc).
+  // Base plate (rectangle / heart / disc). Omitted in hollow-floor mode, where
+  // only the frame + streets/buildings remain and the floor reads as empty.
   const base = Math.max(baseMm, 0.5);
-  prism(outline, 0, base);
+  if (solidFloor) prism(outline, 0, base);
   // Solids above sink half-way into the plate so the shells always overlap
-  // (no coplanar faces, robust boolean union downstream).
-  const sunk = base * 0.5;
-  // Raised frame wall along the whole outline: FRAME_MM thick,
-  // FRAME_HEIGHT_MM tall.
-  prism(outline, sunk, base + FRAME_HEIGHT_MM, [innerOutline]);
+  // (no coplanar faces, robust boolean union downstream). With no plate they
+  // stand on the ground plane (y = 0) instead.
+  const sunk = solidFloor ? base * 0.5 : 0;
+  // Raised frame wall along the whole outline: FRAME_MM thick, rising to the
+  // full relief depth so it sits level with the tallest content.
+  prism(outline, sunk, base + reliefMm, [innerOutline]);
 
   if (buildings?.length) {
     for (const b of buildings) {
@@ -131,10 +144,10 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
       for (let i = 1; i < st.pts.length; i++) {
         let ax = nx(st.pts[i - 1][1]), az = nz(st.pts[i - 1][0]);
         let bx = nx(st.pts[i][1]), bz = nz(st.pts[i][0]);
-        const aIn = inside(ax, az), bIn = inside(bx, bz);
+        const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
         if (!aIn && !bIn) continue;
-        if (!bIn) { const p = clipToBoundary(ax, az, bx, bz); bx = p.x; bz = p.z; }
-        else if (!aIn) { const p = clipToBoundary(bx, bz, ax, az); ax = p.x; az = p.z; }
+        if (!bIn) { const p = streetClip(ax, az, bx, bz); bx = p.x; bz = p.z; }
+        else if (!aIn) { const p = streetClip(bx, bz, ax, az); ax = p.x; az = p.z; }
         const dx = bx - ax, dz = bz - az;
         const len = Math.hypot(dx, dz);
         if (len === 0) continue;

@@ -3,7 +3,7 @@ import { useDesigner } from "@/app/store";
 import type { Shape } from "@/entities/ring/model/types";
 import { Designer } from "./Designer";
 
-const VALID_SHAPES = new Set(["rectangle", "heart", "circle"]);
+const VALID_SHAPES = new Set(["rectangle", "circle"]);
 
 /** The standalone design experience at /design. */
 export function DesignPage() {

@@ -3,7 +3,6 @@ import { HANG_PLACES, JEWELRY_TYPES, hangPlaceLabel, type Shape } from "@/entiti
 
 const SHAPES: { id: Shape; label: string }[] = [
   { id: "rectangle", label: "Rectangle" },
-  { id: "heart", label: "Heart" },
   { id: "circle", label: "Circle" },
 ];
 
@@ -137,18 +136,7 @@ export function RingControls({ areaMin = 0.3, areaMax = 614 }: RingControlsProps
       </div>
 
       <div className="ctl-grid" style={{ marginTop: 22 }}>
-        <Range
-          label="Plate size"
-          value={`${s.width} mm`}
-          min={15}
-          max={30}
-          step={1}
-          current={s.width}
-          onChange={s.setWidth}
-        />
         <Range label="Relief depth" value={`${s.relief.toFixed(1)} mm`} min={0.4} max={8} step={0.2} current={s.relief} onChange={s.setRelief} />
-        <Range label="Base thickness" value={`${s.thickness.toFixed(1)} mm`} min={0.5} max={4} step={0.1} current={s.thickness} onChange={s.setThickness} />
-        <Range label="Smoothing" value={s.smooth === 0 ? "Sharp" : `${s.smooth}×`} min={0} max={6} step={0.2} current={s.smooth} onChange={s.setSmooth} />
         <Range label="Sample area" value={`${s.areaKm} km`} min={areaMin} max={areaMax} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
       </div>
 

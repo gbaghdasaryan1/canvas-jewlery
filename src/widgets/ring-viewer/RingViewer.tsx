@@ -41,7 +41,7 @@ function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
   return env;
 }
 
-function SceneEnvironment() {
+export function SceneEnvironment() {
   const { gl, scene } = useThree();
   useEffect(() => {
     const env = makeEnvMap(gl);

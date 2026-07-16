@@ -11,6 +11,7 @@ import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 import { Panel } from "@/shared/ui/Panel";
 import { TerrainMap } from "@/widgets/terrain-map/TerrainMap";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
+import { StlPreview } from "@/widgets/stl-preview/StlPreview";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
@@ -117,6 +118,29 @@ export function Designer() {
           <div className="panel viewer dz-stage">
             <div className="cap">Your {SHAPE_LABEL[shape]} {jewelryType} · <b>{METALS[metal].label}</b></div>
             <div className="stage">{viewer}</div>
+          </div>
+
+          <div className="panel viewer dz-stl">
+            <div className="cap">STL preview · <b>print geometry</b></div>
+            <div className="stage">
+              {heightNorm ? (
+                <StlPreview
+                  shape={shape}
+                  heightNorm={heightNorm}
+                  width={width}
+                  relief={relief}
+                  thickness={thickness}
+                  jewelryType={jewelryType}
+                  hangPlace={hangPlace}
+                  hangSize={hangSize}
+                  hangRotation={hangRotation}
+                  hangHorizontal={hangHorizontal}
+                  metal={metal}
+                />
+              ) : (
+                <div className="stage-msg mono">No mesh yet</div>
+              )}
+            </div>
           </div>
 
           <div className="dz-buy">

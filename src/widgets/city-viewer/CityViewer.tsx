@@ -8,7 +8,6 @@ import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import type { Shape } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import {
-  FRAME_HEIGHT_MM,
   FRAME_MM,
   ROAD_DEFAULT,
   ROAD_STYLES,
@@ -84,11 +83,14 @@ interface CityViewerProps {
   hangRotation?: number;
   /** Rotate bail 90° for chain attachment (perpendicular to plate surface). */
   hangHorizontal?: boolean;
+  /** When false, the solid base plate is omitted — only the frame and the
+      streets/buildings remain, so the floor between them reads as empty. */
+  solidFloor?: boolean;
 }
 
 export function CityViewer({
   buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
-  hang, hangSize = 1, hangRotation = 0, hangHorizontal = false,
+  hang, hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
 }: CityViewerProps) {
   // lat/lng → the same normalized plane the mesh builders sample:
   // x = (lng-west)/dLng - 0.5 (east), z = (lat-south)/dLat - 0.5. World
@@ -103,8 +105,23 @@ export function CityViewer({
   const mToU = WORLD / (areaKm * 1000); // metres → world units
 
   const outline = useMemo<Pt[]>(() => shapeOutline(shape), [shape]);
-  const inside = makeInside(shape, outline);
+  // City content stops at the inner edge of the raised frame band — same
+  // clipping buildCityMesh uses for the STL, so nothing renders on the frame.
+  const innerOutline = useMemo<Pt[]>(
+    () => insetOutline(outline, FRAME_MM / widthMm),
+    [outline, widthMm],
+  );
+  const inside = makeInside(shape, innerOutline);
   const clipToBoundary = makeClipToBoundary(inside);
+  // Hollow-floor mode: streets run into the MIDDLE of the frame band so they
+  // fuse into the frame (one connected solid, matching buildCityMesh) without
+  // poking past its outer edge. Otherwise they stop at the inner edge.
+  const streetOutline = useMemo<Pt[]>(
+    () => insetOutline(outline, (FRAME_MM * 0.5) / widthMm),
+    [outline, widthMm],
+  );
+  const streetInside = solidFloor ? inside : makeInside(shape, streetOutline);
+  const streetClip = solidFloor ? clipToBoundary : makeClipToBoundary(streetInside);
 
   const buildingGeo = useMemo(() => {
     if (!buildings?.length) return null;
@@ -178,10 +195,10 @@ export function CityViewer({
         let bx = nx(st.pts[i][1]), bz = nz(st.pts[i][0]);
         // Clip segments at the outline: roads end exactly at the plate edge
         // instead of poking past it (or leaving gaps short of it).
-        const aIn = inside(ax, az), bIn = inside(bx, bz);
+        const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
         if (!aIn && !bIn) continue;
-        if (!bIn) { const p = clipToBoundary(ax, az, bx, bz); bx = p.x; bz = p.z; }
-        else if (!aIn) { const p = clipToBoundary(bx, bz, ax, az); ax = p.x; az = p.z; }
+        if (!bIn) { const p = streetClip(ax, az, bx, bz); bx = p.x; bz = p.z; }
+        else if (!aIn) { const p = streetClip(bx, bz, ax, az); ax = p.x; az = p.z; }
         const dx = (bx - ax) * WORLD, dz = (bz - az) * WORLD;
         const len = Math.hypot(dx, dz);
         if (len === 0) continue;
@@ -205,14 +222,15 @@ export function CityViewer({
     geo.computeVertexNormals();
     return geo;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streets, shape, lat, lng, areaKm]);
+  }, [streets, shape, lat, lng, areaKm, solidFloor, widthMm]);
 
   // Shaped ground plate + rim, matching the piece's outline. The plate is a
   // real slab: its thickness follows the "Base thickness" slider at true
   // scale (thickness mm relative to the plate side), growing downward so the
   // city surface stays at y = 0.
   const plateH = (thicknessMm / widthMm) * WORLD;
-  const frameH = (FRAME_HEIGHT_MM / widthMm) * WORLD;
+  // Skyline frame rises to the full relief depth — level with the tallest content.
+  const frameH = (reliefMm / widthMm) * WORLD;
   const groundGeo = useMemo(() => {
     const s = new THREE.Shape();
     outline.forEach((p, i) => {
@@ -229,7 +247,6 @@ export function CityViewer({
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, [outline]);
   const frameGeo = useMemo(() => {
-    const innerOutline = insetOutline(outline, FRAME_MM / widthMm);
     const toV2 = (p: Pt) => new THREE.Vector2(p.x * WORLD, -p.z * WORLD);
     const s = new THREE.Shape(outline.map(toV2));
     s.holes.push(new THREE.Path(innerOutline.map(toV2)));
@@ -237,7 +254,7 @@ export function CityViewer({
     geo.rotateX(-Math.PI / 2);
     geo.computeVertexNormals();
     return geo;
-  }, [outline, widthMm, frameH]);
+  }, [outline, innerOutline, frameH]);
 
   // Pendant bail — the same drop loop RingViewer shows on the metal piece,
   // here in the map's plate silver so the hang point previews in this view
@@ -265,9 +282,11 @@ export function CityViewer({
       {/* soft viewport light, like the map style's `light` */}
       <hemisphereLight args={["#ffffff", "#c8ccd2", 0.9]} />
       <directionalLight position={[40, 80, 20]} intensity={0.55} />
-      <mesh geometry={groundGeo} position={[0, -0.01, 0]}>
-        <meshLambertMaterial color={GROUND} />
-      </mesh>
+      {solidFloor && (
+        <mesh geometry={groundGeo} position={[0, -0.01, 0]}>
+          <meshLambertMaterial color={GROUND} />
+        </mesh>
+      )}
       <mesh geometry={frameGeo}>
         <meshLambertMaterial color={GROUND} />
       </mesh>

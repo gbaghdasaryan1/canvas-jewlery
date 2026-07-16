@@ -4,7 +4,7 @@ import { PRESETS } from "@/shared/config/presets";
 import type { Shape } from "@/entities/ring/model/types";
 import { SkylineDesigner } from "./SkylineDesigner";
 
-const VALID_SHAPES = new Set(["rectangle", "heart", "circle"]);
+const VALID_SHAPES = new Set(["rectangle", "circle"]);
 const DEFAULT_CITY = PRESETS.find((p) => p.city)!;
 
 /** The standalone skyline design experience at /skylines. */

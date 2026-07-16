@@ -10,7 +10,6 @@ interface Option {
 
 const OPTIONS: Option[] = [
   { shape: "rectangle", title: "Terrain Plaque", blurb: "A clean rectangular relief of your landscape.", tone: "stone", seed: 11 },
-  { shape: "heart", title: "Heart Keepsake", blurb: "The place you love, shaped like it.", tone: "bronze", seed: 23 },
   { shape: "circle", title: "Round Locket", blurb: "A soft disc of mountains or coastline.", tone: "sage", seed: 41 },
 ];
 
