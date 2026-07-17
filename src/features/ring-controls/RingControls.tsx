@@ -37,8 +37,8 @@ function Range({ label, value, min, max, step, current, onChange }: RangeProps) 
 }
 
 interface RingControlsProps {
-  /** Bounds for the "Sample area" slider — skylines need a much tighter
-      window than terrain (Overpass payloads blow up past a few km). */
+  /** Bounds for the "Sample area" slider — maps need a much tighter
+      window than mountains (Overpass payloads blow up past a few km). */
   areaMin?: number;
   areaMax?: number;
 }
@@ -77,43 +77,6 @@ export function RingControls({ areaMin = 0.3, areaMax = 614 }: RingControlsProps
                 }
               >
                 ↻ {capitalize(hangPlaceLabel(s.hangPlace))}
-              </button>
-            </div>
-            <div className="ctl-grid" style={{ marginTop: 12 }}>
-              <Range
-                label="Loop size"
-                value={`${s.hangSize.toFixed(2)}×`}
-                min={0.5}
-                max={2}
-                step={0.05}
-                current={s.hangSize}
-                onChange={s.setHangSize}
-              />
-              <Range
-                label="Loop rotation"
-                value={`${s.hangRotation}°`}
-                min={-45}
-                max={45}
-                step={1}
-                current={s.hangRotation}
-                onChange={s.setHangRotation}
-              />
-            </div>
-          </div>
-          <div className="field" style={{ marginTop: 12 }}>
-            <label>Chain loop</label>
-            <div className="metals">
-              <button
-                className={`metal ${!s.hangHorizontal ? "active" : ""}`}
-                onClick={() => s.setHangHorizontal(false)}
-              >
-                Pendant
-              </button>
-              <button
-                className={`metal ${s.hangHorizontal ? "active" : ""}`}
-                onClick={() => s.setHangHorizontal(true)}
-              >
-                Chain
               </button>
             </div>
           </div>

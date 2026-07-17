@@ -34,7 +34,7 @@ function popupContent(props: Record<string, unknown>): HTMLElement {
 }
 
 /**
- * Mapbox GL city picker for /skylines — custom-styled Streets v8 tiles with
+ * Mapbox GL city picker for /maps — custom-styled Streets v8 tiles with
  * 3D building extrusions, tilted for a skyline view. Click or drag the pin to
  * choose the spot; roads/POIs/places are hoverable and show details on click.
  */

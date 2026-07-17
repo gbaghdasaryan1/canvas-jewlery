@@ -2,7 +2,7 @@
 
 ## Project Context
 
-You are building the backend for **Cairn Jewelry Studio** — a bespoke jewelry ordering platform where customers design relief pieces from real-world terrain/cityscape data (mountains, streets, skylines) or custom image silhouettes. The existing frontend is a Vite + React 18 + TypeScript SPA with no backend. You are adding the first backend.
+You are building the backend for **Cairn Jewelry Studio** — a bespoke jewelry ordering platform where customers design relief pieces from real-world mountains/cityscape data (mountains, streets, maps) or custom image silhouettes. The existing frontend is a Vite + React 18 + TypeScript SPA with no backend. You are adding the first backend.
 
 **Goal**: Replace the `mailto:` checkout flow with a real order pipeline, add user accounts, saved designs, and an admin CRM.
 
@@ -45,7 +45,7 @@ You are building the backend for **Cairn Jewelry Studio** — a bespoke jewelry 
 |-------------|-----------------------------------------------|------------------------------------|
 | id          | UUID PK                                       |                                    |
 | userId      | UUID FK → users                               | nullable — guest designs           |
-| type        | enum('terrain','skyline','pendant')           |                                    |
+| type        | enum('mountains','skyline','pendant')           |                                    |
 | name        | varchar(255)                                  | place name or custom label         |
 | snapshot    | jsonb                                         | full design config object          |
 | stlUrl      | varchar(500)                                  | S3 URL to STL file                 |

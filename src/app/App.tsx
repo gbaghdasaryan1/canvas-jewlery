@@ -1,21 +1,20 @@
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppProviders } from "./providers";
 import { Landing } from "@/widgets/site/Landing";
 import { DesignPage } from "@/widgets/designer/DesignPage";
 import { SkylinePage } from "@/widgets/designer/SkylinePage";
-import { PendantPage } from "@/widgets/pendant-designer/ui/PendantPage";
+
+const router = createBrowserRouter([
+  { path: "/", element: <Landing /> },
+  { path: "/mountains", element: <DesignPage /> },
+  { path: "/maps", element: <SkylinePage /> },
+  { path: "*", element: <Landing /> },
+]);
 
 export function App() {
-  const path = window.location.pathname.replace(/\/+$/, "");
-  const page =
-    path === "/design" ? (
-      <DesignPage />
-    ) : path === "/skylines" ? (
-      <SkylinePage />
-    ) : path === "/pendant" ? (
-      <PendantPage />
-    ) : (
-      <Landing />
-    );
-
-  return <AppProviders>{page}</AppProviders>;
+  return (
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
+  );
 }

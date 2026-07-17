@@ -2,7 +2,7 @@
 
 ## **Product Summary**
 
-Canvas Jewelry is a **web-based personalized metalwork design platform** that allows customers to create custom relief pieces from real-world locations. Users select any place on Earth, and the system generates a cast-metal art piece featuring the actual terrain or cityscape of that location. The product targets gift-givers, home decorators, and collectors seeking unique, location-specific memorabilia.
+Canvas Jewelry is a **web-based personalized metalwork design platform** that allows customers to create custom relief pieces from real-world locations. Users select any place on Earth, and the system generates a cast-metal art piece featuring the actual mountains or cityscape of that location. The product targets gift-givers, home decorators, and collectors seeking unique, location-specific memorabilia.
 
 ---
 
@@ -23,7 +23,7 @@ Canvas Jewelry is a **web-based personalized metalwork design platform** that al
 - **Relief intensity** (depth exaggeration factor)
 - **Thickness** (material cost/durability)
 - **Smoothing** (detail vs. artifact balance)
-- **Optional city overlays** (buildings & streets highlighted on top of terrain)
+- **Optional city overlays** (buildings & streets highlighted on top of mountains)
 
 ---
 
@@ -51,8 +51,8 @@ Canvas Jewelry is a **web-based personalized metalwork design platform** that al
 
 | Component | Data Source | Purpose |
 |-----------|-------------|---------|
-| **Real Terrain** | Google Elevation API | Authentic elevation data (55×55 grid sampling per location) |
-| **Building/Streets** | OpenStreetMap (Overpass API) | Urban overlay detail; supports "Skylines" product variant |
+| **Real mountains** | Google Elevation API | Authentic elevation data (55×55 grid sampling per location) |
+| **Building/Streets** | OpenStreetMap (Overpass API) | Urban overlay detail; supports "maps" product variant |
 | **Procedural Fallback** | Deterministic seeding | Graceful degradation if APIs unavailable |
 | **3D Preview** | React Three Fiber (r3f) | Real-time PBR metal rendering |
 | **STL Export** | Binary STL format | Direct feed to casting/3D print services |
@@ -101,7 +101,7 @@ Price = (Mesh Volume in mm³ × Material Density × Metal Price Factor) + Margin
 
 | Feature | Status |
 |---------|--------|
-| Location picker + terrain preview | ✅ Live |
+| Location picker + mountains preview | ✅ Live |
 | 3D ring/plaque/heart viewer | ✅ Live |
 | STL export | ✅ Live |
 | Pendant designer (image → SVG) | ✅ Live |

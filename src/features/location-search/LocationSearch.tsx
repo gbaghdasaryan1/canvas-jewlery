@@ -13,7 +13,7 @@ export function LocationSearch({
   presets = PRESETS,
   placeholder = "Search a place — e.g. Matterhorn, Yosemite Valley…",
 }: LocationSearchProps) {
-  const { lat, lng, areaKm, setLocation, setAreaKm, setShowBuildings } = useDesigner();
+  const { lat, lng, setLocation, setAreaKm, setShowBuildings } = useDesigner();
   const { isLoaded } = useGoogleMaps();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,14 +34,6 @@ export function LocationSearch({
     if (Number.isNaN(v)) return;
     if (axis === "lat") setLocation(clampLat(v), lng, "Custom location");
     else setLocation(lat, wrapLng(v), "Custom location");
-  }
-
-  // Nudge the location by a fraction of the sample area (1 = north/east).
-  function nudge(dLatSign: number, dLngSign: number) {
-    const stepKm = Math.max(0.2, areaKm * 0.25);
-    const dLat = (dLatSign * stepKm) / 111;
-    const dLng = (dLngSign * stepKm) / (111 * Math.cos((lat * Math.PI) / 180) || 1);
-    setLocation(clampLat(lat + dLat), wrapLng(lng + dLng), "Custom location");
   }
 
   async function search() {
@@ -119,15 +111,6 @@ export function LocationSearch({
             onKeyDown={(e) => e.key === "Enter" && commitCoord("lng", (e.target as HTMLInputElement).value)}
           />
         </label>
-      </div>
-      <div className="nudgerow mono">
-        <span className="nudge-label">Move</span>
-        <div className="nudgepad">
-          <button className="nudge n" onClick={() => nudge(0.5, 0)} title="North" aria-label="Move north">↑</button>
-          <button className="nudge w" onClick={() => nudge(0, -0.5)} title="West" aria-label="Move west">←</button>
-          <button className="nudge e" onClick={() => nudge(0, 0.5)} title="East" aria-label="Move east">→</button>
-          <button className="nudge s" onClick={() => nudge(-0.5, 0)} title="South" aria-label="Move south">↓</button>
-        </div>
       </div>
       <div className="chips">
         {presets.map((p) => (

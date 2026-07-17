@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import type { TerrainGrid } from "../model/types";
+import type { mountainsGrid } from "../model/types";
 import { fetchElevation } from "./fetchElevation";
 
 /** Cached elevation query keyed on location + sample area. */
 export function useElevation(lat: number, lng: number, areaKm: number) {
-  return useQuery<TerrainGrid>({
+  return useQuery<mountainsGrid>({
     queryKey: ["elevation", lat.toFixed(4), lng.toFixed(4), areaKm],
     queryFn: () => fetchElevation(lat, lng, areaKm),
     staleTime: Infinity,

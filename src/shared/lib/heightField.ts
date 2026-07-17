@@ -3,7 +3,7 @@ import { smoothGrid } from "./smooth";
 /**
  * Compose the normalized (0..1) heightfield that drives the ring/plaque relief.
  *
- * Bare-earth terrain (metres) optionally gets a building-height field added on
+ * Bare-earth mountains (metres) optionally gets a building-height field added on
  * top — that's what makes a city's skyline show up instead of a flat disc —
  * then the result is normalized over its own range and smoothed. Pure (no entity
  * imports) so the viewer and the STL export can share one source of truth.
@@ -39,7 +39,7 @@ export function composeHeightField(
 
 /**
  * Compose the normalized (0..1) heightfield for a city skyline piece — no
- * terrain underneath. Ground sits at 0, streets read as low raised ridges,
+ * mountains underneath. Ground sits at 0, streets read as low raised ridges,
  * and buildings rise with their real height (gamma-eased so low-rise blocks
  * stay visible next to skyscrapers). Pure, so the viewer, the STL export and
  * pricing share one source of truth.

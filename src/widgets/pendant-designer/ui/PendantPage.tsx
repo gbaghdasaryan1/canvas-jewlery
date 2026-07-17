@@ -37,12 +37,12 @@ export function PendantPage() {
   return (
     <PageShell>
       <TopBar>
-        <Brand href="/">CAIRN</Brand>
+        <Brand to="/">CAIRN</Brand>
         <Tagline>Design your pendant</Tagline>
         <TopSpacer />
         <Toolbar />
-        <NavLink href="/design">Terrain →</NavLink>
-        <NavLink href="/skylines">Skylines →</NavLink>
+        <NavLink to="/mountains">Mountains →</NavLink>
+        <NavLink to="/maps">maps →</NavLink>
       </TopBar>
 
       <Body>

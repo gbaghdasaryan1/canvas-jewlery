@@ -1,5 +1,5 @@
 import { GRID } from "@/shared/config/presets";
-import type { TerrainGrid } from "../model/types";
+import type { mountainsGrid } from "../model/types";
 
 function hash2(x: number, y: number, s: number): number {
   const h = Math.sin(x * 127.1 + y * 311.7 + s) * 43758.5453;
@@ -16,10 +16,10 @@ function valueNoise(x: number, y: number, s: number): number {
 }
 
 /**
- * Deterministic, location-seeded "mountain" terrain. Used as a graceful
+ * Deterministic, location-seeded "mountain" mountains. Used as a graceful
  * fallback when the DEM API is unreachable (e.g. offline or sandboxed).
  */
-export function proceduralTerrain(lat: number, lng: number): TerrainGrid {
+export function proceduralmountains(lat: number, lng: number): mountainsGrid {
   const seed = Math.abs(lat * 73.13 + lng * 149.7) % 1000;
   const g = new Float32Array(GRID * GRID);
   let mn = Infinity, mx = -Infinity;

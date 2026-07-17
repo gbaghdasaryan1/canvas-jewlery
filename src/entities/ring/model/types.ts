@@ -11,12 +11,12 @@ import {
 
 export type Metal = "gold" | "silver" | "platinum";
 
-/** The physical form the terrain is rendered into. */
+/** The physical form the mountains is rendered into. */
 export type Shape = "rectangle" | "heart" | "circle";
 
 /** What the cast piece is worn/mounted as. */
-export type JewelryType = "pendant" | "ring" | "bracelet" | "buckle" | "keychain";
-export const JEWELRY_TYPES: JewelryType[] = ["pendant", "ring", "bracelet", "buckle", "keychain"];
+export type JewelryType = "pendant" | "ring" | "bracelet";
+export const JEWELRY_TYPES: JewelryType[] = ["pendant", "ring", "bracelet"];
 
 /** Where the bail/loop attaches on a pendant — every side and every corner. */
 export type HangPlace =

@@ -3,7 +3,7 @@ export interface RingParams {
   innerRadius: number;
   /** base wall thickness in mm */
   thickness: number;
-  /** max radial displacement of the terrain in mm */
+  /** max radial displacement of the mountains in mm */
   amp: number;
   /** band width in mm (along the finger axis) */
   bandWidth: number;
@@ -18,7 +18,7 @@ export interface SlabParams {
   width: number;
   /** plate size in mm along Z (north–south) */
   depth: number;
-  /** solid base thickness in mm below the lowest terrain point */
+  /** solid base thickness in mm below the lowest mountains point */
   base: number;
   /** max relief height in mm above the base */
   amp: number;
@@ -47,7 +47,7 @@ export function mergeMeshData(...parts: RingMeshData[]): RingMeshData {
 }
 
 /** Raised frame wall around every plaque: band width in mm. */
-export const FRAME_MM = 1.2;
+export const FRAME_MM = 1;
 /** Frame wall height in mm above the base — static, independent of relief. */
 export const FRAME_HEIGHT_MM = 2.5;
 
@@ -77,7 +77,7 @@ function sampleGrid(h: Float32Array, fu: number, fv: number): number {
 }
 
 /**
- * Build a watertight ring band by wrapping a normalized terrain patch around
+ * Build a watertight ring band by wrapping a normalized mountains patch around
  * the finger. Circumference (u) goes around; band width (v) goes across.
  * Returns indexed geometry suitable for BufferGeometry and STL export.
  */
@@ -88,7 +88,7 @@ export function buildRingMesh(heightNorm: Float32Array, p: RingParams): RingMesh
   const indices: number[] = [];
 
   // Displacement field across width (i: 0..W) and circumference (j: 0..C-1).
-  // TEST: relief is sampled VERTICALLY — the circumference wraps the terrain's
+  // TEST: relief is sampled VERTICALLY — the circumference wraps the mountains's
   // v (vertical) axis and the band width spans its u (horizontal) axis. Swap the
   // two sampleGrid args back to (fu, i / W) to restore the horizontal wrap.
   const disp = new Float32Array((W + 1) * C);
@@ -152,8 +152,8 @@ export function buildRingMesh(heightNorm: Float32Array, p: RingParams): RingMesh
 }
 
 /**
- * Build a watertight rectangular relief plaque from a normalized terrain patch.
- * The top face is displaced by the terrain; a flat base and four side walls
+ * Build a watertight rectangular relief plaque from a normalized mountains patch.
+ * The top face is displaced by the mountains; a flat base and four side walls
  * close it into a solid. X is east–west, Z is north–south, Y is height.
  * Returns indexed geometry suitable for BufferGeometry and STL export.
  */
@@ -167,7 +167,7 @@ export function buildSlabMesh(heightNorm: Float32Array, p: SlabParams): RingMesh
   const botOffset = VX * VZ;
   const bot = (i: number, j: number) => botOffset + j * VX + i;
 
-  // Top surface: terrain-displaced. Row j -> north–south (v), col i -> east–west (u).
+  // Top surface: mountains-displaced. Row j -> north–south (v), col i -> east–west (u).
   // Vertices within FRAME_MM of an edge rise to FRAME_HEIGHT_MM — the frame wall.
   for (let j = 0; j < VZ; j++) {
     const z = (j / NZ - 0.5) * p.depth;
@@ -252,7 +252,7 @@ export function circleBoundary(steps: number): Array<{ x: number; z: number }> {
 /**
  * Build a watertight flat relief plaque whose outline is given by `outline`
  * (normalized to [-0.5, 0.5], any star-shaped closed loop). The top face is
- * terrain-displaced and triangulated as a fan from the centroid out to the
+ * mountains-displaced and triangulated as a fan from the centroid out to the
  * outline; a flat base and a wall following the outline close it into a solid.
  */
 function buildFanPlaque(

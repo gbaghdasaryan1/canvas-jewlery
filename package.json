@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Bespoke topographic rings — pick a place on Earth, generate a ring from its terrain.",
+  "description": "Bespoke topographic rings — pick a place on Earth, generate a ring from its mountains.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -24,6 +24,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-konva": "^18.2.16",
+    "react-router-dom": "^7.18.1",
     "styled-components": "^6.4.3",
     "three": "^0.169.0",
     "zustand": "^4.5.5"

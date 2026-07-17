@@ -1,6 +1,6 @@
 const STEPS = [
   { n: "01", title: "You choose the place", body: "Anywhere with real relief. We pull topographic elevation for the exact patch you frame on the map." },
-  { n: "02", title: "We mill the terrain", body: "The heightfield is wrapped into a band and CNC-cut in wax, preserving every ridge and valley at wearable scale." },
+  { n: "02", title: "We mill the mountains", body: "The heightfield is wrapped into a band and CNC-cut in wax, preserving every ridge and valley at wearable scale." },
   { n: "03", title: "Cast in precious metal", body: "Lost-wax cast in recycled gold, silver or platinum, then hand-finished. A summit you can hold." },
 ];
 

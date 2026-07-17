@@ -1,7 +1,7 @@
 import { GRID } from "@/shared/config/presets";
 import { whenGoogleReady } from "@/shared/lib/googleMaps";
-import type { TerrainGrid } from "../model/types";
-import { proceduralTerrain } from "../lib/procedural";
+import type { mountainsGrid } from "../model/types";
+import { proceduralmountains } from "../lib/procedural";
 
 const CHUNK = 256; // Google Elevation API accepts up to 512 locations per request
 const REQUEST_TIMEOUT_MS = 10000;
@@ -9,7 +9,7 @@ const REQUEST_TIMEOUT_MS = 10000;
 /**
  * When the SDK's auth check fails (bad key, referrer not allowed) an in-flight
  * ElevationService call never settles — it neither resolves nor rejects. Guard
- * every request with a timeout so we can still fall back to procedural terrain.
+ * every request with a timeout so we can still fall back to procedural mountains.
  * Later calls on a failed SDK return `undefined` instead of a promise; treat
  * that as a failure too.
  */
@@ -27,18 +27,18 @@ function withTimeout<T>(p: Promise<T> | undefined, ms: number): Promise<T> {
 /**
  * Sample a GRID×GRID patch of real elevations around the chosen coordinate
  * via the Google Elevation service (Maps JS SDK, CORS-free). Falls back to
- * deterministic procedural terrain when the SDK never loads (no API key,
+ * deterministic procedural mountains when the SDK never loads (no API key,
  * offline) or a request fails — the source badge shows which one you got.
  */
 export async function fetchElevation(
   lat: number,
   lng: number,
   areaKm: number,
-): Promise<TerrainGrid> {
+): Promise<mountainsGrid> {
   // The Maps JS SDK is injected lazily by the map widget. Wait for it before
   // sampling real elevation; only fall back to procedural if it never arrives.
   if (!(await whenGoogleReady())) {
-    return proceduralTerrain(lat, lng);
+    return proceduralmountains(lat, lng);
   }
 
   const dLat = areaKm / 111;
@@ -76,6 +76,6 @@ export async function fetchElevation(
     }
     return { data: out, min: mn, max: mx, source: "dem" };
   } catch {
-    return proceduralTerrain(lat, lng);
+    return proceduralmountains(lat, lng);
   }
 }

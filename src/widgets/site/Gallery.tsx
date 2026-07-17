@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ContourArt } from "./ContourArt";
 
 const TONES = ["gold", "silver", "bronze", "sage", "stone"];
@@ -21,13 +22,13 @@ export function Gallery() {
 
         <div className="gallery-grid">
           {PLACES.map((p, i) => (
-            <a key={p} className="gallery-tile" href="/design" aria-label={`Design a piece like ${p}`}>
+            <Link key={p} className="gallery-tile" to="/mountains" aria-label={`Design a piece like ${p}`}>
               <ContourArt seed={(i + 3) * 97} tone={TONES[i % TONES.length]} />
               <div className="gallery-cap">
                 <span>{p}</span>
                 <span className="mono">◷ made to order</span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

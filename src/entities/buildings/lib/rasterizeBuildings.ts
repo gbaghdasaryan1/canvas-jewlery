@@ -17,9 +17,9 @@ function pointInRing(lat: number, lng: number, ring: Array<[number, number]>): b
 
 /**
  * Rasterize building footprints into a gridN×gridN field of heights (metres),
- * aligned to the SAME lat/lng sampling the terrain uses (row = lat, col = lng,
+ * aligned to the SAME lat/lng sampling the mountains uses (row = lat, col = lng,
  * row 0 = south). Each cell takes the tallest building covering its centre, so
- * the city's skyline can be added on top of the bare-earth terrain.
+ * the city's skyline can be added on top of the bare-earth mountains.
  */
 export function rasterizeBuildings(
   buildings: BuildingPolygon[],

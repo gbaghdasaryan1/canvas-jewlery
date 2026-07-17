@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ContourArt } from "./ContourArt";
 
 /** Marketing hero banner — the top of the landing page. */
@@ -16,7 +17,7 @@ export function HomeHero() {
             <p>The home you'll never forget.</p>
           </div>
           <div className="home-hero-cta">
-            <a className="btn-primary lg" href="/design">Start Designing</a>
+            <Link className="btn-primary lg" to="/mountains">Start Designing</Link>
             <a className="btn-ghost lg" href="#gallery">Explore Gallery</a>
           </div>
           <div className="home-hero-trust">

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import styled, { css, keyframes } from "styled-components";
 
 /** Styled primitives for the /pendant designer. Colors come from the shared
@@ -23,7 +24,7 @@ export const TopBar = styled.header`
   background: var(--graphite);
 `;
 
-export const Brand = styled.a`
+export const Brand = styled(Link)`
   font-family: var(--display);
   font-size: 15px;
   letter-spacing: 0.14em;
@@ -43,7 +44,7 @@ export const TopSpacer = styled.div`
   flex: 1;
 `;
 
-export const NavLink = styled.a`
+export const NavLink = styled(Link)`
   font-size: 12px;
   color: var(--mist);
   text-decoration: none;

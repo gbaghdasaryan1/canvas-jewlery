@@ -1,16 +1,16 @@
-import type { TerrainGrid } from "@/entities/terrain/model/types";
+import type { mountainsGrid } from "@/entities/mountains/model/types";
 import { formatLatLng } from "@/shared/lib/format";
 
 interface ReadoutProps {
   lat: number;
   lng: number;
   areaKm: number;
-  terrain: TerrainGrid | null;
+  mountains: mountainsGrid | null;
 }
 
-export function Readout({ lat, lng, areaKm, terrain }: ReadoutProps) {
-  const relief = terrain ? Math.round(terrain.max - terrain.min) : null;
-  const flat = relief !== null && relief < 25 && terrain?.source === "dem";
+export function Readout({ lat, lng, areaKm, mountains }: ReadoutProps) {
+  const relief = mountains ? Math.round(mountains.max - mountains.min) : null;
+  const flat = relief !== null && relief < 25 && mountains?.source === "dem";
 
   return (
     <div className="readout">
@@ -21,7 +21,7 @@ export function Readout({ lat, lng, areaKm, terrain }: ReadoutProps) {
       <div className="row">
         <span>Relief (min–max)</span>
         <span>
-          {terrain ? `${Math.round(terrain.min)}–${Math.round(terrain.max)} m (Δ${relief})` : "—"}
+          {mountains ? `${Math.round(mountains.min)}–${Math.round(mountains.max)} m (Δ${relief})` : "—"}
         </span>
       </div>
       <div className="row">
@@ -33,8 +33,8 @@ export function Readout({ lat, lng, areaKm, terrain }: ReadoutProps) {
       <div className="row" style={{ border: "none", paddingBottom: 0 }}>
         <span>Source</span>
         <span className="src">
-          <span className={`dot ${terrain?.source === "dem" ? "" : "demo"}`} />
-          {terrain ? (terrain.source === "dem" ? "Live DEM (Copernicus)" : "Demo terrain (offline)") : "—"}
+          <span className={`dot ${mountains?.source === "dem" ? "" : "demo"}`} />
+          {mountains ? (mountains.source === "dem" ? "Live DEM (Copernicus)" : "Demo mountains (offline)") : "—"}
         </span>
       </div>
       {flat && <div className="flat-warn mono">Nearly flat here — try somewhere with more relief.</div>}

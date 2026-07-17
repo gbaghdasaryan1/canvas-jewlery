@@ -52,6 +52,10 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
       width,
       depth: width,
       base: Math.max(0.5, thickness),
+      // The skyline's vector mesh raises its frame to the relief depth (base +
+      // relief), not the relief plaque's fixed frame — centre the bail on that
+      // wall so it doesn't float above a shallow (e.g. streets) frame.
+      frameHeightMm: exportMesh ? relief : undefined,
       hangSize,
       hangRotation,
       hangHorizontal,

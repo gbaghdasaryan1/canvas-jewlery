@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
-import { useElevation } from "@/entities/terrain/api/useElevation";
+import { useElevation } from "@/entities/mountains/api/useElevation";
 import { METALS, buildShapeMesh, hangAnchor, hangPlaceLabel, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
@@ -9,9 +9,8 @@ import { estimatePrice, formatAMD } from "@/shared/lib/pricing";
 import { composeHeightField } from "@/shared/lib/heightField";
 import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 import { Panel } from "@/shared/ui/Panel";
-import { TerrainMap } from "@/widgets/terrain-map/TerrainMap";
+import { MountainsMap } from "@/widgets/mountains-map/MountainsMap";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
-import { StlPreview } from "@/widgets/stl-preview/StlPreview";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
@@ -51,7 +50,7 @@ export function Designer() {
   const qAreaKm = useDebouncedValue(areaKm, 450);
 
   const elevation = useElevation(qLat, qLng, qAreaKm);
-  const terrain = elevation.data ?? null;
+  const mountains = elevation.data ?? null;
   const buildings = useBuildings(qLat, qLng, qAreaKm, showBuildings);
 
   const structures = useMemo(
@@ -63,8 +62,8 @@ export function Designer() {
   );
 
   const heightNorm = useMemo(
-    () => (terrain ? composeHeightField(terrain.data, terrain.min, terrain.max, structures, smooth) : null),
-    [terrain, structures, smooth],
+    () => (mountains ? composeHeightField(mountains.data, mountains.min, mountains.max, structures, smooth) : null),
+    [mountains, structures, smooth],
   );
   const params = useMemo(
     () => toShapeParams(shape, { width, relief, thickness }),
@@ -95,8 +94,8 @@ export function Designer() {
     window.location.href = `mailto:hello@cairn.studio?subject=${subject}&body=${body}`;
   }
 
-  const viewer = elevation.isLoading && !terrain ? (
-    <div className="stage-msg mono">Reading terrain…</div>
+  const viewer = elevation.isLoading && !mountains ? (
+    <div className="stage-msg mono">Reading mountains…</div>
   ) : (
     <RingViewer
       heightNorm={viewerHeightNorm}
@@ -120,29 +119,6 @@ export function Designer() {
             <div className="stage">{viewer}</div>
           </div>
 
-          <div className="panel viewer dz-stl">
-            <div className="cap">STL preview · <b>print geometry</b></div>
-            <div className="stage">
-              {heightNorm ? (
-                <StlPreview
-                  shape={shape}
-                  heightNorm={heightNorm}
-                  width={width}
-                  relief={relief}
-                  thickness={thickness}
-                  jewelryType={jewelryType}
-                  hangPlace={hangPlace}
-                  hangSize={hangSize}
-                  hangRotation={hangRotation}
-                  hangHorizontal={hangHorizontal}
-                  metal={metal}
-                />
-              ) : (
-                <div className="stage-msg mono">No mesh yet</div>
-              )}
-            </div>
-          </div>
-
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
             <div className="dz-price-sub mono">made to order in 3–4 weeks</div>
@@ -160,12 +136,12 @@ export function Designer() {
           <Step n={1} title="Choose your place" hint="Search a spot, drop a pin, or nudge to frame it.">
             <LocationSearch />
             <Panel className="dz-mappanel" label={<>Map</>}>
-              <TerrainMap />
+              <MountainsMap />
             </Panel>
             {/* <div className="reliefrow">
               <div className="reliefwrap">
                 <ReliefPreview
-                  terrain={terrain}
+                  mountains={mountains}
                   smooth={smooth}
                   lat={lat}
                   lng={lng}
@@ -192,14 +168,14 @@ export function Designer() {
                   </button>
                 </div>
               </div>
-              <Readout lat={lat} lng={lng} areaKm={areaKm} terrain={terrain} />
+              <Readout lat={lat} lng={lng} areaKm={areaKm} mountains={mountains} />
             </div> */}
             <button
               className="dz-reread mono"
               onClick={() => elevation.refetch()}
               disabled={elevation.isFetching}
             >
-              {elevation.isFetching ? "Reading terrain…" : "↻ Re-read terrain"}
+              {elevation.isFetching ? "Reading mountains…" : "↻ Re-read mountains"}
             </button>
           </Step>
 

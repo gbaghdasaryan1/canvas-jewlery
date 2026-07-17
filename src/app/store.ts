@@ -47,7 +47,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   hangPlace: "top",
   hangSize: 1,
   hangRotation: 0,
-  hangHorizontal: false,
+  hangHorizontal: true,
   shape: "rectangle",
   areaKm: 40,
   width: 18, // mm — plaque side

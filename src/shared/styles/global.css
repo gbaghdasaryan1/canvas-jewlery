@@ -90,6 +90,17 @@ h1.display em { font-style: italic; color: var(--champagne); }
   color: var(--mist); background: rgba(13,11,8,0.7); border: 1px solid var(--line); padding: 3px 7px; border-radius: 6px; transition: 0.15s; }
 .relief-toggle:hover { border-color: var(--gold); color: var(--ivory); }
 .relief-toggle.on { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+
+/* Render-layers segmented control (skyline designer) */
+.layer-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; background: rgba(13, 11, 8, 0.5); border: 1px solid var(--line); border-radius: 12px; }
+.layer-seg-btn { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 6px 10px; cursor: pointer; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--mist); transition: 0.18s ease; }
+.layer-seg-btn:hover { color: var(--ivory); border-color: var(--gold); background: var(--graphite); }
+.layer-seg-btn .layer-seg-ico { display: flex; color: var(--gold); transition: transform 0.18s ease; }
+.layer-seg-btn:hover .layer-seg-ico { transform: translateY(-1px); }
+.layer-seg-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; }
+.layer-seg-btn.on { color: var(--ink); background: linear-gradient(180deg, var(--champagne), var(--gold)); border-color: var(--gold); box-shadow: 0 4px 14px -6px var(--gold), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.layer-seg-btn.on .layer-seg-ico { color: var(--ink); transform: none; }
+.layer-seg-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--gold); }
 .readout { flex: 1; font-family: var(--mono); font-size: 12px; color: var(--mist); display: flex; flex-direction: column; justify-content: center; gap: 9px; min-width: 0; }
 .readout .row { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line-soft); padding-bottom: 7px; }
 .readout .row span:first-child { color: var(--faint); letter-spacing: 0.06em; text-transform: uppercase; font-size: 10px; }

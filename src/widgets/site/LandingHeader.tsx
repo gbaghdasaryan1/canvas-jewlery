@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const PROMOS = [
   "Handcrafted to order — each piece is unique to your place",
@@ -30,17 +31,17 @@ export function LandingHeader() {
       </div>
       <header className="home-top">
         <div className="wrap">
-          <a className="home-brand" href="/">
+          <Link className="home-brand" to="/">
             <BrandMark />
             CAIRN
-          </a>
+          </Link>
           <nav className="home-nav">
             <a href="#collections">Collections</a>
             <a href="#gallery">Gallery</a>
-            <a href="/skylines">Skylines</a>
+            <Link to="/maps">maps</Link>
             <a href="#how">How it's made</a>
           </nav>
-          <a className="btn-primary" href="/design">Design yours</a>
+          <Link className="btn-primary" to="/mountains">Design yours</Link>
         </div>
       </header>
     </>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ContourArt } from "./ContourArt";
 
 interface Option {
@@ -9,7 +10,7 @@ interface Option {
 }
 
 const OPTIONS: Option[] = [
-  { shape: "rectangle", title: "Terrain Plaque", blurb: "A clean rectangular relief of your landscape.", tone: "stone", seed: 11 },
+  { shape: "rectangle", title: "mountains Plaque", blurb: "A clean rectangular relief of your landscape.", tone: "stone", seed: 11 },
   { shape: "circle", title: "Round Locket", blurb: "A soft disc of mountains or coastline.", tone: "sage", seed: 41 },
 ];
 
@@ -30,7 +31,7 @@ export function Collections() {
 
         <div className="options-grid">
           {OPTIONS.map((o) => (
-            <a key={o.shape} className="option-card" href={`/design?shape=${o.shape}`}>
+            <Link key={o.shape} className="option-card" to={`/mountains?shape=${o.shape}`}>
               <div className="option-art">
                 <ContourArt seed={o.seed} tone={o.tone} />
               </div>
@@ -39,7 +40,7 @@ export function Collections() {
                 <p className="option-blurb">{o.blurb}</p>
                 <span className="option-link">Design this →</span>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       </div>

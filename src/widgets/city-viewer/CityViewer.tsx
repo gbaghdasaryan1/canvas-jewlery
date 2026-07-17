@@ -259,12 +259,15 @@ export function CityViewer({
   // Pendant bail — the same drop loop RingViewer shows on the metal piece,
   // here in the map's plate silver so the hang point previews in this view
   // too. Mid-height of the plate side, tip into the wall. Preview-only.
-  const bailR = WORLD * 0.075 * hangSize;
-  const bailTube = bailR * 0.4;
+  const bailR = WORLD * 0.095 * hangSize;
+  const bailTube = bailR * 0.2;
   const bailCurve = useMemo(() => new DropBailCurve(bailR), [bailR]);
   const outLen = hang ? Math.hypot(hang.x, hang.z) || 1 : 1;
   const ox = hang ? hang.x / outLen : 0;
   const oz = hang ? hang.z / outLen : 1;
+  // Centre the bail on the frame wall (which rises 0..frameH at the relief
+  // depth), so it stays mid-frame as the relief slider changes.
+  const bailY = frameH / 2;
 
   useEffect(() => () => buildingGeo?.dispose(), [buildingGeo]);
   useEffect(() => () => roadGeo?.dispose(), [roadGeo]);
@@ -297,7 +300,7 @@ export function CityViewer({
         <mesh
           position={[
             hang.x * WORLD + ox * bailR * 0.75,
-            (frameH - plateH) / 2,
+            bailY,
             hang.z * WORLD + oz * bailR * 0.75,
           ]}
           // YXZ: roll upright around the tip axis first, then yaw outward —

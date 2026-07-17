@@ -7,7 +7,7 @@ function radiusFor(cls: string): number {
 
 /**
  * Rasterize OSM street polylines into a gridN×gridN 0/1 mask, aligned to the
- * SAME lat/lng sampling as the terrain and building rasters (row = lat,
+ * SAME lat/lng sampling as the mountains and building rasters (row = lat,
  * col = lng, row 0 = south). Each segment is walked in half-cell steps so
  * diagonal roads leave no gaps.
  */

@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { GRID } from "@/shared/config/presets";
 import { smoothGrid } from "@/shared/lib/smooth";
-import type { TerrainGrid } from "@/entities/terrain/model/types";
+import type { mountainsGrid } from "@/entities/mountains/model/types";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 
 interface ReliefPreviewProps {
-  terrain: TerrainGrid | null;
+  mountains: mountainsGrid | null;
   smooth: number;
   /** Patch centre + size, needed to project map features onto the canvas. */
   lat: number;
@@ -33,9 +33,9 @@ function roadWidth(cls: string): number {
   }
 }
 
-/** Shaded-relief + contour rendering of the sampled patch (map -> terrain). */
+/** Shaded-relief + contour rendering of the sampled patch (map -> mountains). */
 export function ReliefPreview({
-  terrain,
+  mountains,
   smooth,
   lat,
   lng,
@@ -50,13 +50,13 @@ export function ReliefPreview({
     if (!cv) return;
     const ctx = cv.getContext("2d")!;
     const S = cv.width;
-    if (!terrain) {
+    if (!mountains) {
       ctx.clearRect(0, 0, S, S);
       return;
     }
-    const H = smoothGrid(terrain.data, smooth); // round off sharp ridges
+    const H = smoothGrid(mountains.data, smooth); // round off sharp ridges
     const N = GRID;
-    const span = terrain.max - terrain.min || 1;
+    const span = mountains.max - mountains.min || 1;
     const img = ctx.createImageData(S, S);
     const lx = -0.6, ly = -0.7, lz = 0.8;
 
@@ -74,7 +74,7 @@ export function ReliefPreview({
         let nx = (-ex / span) * 6, ny = (-ey / span) * 6;
         const il = Math.hypot(nx, ny, 1);
         const sh = Math.max(0, (nx * lx + ny * ly + 1 * lz) / il);
-        const t = (e - terrain.min) / span;
+        const t = (e - mountains.min) / span;
         const o = (py * S + px) * 4;
         img.data[o] = 24 + t * 125 + sh * 60;
         img.data[o + 1] = 27 + t * 135 + sh * 65;
@@ -89,7 +89,7 @@ export function ReliefPreview({
     ctx.globalAlpha = 0.4;
     const levels = 7;
     for (let L = 1; L < levels; L++) {
-      const lev = terrain.min + (span * L) / levels;
+      const lev = mountains.min + (span * L) / levels;
       for (let py = 0; py < S - 2; py += 2)
         for (let px = 0; px < S - 2; px += 2) {
           const gx = (px / S) * (N - 1), gy = (py / S) * (N - 1);
@@ -101,7 +101,7 @@ export function ReliefPreview({
     ctx.restore();
 
     // Map overlays (buildings then streets) — projected to match the relief
-    // (top = south, exactly as the terrain grid is sampled).
+    // (top = south, exactly as the mountains grid is sampled).
     if ((streets && streets.length) || (buildings && buildings.length)) {
       const dLat = areaKm / 111;
       const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -152,7 +152,7 @@ export function ReliefPreview({
         ctx.restore();
       }
     }
-  }, [terrain, smooth, lat, lng, areaKm, streets, buildings]);
+  }, [mountains, smooth, lat, lng, areaKm, streets, buildings]);
 
   return <canvas ref={ref} className="relief" width={264} height={264} />;
 }

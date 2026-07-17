@@ -18,18 +18,18 @@ Use `http://host.docker.internal:5174/...` AND temporarily add
 
 ## Flows worth driving
 
-- `/skylines` — waits on "Reading the city…" (Overpass fetch, ~20 s for
+- `/maps` — waits on "Reading the city…" (Overpass fetch, ~20 s for
   Yerevan default). The 3D city viewer is the first `<canvas>`; zoom out
   with mouse-wheel events on its center to see the whole plate. Shape
   buttons (Rectangle/Heart/Circle) re-clip live. "Download STL" fires a
   real download (exercises `buildCityMesh`).
-- `/design` — Google Maps key is absent/broken in dev: the map shows an
-  error, but terrain falls back to procedural and the metal plaque still
-  renders ("Reading terrain…" → viewer). Shape buttons work the same.
+- `/mountains` — Google Maps key is absent/broken in dev: the map shows an
+  error, but mountains falls back to procedural and the metal plaque still
+  renders ("Reading mountains…" → viewer). Shape buttons work the same.
 
 ## Gotchas
 
-- Console always has a favicon 404; /design has Google Maps errors
+- Console always has a favicon 404; /mountains has Google Maps errors
   without a billing-enabled key. Both pre-existing noise.
 - Overpass mirrors are rate-limited: repeated reloads can stall the
   city fetch.

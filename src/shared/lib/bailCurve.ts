@@ -30,6 +30,10 @@ export interface BailMeshParams {
   depth: number;
   /** Plate base thickness in mm (the exported plate's bottom is y = 0). */
   base: number;
+  /** Frame-wall height above the base, in mm. The bail centres on the wall at
+      (base + frameHeightMm) / 2. Defaults to the relief plaque's fixed frame;
+      the skyline passes its relief depth so the loop tracks the shorter wall. */
+  frameHeightMm?: number;
   hangSize?: number;
   /** Yaw offset in degrees, added atop the outward-facing angle. */
   hangRotation?: number;
@@ -44,13 +48,14 @@ export interface BailMeshParams {
  * the result is a standard multi-shell STL (slicers/casting prep union it).
  */
 export function buildBailMesh({
-  hang, width, depth, base, hangSize = 1, hangRotation = 0, hangHorizontal = false,
+  hang, width, depth, base, frameHeightMm = FRAME_HEIGHT_MM,
+  hangSize = 1, hangRotation = 0, hangHorizontal = false,
 }: BailMeshParams): RingMeshData {
-  const r = width * 0.075 * hangSize;
+  const r = width * 0.095 * hangSize;
   const outLen = Math.hypot(hang.x, hang.z) || 1;
   const ox = hang.x / outLen;
   const oz = hang.z / outLen;
-  const geo = new THREE.TubeGeometry(new DropBailCurve(r), 48, r * 0.4, 10, true);
+  const geo = new THREE.TubeGeometry(new DropBailCurve(r), 48, r * 0.2, 10, true);
   const m = new THREE.Matrix4().makeRotationFromEuler(
     // YXZ: roll upright around the tip axis first, then yaw outward — same
     // chain-ready orientation as the viewers.
@@ -63,7 +68,7 @@ export function buildBailMesh({
   );
   m.setPosition(
     hang.x * width + ox * r * 0.75,
-    (base + FRAME_HEIGHT_MM) / 2,
+    (base + frameHeightMm) / 2,
     hang.z * depth + oz * r * 0.75,
   );
   geo.applyMatrix4(m);

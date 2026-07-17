@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { LandingHeader } from "./LandingHeader";
 import { HomeHero } from "./HomeHero";
 import { HeroStory } from "./HeroStory";
@@ -20,7 +21,7 @@ export function Landing() {
         <div className="wrap home-final-inner">
           <h2 className="home-h2">Your place, made to keep.</h2>
           <p className="section-sub">It takes about a minute to design. Nothing to install.</p>
-          <a className="btn-primary lg" href="/design">Start designing</a>
+          <Link className="btn-primary lg" to="/mountains">Start designing</Link>
         </div>
       </section>
 

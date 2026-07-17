@@ -24,7 +24,6 @@ export const PRESETS: Preset[] = [
   // North America
   { name: "Grand Canyon",  lat:  36.2051, lng:-113.0545, areaKm: 14 },
   { name: "Half Dome",     lat:  37.7459, lng:-119.5332, areaKm: 2 },
-  { name: "Matterhorn", lat: 45.9765738, lng: 7.6584519, areaKm: 6.7 },
   // Cities — OSM building footprints sculpted onto the relief (buildings layer auto-on)
   { name: "Yerevan",       lat:  40.1776, lng:  44.5126, areaKm: 0.5, city: true },
   { name: "Manhattan",     lat:  40.7549, lng: -73.9840, areaKm: 0.5, city: true },
@@ -32,4 +31,4 @@ export const PRESETS: Preset[] = [
   { name: "Hong Kong",     lat:  22.2799, lng: 114.1588, areaKm: 0.5, city: true },
 ];
 
-export const GRID = 55; // elevation samples per axis
+export const GRID = 150; // elevation samples per axis
