@@ -568,3 +568,57 @@ body { -webkit-tap-highlight-color: transparent; }
 /* secondary button (Download STL) as a light ghost */
 .design-app .btn { border-color: var(--paper-line); color: var(--ink-1); background: transparent; }
 .design-app .btn:hover { border-color: var(--bronze); color: var(--bronze); background: rgba(116,128,141,0.08); }
+
+/* ── Order modal (phone → OTP → order) ────────────────────────────────
+   Rendered via portal to <body>, so it sits outside .design-app and styles
+   itself on the light editorial palette (tokens live on :root). */
+.om-backdrop {
+  position: fixed; inset: 0; z-index: 4000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(20, 24, 30, 0.5); backdrop-filter: blur(6px);
+  animation: om-fade 0.16s ease;
+}
+.om-modal {
+  position: relative; width: 100%; max-width: 420px;
+  background: var(--card); color: var(--ink-2);
+  border: 1px solid var(--paper-line); border-radius: 18px;
+  padding: 30px 28px 28px; box-shadow: 0 24px 60px rgba(18, 22, 28, 0.32);
+  animation: om-rise 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes om-fade { from { opacity: 0; } }
+@keyframes om-rise { from { opacity: 0; transform: translateY(12px); } }
+.om-x {
+  position: absolute; top: 14px; right: 14px; width: 30px; height: 30px;
+  display: grid; place-items: center; border-radius: 8px;
+  border: none; background: transparent; color: var(--ink-3);
+  font-size: 22px; line-height: 1; cursor: pointer; transition: 0.15s;
+}
+.om-x:hover:not(:disabled) { background: var(--paper-2); color: var(--ink-1); }
+.om-x:disabled { opacity: 0.4; cursor: default; }
+.om-eyebrow { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--bronze); }
+.om-title { font-family: var(--display); font-size: 24px; color: var(--ink-1); margin: 6px 0 8px; }
+.om-sub { font-size: 14px; line-height: 1.5; color: var(--ink-2); margin-bottom: 20px; }
+.om-sub b { color: var(--ink-1); font-weight: 600; }
+.om-label { display: block; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.om-input {
+  width: 100%; box-sizing: border-box; background: var(--paper); color: var(--ink-1);
+  border: 1px solid var(--paper-line); border-radius: 11px;
+  padding: 13px 14px; font-size: 15px; outline: none; transition: border-color 0.15s;
+}
+.om-input::placeholder { color: var(--ink-3); }
+.om-input:focus { border-color: var(--bronze); }
+.om-code { letter-spacing: 0.5em; text-align: center; font-size: 22px; padding: 14px; }
+.om-error { color: #c0392b; font-size: 12px; margin-top: 10px; }
+.om-submit { width: 100%; margin-top: 18px; justify-content: center; }
+.om-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--bronze); font-size: 12px; text-decoration: underline; text-underline-offset: 2px;
+}
+.om-link:disabled { color: var(--ink-3); cursor: default; text-decoration: none; }
+.om-resend { display: block; width: 100%; text-align: center; margin-top: 14px; }
+.om-done { text-align: center; padding-top: 6px; }
+.om-check {
+  width: 54px; height: 54px; margin: 0 auto 14px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 26px; font-weight: 700;
+  background: rgba(116, 128, 141, 0.14); color: var(--bronze);
+}

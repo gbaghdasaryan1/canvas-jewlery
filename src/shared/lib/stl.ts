@@ -36,9 +36,14 @@ export function buildBinarySTL({ positions, indices }: RingMeshData): ArrayBuffe
   return buf;
 }
 
+/** Wrap indexed geometry in a binary-STL Blob (e.g. to attach to an order). */
+export function buildStlBlob(data: RingMeshData): Blob {
+  return new Blob([buildBinarySTL(data)], { type: "model/stl" });
+}
+
 /** Trigger a browser download of an STL blob. */
 export function downloadSTL(data: RingMeshData, filename: string): void {
-  const blob = new Blob([buildBinarySTL(data)], { type: "model/stl" });
+  const blob = buildStlBlob(data);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

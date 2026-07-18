@@ -1,13 +1,15 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesigner } from "@/app/store";
-import { METALS, buildShapeMesh, hangAnchors, hangAxisLabel, hangPlaceLabel, isRing, toShapeParams } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useStreets } from "@/entities/streets/api/useStreets";
 import { rasterizeStreets } from "@/entities/streets/lib/rasterizeStreets";
 import { GRID, PRESETS } from "@/shared/config/presets";
-import { estimatePrice, formatAMD } from "@/shared/lib/pricing";
+import { estimatePrice } from "@/shared/lib/pricing";
 import { composeCityField } from "@/shared/lib/heightField";
+import { buildStlBlob } from "@/shared/lib/stl";
+import { slugify } from "@/shared/lib/format";
 import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 import { Panel } from "@/shared/ui/Panel";
 import { CityMap } from "@/widgets/city-map/CityMap";
@@ -18,6 +20,8 @@ import { StlPreview } from "@/widgets/stl-preview/StlPreview";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
 import { ExportButton } from "@/features/stl-export/ExportButton";
+import { buildExportMesh } from "@/features/stl-export/buildExportMesh";
+import { OrderModal, type OrderPayload } from "@/features/order";
 import type { Shape } from "@/entities/ring/model/types";
 import { Step } from "./Designer";
 
@@ -142,22 +146,32 @@ export function SkylineDesigner() {
     });
   }
 
-  function order() {
-    const price = heightNorm
-      ? estimatePrice(buildShapeMesh(shape, heightNorm, params), metal)
-      : null;
-    const subject = encodeURIComponent(`CAIRN — ${name} skyline ${SHAPE_LABEL[shape]} ${jewelryType}`);
-    const body = encodeURIComponent(
-      `I'd like to order this piece:\n\n` +
-      `Place: ${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})\n` +
-      `Type: ${jewelryType}\n` +
-      (jewelryType === "pendant" ? `Hanging point: ${hangPlaceLabel(hangPlace)}\n` : "") +
-      (jewelryType === "bracelet" ? `Hanging points: ${hangAxisLabel(hangPlace)}\n` : "") +
-      `Form: skyline ${SHAPE_LABEL[shape]}\n` +
-      `Metal: ${METALS[metal].label}\n` +
-      `Estimate: ${price ? formatAMD(price.amd) : "—"}\n`,
-    );
-    window.location.href = `mailto:hello@cairn.studio?subject=${subject}&body=${body}`;
+  const [orderOpen, setOrderOpen] = useState(false);
+
+  // Built lazily on confirm. The STL comes from the same vector city mesh the
+  // canvas shows (via exportMesh), so the ordered file matches the preview.
+  function buildPayload(): OrderPayload | null {
+    if (!heightNorm) return null;
+    const mesh = buildExportMesh({
+      shape, heightNorm, width, relief, thickness,
+      jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+      exportMesh,
+    });
+    if (!mesh) return null;
+    const price = estimatePrice(buildShapeMesh(shape, heightNorm, params), metal);
+    return {
+      stl: buildStlBlob(mesh),
+      fileName: `cairn-${slugify(name)}-skyline-${SHAPE_LABEL[shape]}.stl`,
+      options: {
+        product: "skyline",
+        place: { name, lat, lng },
+        jewelryType, shape, metal,
+        width, relief, thickness, areaKm, smooth,
+        hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+        overlays: { buildings: layerMode !== "streets", streets: layerMode !== "buildings" },
+        estimate: { amd: price.amd, grams: price.grams },
+      },
+    };
   }
 
   const hangs = hangAnchors(shape, jewelryType, hangPlace);
@@ -248,13 +262,24 @@ export function SkylineDesigner() {
             <div className="dz-place mono">{name}</div>
             <div className="dz-price-sub mono">made to order in 3–4 weeks</div>
             <div className="dz-cta">
-              <button className="btn-primary lg dz-order" onClick={order}>
+              <button
+                className="btn-primary lg dz-order"
+                onClick={() => setOrderOpen(true)}
+                disabled={!heightNorm}
+              >
                 Order this piece
               </button>
               <ExportButton heightNorm={heightNorm} tag="skyline" exportMesh={exportMesh} />
             </div>
           </div>
         </aside>
+
+        <OrderModal
+          open={orderOpen}
+          onClose={() => setOrderOpen(false)}
+          summary={<>Ordering your <b>{name}</b> skyline {SHAPE_LABEL[shape]} in {METALS[metal].label}.</>}
+          buildPayload={buildPayload}
+        />
 
         {/* Right — guided configuration */}
         <div className="dz-config">
