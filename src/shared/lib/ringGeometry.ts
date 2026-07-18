@@ -25,6 +25,9 @@ export interface SlabParams {
   /** vertices per axis on the top surface */
   resX: number;
   resZ: number;
+  /** Raise the perimeter frame wall. Defaults to true; rings pass false so the
+      relief sits flush on the band with no bezel. */
+  frame?: boolean;
 }
 
 export interface RingMeshData {
@@ -174,7 +177,7 @@ export function buildSlabMesh(heightNorm: Float32Array, p: SlabParams): RingMesh
     for (let i = 0; i < VX; i++) {
       const x = (i / NX - 0.5) * p.width;
       const edge = Math.min(p.width / 2 - Math.abs(x), p.depth / 2 - Math.abs(z));
-      const y = edge <= FRAME_MM
+      const y = p.frame !== false && edge <= FRAME_MM
         ? p.base + FRAME_HEIGHT_MM
         : p.base + p.amp * sampleGrid(heightNorm, i / NX, j / NZ);
       positions.push(x, y, z);
@@ -250,12 +253,35 @@ export function circleBoundary(steps: number): Array<{ x: number; z: number }> {
 }
 
 /**
+ * Normalized octagon outline (fits [-0.5, 0.5], corners chamfered by fraction
+ * `k` of the side — 0.21 ≈ a regular octagon), sampled counterclockwise to
+ * `steps` points so the relief fan has enough angular resolution. Matches the
+ * signet ring's flat plate top.
+ */
+export function octagonBoundary(steps = 160, k = 0.21): Array<{ x: number; z: number }> {
+  const c: Array<[number, number]> = [
+    [0.5 - k, -0.5], [0.5, -0.5 + k], [0.5, 0.5 - k], [0.5 - k, 0.5],
+    [-0.5 + k, 0.5], [-0.5, 0.5 - k], [-0.5, -0.5 + k], [-0.5 + k, -0.5],
+  ];
+  const out: Array<{ x: number; z: number }> = [];
+  const per = Math.max(1, Math.round(steps / 8));
+  for (let i = 0; i < 8; i++) {
+    const a = c[i], b = c[(i + 1) % 8];
+    for (let j = 0; j < per; j++) {
+      const t = j / per;
+      out.push({ x: a[0] + (b[0] - a[0]) * t, z: a[1] + (b[1] - a[1]) * t });
+    }
+  }
+  return out;
+}
+
+/**
  * Build a watertight flat relief plaque whose outline is given by `outline`
  * (normalized to [-0.5, 0.5], any star-shaped closed loop). The top face is
  * mountains-displaced and triangulated as a fan from the centroid out to the
  * outline; a flat base and a wall following the outline close it into a solid.
  */
-function buildFanPlaque(
+export function buildFanPlaque(
   heightNorm: Float32Array,
   p: SlabParams,
   outline: Array<{ x: number; z: number }>,
@@ -286,7 +312,7 @@ function buildFanPlaque(
   };
 
   const yOf = (nx: number, nz: number) =>
-    distToOutline(nx * p.width, nz * p.depth) <= FRAME_MM
+    p.frame !== false && distToOutline(nx * p.width, nz * p.depth) <= FRAME_MM
       ? p.base + FRAME_HEIGHT_MM
       : p.base + p.amp * sampleGrid(heightNorm, nx + 0.5, nz + 0.5);
 
@@ -361,4 +387,75 @@ export function buildHeartMesh(heightNorm: Float32Array, p: SlabParams): RingMes
 /** Round (disc) relief plaque. */
 export function buildCircleMesh(heightNorm: Float32Array, p: SlabParams): RingMeshData {
   return buildFanPlaque(heightNorm, p, circleBoundary(Math.max(120, p.resX * 2)));
+}
+
+/** Flat shank proportions relative to the plaque side (mm). Shared by the
+    viewer and the exported solid so preview and print stay in sync. */
+export const ringBandDims = (width: number) => ({
+  innerR: width * 0.48,
+  wall: width * 0.07,
+  bandWidth: width * 0.21,
+});
+
+export interface RingBandParams {
+  /** inner radius of the finger hole, in mm */
+  innerR: number;
+  /** radial wall thickness (outer − inner), in mm */
+  wall: number;
+  /** band width along the finger axis (Z), in mm */
+  bandWidth: number;
+  /** angular segments around the band */
+  steps?: number;
+}
+
+/**
+ * A plain flat wedding-style band: a rectangular cross-section (radial `wall` ×
+ * axial `bandWidth`) swept around the finger. The band circle lies in the X–Y
+ * plane with the finger axis along +Z, so its top crest (max +Y) runs along Z —
+ * a relief plaque set at y = 0 rests flush on that crest. Watertight indexed
+ * mesh, matching the rest of the app's builders. Used as the ring's shank in the
+ * viewer and merged into the exported solid.
+ *
+ * Each of the four faces (outer / inner cylinder walls + the two flat sides)
+ * gets its OWN ring of vertices, so `computeVertexNormals` keeps the 90° corner
+ * edges crisp — the band reads as a flat plate, not a rounded tube — while each
+ * face still shades smoothly around the circumference.
+ */
+export function buildRingBandMesh({ innerR, wall, bandWidth, steps = 128 }: RingBandParams): RingMeshData {
+  const outerR = innerR + wall;
+  const hw = bandWidth / 2;
+  // Closed rectangular cross-section in (r, z), counterclockwise.
+  const cs: Array<[number, number]> = [
+    [innerR, -hw],
+    [outerR, -hw],
+    [outerR, hw],
+    [innerR, hw],
+  ];
+  const M = cs.length;
+  const positions: number[] = [];
+  const indices: number[] = [];
+  // One face per cross-section edge: a strip between the ring at corner k and
+  // the ring at corner k+1, each with a dedicated (un-shared) vertex loop.
+  for (let k = 0; k < M; k++) {
+    const [ra, za] = cs[k];
+    const [rb, zb] = cs[(k + 1) % M];
+    const base = positions.length / 3;
+    for (let s = 0; s < steps; s++) {
+      const ang = (s / steps) * Math.PI * 2;
+      const c = Math.cos(ang), sn = Math.sin(ang);
+      positions.push(c * ra, sn * ra, za); // ring A (corner k)
+    }
+    for (let s = 0; s < steps; s++) {
+      const ang = (s / steps) * Math.PI * 2;
+      const c = Math.cos(ang), sn = Math.sin(ang);
+      positions.push(c * rb, sn * rb, zb); // ring B (corner k+1)
+    }
+    const rA = (s: number) => base + (s % steps);
+    const rB = (s: number) => base + steps + (s % steps);
+    for (let s = 0; s < steps; s++) {
+      const s2 = (s + 1) % steps;
+      indices.push(rA(s), rA(s2), rB(s), rB(s), rA(s2), rB(s2));
+    }
+  }
+  return { positions: new Float32Array(positions), indices: new Uint32Array(indices) };
 }

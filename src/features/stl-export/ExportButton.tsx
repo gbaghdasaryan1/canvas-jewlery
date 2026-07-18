@@ -25,13 +25,13 @@ interface ExportButtonProps {
 export function ExportButton({ heightNorm, tag, exportMesh }: ExportButtonProps) {
   const {
     shape, width, relief, thickness, name,
-    jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal,
+    jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
   } = useDesigner();
 
   function exportStl() {
     const mesh = buildExportMesh({
       shape, heightNorm, width, relief, thickness,
-      jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, exportMesh,
+      jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, exportMesh,
     });
     if (!mesh) return;
     const fileName = `cairn-${slugify(name)}-${tag ? `${tag}-` : ""}${SUFFIX[shape]}.stl`;

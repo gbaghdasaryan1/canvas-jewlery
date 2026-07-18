@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
 import { useElevation } from "@/entities/mountains/api/useElevation";
-import { METALS, buildShapeMesh, hangAnchor, hangPlaceLabel, toShapeParams } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, hangAnchors, hangAxisLabel, hangPlaceLabel, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { GRID } from "@/shared/config/presets";
@@ -39,7 +39,7 @@ export function Step({ n, title, hint, children }: { n: number; title: string; h
 
 export function Designer() {
   const {
-    lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, shape, areaKm, width, relief, thickness, smooth,
+    lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth,
     showBuildings, metal,
   } = useDesigner();
   // Debounce the location inputs feeding the network queries: dragging the
@@ -66,8 +66,8 @@ export function Designer() {
     [mountains, structures, smooth],
   );
   const params = useMemo(
-    () => toShapeParams(shape, { width, relief, thickness }),
-    [shape, width, relief, thickness],
+    () => toShapeParams(shape, { width, relief, thickness }, undefined, !isRing(jewelryType)),
+    [shape, width, relief, thickness, jewelryType],
   );
 
   // Let React deprioritize the mesh rebuild while a slider is mid-drag —
@@ -87,6 +87,7 @@ export function Designer() {
       `Place: ${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})\n` +
       `Type: ${jewelryType}\n` +
       (jewelryType === "pendant" ? `Hanging point: ${hangPlaceLabel(hangPlace)}\n` : "") +
+      (jewelryType === "bracelet" ? `Hanging points: ${hangAxisLabel(hangPlace)}\n` : "") +
       `Form: ${SHAPE_LABEL[shape]}\n` +
       `Metal: ${METALS[metal].label}\n` +
       `Estimate: ${price ? formatAMD(price.amd) : "—"}\n`,
@@ -102,10 +103,12 @@ export function Designer() {
       shape={shape}
       params={viewerParams}
       metal={metal}
-      hang={jewelryType === "pendant" ? hangAnchor(shape, hangPlace) : null}
+      hangs={hangAnchors(shape, jewelryType, hangPlace)}
       hangSize={hangSize}
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
+      jewelryType={jewelryType}
+      ringRotation={ringRotation}
     />
   );
 

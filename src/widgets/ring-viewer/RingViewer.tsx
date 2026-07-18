@@ -2,9 +2,9 @@ import { useEffect, useMemo } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { FRAME_HEIGHT_MM, type SlabParams } from "@/shared/lib/ringGeometry";
+import { FRAME_HEIGHT_MM, buildRingBandMesh, ringBandDims, type SlabParams } from "@/shared/lib/ringGeometry";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
-import { METALS, buildShapeMesh, type Metal, type Shape } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
 
 function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
   const W = 128, H = 512;
@@ -59,14 +59,20 @@ interface RingMeshProps {
   shape: Shape;
   params: SlabParams;
   metal: Metal;
-  /** Pendant bail anchor in the normalized [-0.5, 0.5] plane; null hides it. */
-  hang?: { x: number; z: number } | null;
+  /** Bail anchors in the normalized [-0.5, 0.5] plane; empty hides them.
+      Pendant = one, bracelet = two parallel (left + right). */
+  hangs?: { x: number; z: number }[];
   /** Bail loop scale multiplier — default 1. */
   hangSize?: number;
   /** Bail loop yaw offset in degrees, added atop the outward-facing angle. */
   hangRotation?: number;
   /** Rotate bail 90° for chain attachment (perpendicular to plate surface). */
   hangHorizontal?: boolean;
+  /** What the piece is worn as. "ring" swaps the bail/frame for a flat shank
+      band under the plaque; everything else keeps the bezel + bail. */
+  jewelryType?: JewelryType;
+  /** Ring only — yaw of the plaque on the band, in degrees. */
+  ringRotation?: number;
 }
 
 /**
@@ -84,10 +90,13 @@ function contrastCurve(h: Float32Array): Float32Array {
   return out;
 }
 
-function RingMesh({ heightNorm, shape, params, metal, hang, hangSize = 1, hangRotation = 0, hangHorizontal = false }: RingMeshProps) {
+function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, jewelryType = "pendant", ringRotation = 0 }: RingMeshProps) {
+  const ring = isRing(jewelryType);
+  // Rings show the raw relief — the smoothstep contrast curve is skipped so the
+  // profile matches the exported/priced mesh exactly.
   const heightContrast = useMemo(
-    () => (heightNorm ? contrastCurve(heightNorm) : null),
-    [heightNorm],
+    () => (heightNorm ? (ring ? heightNorm : contrastCurve(heightNorm)) : null),
+    [heightNorm, ring],
   );
 
   // `offset` is what geo.center() subtracted — the bail marker is positioned
@@ -119,6 +128,19 @@ function RingMesh({ heightNorm, shape, params, metal, hang, hangSize = 1, hangRo
 
   useEffect(() => () => material.dispose(), [material]);
 
+  const ringBand = useMemo(() => {
+    if (!ring) return null;
+    const dims = ringBandDims(params.width);
+    const { positions, indices } = buildRingBandMesh(dims);
+    const topLocalY = dims.innerR + dims.wall;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    geo.computeVertexNormals();
+    return { geo, topLocalY };
+  }, [ring, params.width]);
+  useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
+
   // Pendant bail: a HORIZONTAL water-drop loop protruding from the outer
   // side face at the hang point, at mid-height of the side — pointed tip
   // into the wall, round end out. Same metal as the piece. Preview-only —
@@ -126,33 +148,47 @@ function RingMesh({ heightNorm, shape, params, metal, hang, hangSize = 1, hangRo
   const bailR = params.width * 0.095 * hangSize;
   const bailTube = bailR * 0.2;
   const bailCurve = useMemo(() => new DropBailCurve(bailR), [bailR]);
-  const outLen = hang ? Math.hypot(hang.x, hang.z) || 1 : 1;
-  const ox = hang ? hang.x / outLen : 0;
-  const oz = hang ? hang.z / outLen : 1;
   return (
     <>
-      <mesh geometry={geometry} material={material} />
-      {hang && heightContrast && (
+      {/* Ring plaque yaws on the band so the wearer can aim the relief; every
+          other type renders the plaque unrotated. */}
+      <group rotation={[0, ring ? (ringRotation * Math.PI) / 180 : 0, 0]}>
+        <mesh geometry={geometry} material={material} />
+      </group>
+      {ringBand && (
         <mesh
+          geometry={ringBand.geo}
           material={material}
-          position={[
-            hang.x * params.width + ox * bailR * 0.75 - offset.x,
-            (params.base + FRAME_HEIGHT_MM) / 2 - offset.y,
-            hang.z * params.depth + oz * bailR * 0.75 - offset.z,
-          ]}
-          // YXZ: roll the loop upright around its own tip axis first, then
-          // yaw it outward — the chain hole stays tangent to the plate edge
-          // on every side, so a chain threads straight through.
-          rotation={[
-            hangHorizontal ? Math.PI / 2 : 0,
-            Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
-            0,
-            "YXZ",
-          ]}
-        >
-          <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
-        </mesh>
+          position={[0, -offset.y - ringBand.topLocalY, 0]}
+        />
       )}
+      {heightContrast && hangs.map((hang, i) => {
+        const outLen = Math.hypot(hang.x, hang.z) || 1;
+        const ox = hang.x / outLen;
+        const oz = hang.z / outLen;
+        return (
+          <mesh
+            key={i}
+            material={material}
+            position={[
+              hang.x * params.width + ox * bailR * 0.75 - offset.x,
+              (params.base + FRAME_HEIGHT_MM) / 2 - offset.y,
+              hang.z * params.depth + oz * bailR * 0.75 - offset.z,
+            ]}
+            // YXZ: roll the loop upright around its own tip axis first, then
+            // yaw it outward — the chain hole stays tangent to the plate edge
+            // on every side, so a chain threads straight through.
+            rotation={[
+              hangHorizontal ? Math.PI / 2 : 0,
+              Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
+              0,
+              "YXZ",
+            ]}
+          >
+            <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
+          </mesh>
+        );
+      })}
     </>
   );
 }

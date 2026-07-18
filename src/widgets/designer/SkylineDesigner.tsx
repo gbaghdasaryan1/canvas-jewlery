@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesigner } from "@/app/store";
-import { METALS, buildShapeMesh, hangAnchor, hangPlaceLabel, toShapeParams } from "@/entities/ring/model/types";
+import { METALS, buildShapeMesh, hangAnchors, hangAxisLabel, hangPlaceLabel, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useStreets } from "@/entities/streets/api/useStreets";
@@ -71,7 +71,7 @@ const STREETS_RELIEF_MM = 1.15;
 const DEFAULT_RELIEF_MM = 4;
 
 export function SkylineDesigner() {
-  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, shape, areaKm, width, relief, thickness, smooth, metal, setLocation, setRelief } =
+  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth, metal, setLocation, setRelief } =
     useDesigner();
 
   // Stage view: "map" renders the fetched city in the Mapbox map's style
@@ -115,8 +115,8 @@ export function SkylineDesigner() {
   }, [buildingField, streetField, smooth, layerMode]);
 
   const params = useMemo(
-    () => toShapeParams(shape, { width, relief, thickness }),
-    [shape, width, relief, thickness],
+    () => toShapeParams(shape, { width, relief, thickness }, undefined, !isRing(jewelryType)),
+    [shape, width, relief, thickness, jewelryType],
   );
 
   const viewerHeightNorm = useDeferredValue(heightNorm);
@@ -152,6 +152,7 @@ export function SkylineDesigner() {
       `Place: ${name} (${lat.toFixed(4)}, ${lng.toFixed(4)})\n` +
       `Type: ${jewelryType}\n` +
       (jewelryType === "pendant" ? `Hanging point: ${hangPlaceLabel(hangPlace)}\n` : "") +
+      (jewelryType === "bracelet" ? `Hanging points: ${hangAxisLabel(hangPlace)}\n` : "") +
       `Form: skyline ${SHAPE_LABEL[shape]}\n` +
       `Metal: ${METALS[metal].label}\n` +
       `Estimate: ${price ? formatAMD(price.amd) : "—"}\n`,
@@ -159,7 +160,7 @@ export function SkylineDesigner() {
     window.location.href = `mailto:hello@cairn.studio?subject=${subject}&body=${body}`;
   }
 
-  const hang = jewelryType === "pendant" ? hangAnchor(shape, hangPlace) : null;
+  const hangs = hangAnchors(shape, jewelryType, hangPlace);
 
   const relevantLoading =
     (layerMode !== "streets" && buildings.isLoading) ||
@@ -186,7 +187,7 @@ export function SkylineDesigner() {
       widthMm={width}
       thicknessMm={thickness}
       reliefMm={relief}
-      hang={hang}
+      hangs={hangs}
       hangSize={hangSize}
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
@@ -198,10 +199,12 @@ export function SkylineDesigner() {
       shape={shape}
       params={viewerParams}
       metal={metal}
-      hang={hang}
+      hangs={hangs}
       hangSize={hangSize}
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
+      jewelryType={jewelryType}
+      ringRotation={ringRotation}
     />
   );
 
@@ -231,6 +234,7 @@ export function SkylineDesigner() {
                   hangSize={hangSize}
                   hangRotation={hangRotation}
                   hangHorizontal={hangHorizontal}
+                  ringRotation={ringRotation}
                   exportMesh={exportMesh}
                   metal={metal}
                 />

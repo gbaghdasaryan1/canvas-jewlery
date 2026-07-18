@@ -31,7 +31,7 @@ function PrintMesh({ metal, ...meshInput }: StlPreviewProps) {
   }, [
     meshInput.shape, meshInput.heightNorm, meshInput.width, meshInput.relief, meshInput.thickness,
     meshInput.jewelryType, meshInput.hangPlace, meshInput.hangSize, meshInput.hangRotation,
-    meshInput.hangHorizontal, meshInput.exportMesh,
+    meshInput.hangHorizontal, meshInput.ringRotation, meshInput.exportMesh,
   ]);
 
   useEffect(() => () => geometry?.dispose(), [geometry]);

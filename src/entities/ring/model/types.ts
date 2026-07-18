@@ -14,9 +14,19 @@ export type Metal = "gold" | "silver" | "platinum";
 /** The physical form the mountains is rendered into. */
 export type Shape = "rectangle" | "heart" | "circle";
 
-/** What the cast piece is worn/mounted as. */
 export type JewelryType = "pendant" | "ring" | "bracelet";
 export const JEWELRY_TYPES: JewelryType[] = ["pendant", "ring", "bracelet"];
+
+/** Button/caption text per type. */
+export const JEWELRY_LABELS: Record<JewelryType, string> = {
+  pendant: "Pendant",
+  ring: "Ring",
+  bracelet: "Bracelet",
+};
+
+/** Ring: no bezel frame, no bail, a shank under the plate, and a
+    plate-orientation control instead of a hanging point. */
+export const isRing = (t: JewelryType): boolean => t === "ring";
 
 /** Where the bail/loop attaches on a pendant — every side and every corner. */
 export type HangPlace =
@@ -29,6 +39,26 @@ export const HANG_PLACES: HangPlace[] = [
 ];
 /** Prose form for captions and the order email ("top-left" → "top left"). */
 export const hangPlaceLabel = (h: HangPlace) => h.replace("-", " ");
+
+/** The place diametrically opposite `place` (top↔bottom, left↔right, …). */
+export const oppositePlace = (h: HangPlace): HangPlace =>
+  HANG_PLACES[(HANG_PLACES.indexOf(h) + 4) % HANG_PLACES.length];
+
+/** Both ends of a bracelet's parallel pair, e.g. "top & bottom". */
+export const hangAxisLabel = (h: HangPlace) =>
+  `${hangPlaceLabel(h)} & ${hangPlaceLabel(oppositePlace(h))}`;
+
+/**
+ * Advance the hanging point one step for the cycle button. Pendants step
+ * through all 8 sides and corners; a bracelet's two bails are a parallel pair,
+ * so it only has 4 distinct axes (stepping past them just swaps which end is
+ * "first") — it wraps at 4.
+ */
+export function nextHangPlace(place: HangPlace, jewelryType: JewelryType): HangPlace {
+  const n = jewelryType === "bracelet" ? 4 : HANG_PLACES.length;
+  const i = HANG_PLACES.indexOf(place) % n;
+  return HANG_PLACES[(i + 1) % n];
+}
 
 const HANG_DIR: Record<HangPlace, { dx: number; dz: number }> = {
   top: { dx: 0, dz: 1 },
@@ -66,6 +96,24 @@ export function hangAnchor(shape: Shape, place: HangPlace): { x: number; z: numb
   return best;
 }
 
+/**
+ * Every bail anchor for a piece, in the normalized [-0.5, 0.5] plane. Pendants
+ * hang from the single chosen `hangPlace`; a bracelet is a chain link, so it
+ * gets two parallel bails on the left and right edges to connect into the band
+ * on both sides. Rings have none. Drives the viewers and the exported mesh so
+ * all three stay in sync.
+ */
+export function hangAnchors(
+  shape: Shape,
+  jewelryType: JewelryType,
+  hangPlace: HangPlace,
+): { x: number; z: number }[] {
+  if (jewelryType === "pendant") return [hangAnchor(shape, hangPlace)];
+  if (jewelryType === "bracelet")
+    return [hangAnchor(shape, hangPlace), hangAnchor(shape, oppositePlace(hangPlace))];
+  return [];
+}
+
 export interface MetalSpec {
   label: string;
   color: number;
@@ -88,7 +136,7 @@ export interface DesignInput {
 /** Map user-facing design inputs to concrete relief-plaque geometry parameters
     (mm). `res` sets the top-surface vertex density — the live viewer uses the
     GRID default; STL export may pass a denser value. */
-export function toSlabParams({ width, relief, thickness }: DesignInput, res: number = GRID - 1): SlabParams {
+export function toSlabParams({ width, relief, thickness }: DesignInput, res: number = GRID - 1, frame = true): SlabParams {
   return {
     width, // mm: plate side is exactly the slider value
     depth: width,
@@ -96,12 +144,14 @@ export function toSlabParams({ width, relief, thickness }: DesignInput, res: num
     amp: relief, // mm: relief height above the base
     resX: res,
     resZ: res,
+    frame, // rings pass false — the relief sits flush, no bezel wall
   };
 }
 
-/** Geometry parameters for the given shape from the user's design inputs. */
-export function toShapeParams(_shape: Shape, input: DesignInput, res?: number): SlabParams {
-  return toSlabParams(input, res);
+/** Geometry parameters for the given shape from the user's design inputs.
+    `frame` gates the raised bezel wall — pass false for rings. */
+export function toShapeParams(_shape: Shape, input: DesignInput, res?: number, frame = true): SlabParams {
+  return toSlabParams(input, res, frame);
 }
 
 /** Build the watertight mesh for the given shape. */

@@ -12,6 +12,7 @@ interface DesignerState {
   hangSize: number; // pendant only — bail loop scale multiplier
   hangRotation: number; // pendant only — bail loop yaw offset, degrees
   hangHorizontal: boolean; // pendant only — rotate bail 90° for chain attachment
+  ringRotation: number; // ring only — yaw of the relief plaque on the band, degrees
   shape: Shape;
   areaKm: number;
   width: number;
@@ -28,6 +29,7 @@ interface DesignerState {
   setHangSize: (v: number) => void;
   setHangRotation: (v: number) => void;
   setHangHorizontal: (v: boolean) => void;
+  setRingRotation: (v: number) => void;
   setShape: (s: Shape) => void;
   setAreaKm: (v: number) => void;
   setWidth: (v: number) => void;
@@ -48,6 +50,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   hangSize: 1,
   hangRotation: 0,
   hangHorizontal: true,
+  ringRotation: 0,
   shape: "rectangle",
   areaKm: 40,
   width: 18, // mm — plaque side
@@ -63,6 +66,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   setHangSize: (hangSize) => set({ hangSize }),
   setHangRotation: (hangRotation) => set({ hangRotation }),
   setHangHorizontal: (hangHorizontal) => set({ hangHorizontal }),
+  setRingRotation: (ringRotation) => set({ ringRotation }),
   setShape: (shape) => set({ shape }),
   setAreaKm: (areaKm) => set({ areaKm }),
   setWidth: (width) => set({ width }),

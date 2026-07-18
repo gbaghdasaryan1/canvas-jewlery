@@ -75,8 +75,9 @@ interface CityViewerProps {
   /** max relief height in mm (the "Relief depth" slider) — the tallest
       building in the frame reaches this, everything else proportional */
   reliefMm: number;
-  /** Pendant bail anchor in the normalized [-0.5, 0.5] plane; null hides it. */
-  hang?: { x: number; z: number } | null;
+  /** Bail anchors in the normalized [-0.5, 0.5] plane; empty hides them.
+      Pendant = one, bracelet = two parallel (left + right). */
+  hangs?: { x: number; z: number }[];
   /** Bail loop scale multiplier — default 1. */
   hangSize?: number;
   /** Bail loop yaw offset in degrees, added atop the outward-facing angle. */
@@ -90,7 +91,7 @@ interface CityViewerProps {
 
 export function CityViewer({
   buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
-  hang, hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
+  hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
 }: CityViewerProps) {
   // lat/lng → the same normalized plane the mesh builders sample:
   // x = (lng-west)/dLng - 0.5 (east), z = (lat-south)/dLat - 0.5. World
@@ -262,9 +263,6 @@ export function CityViewer({
   const bailR = WORLD * 0.095 * hangSize;
   const bailTube = bailR * 0.2;
   const bailCurve = useMemo(() => new DropBailCurve(bailR), [bailR]);
-  const outLen = hang ? Math.hypot(hang.x, hang.z) || 1 : 1;
-  const ox = hang ? hang.x / outLen : 0;
-  const oz = hang ? hang.z / outLen : 1;
   // Centre the bail on the frame wall (which rises 0..frameH at the relief
   // depth), so it stays mid-frame as the relief slider changes.
   const bailY = frameH / 2;
@@ -296,26 +294,32 @@ export function CityViewer({
       <lineLoop geometry={rimGeo}>
         <lineBasicMaterial color={RIM} />
       </lineLoop>
-      {hang && (
-        <mesh
-          position={[
-            hang.x * WORLD + ox * bailR * 0.75,
-            bailY,
-            hang.z * WORLD + oz * bailR * 0.75,
-          ]}
-          // YXZ: roll upright around the tip axis first, then yaw outward —
-          // same chain-ready orientation as RingViewer.
-          rotation={[
-            hangHorizontal ? Math.PI / 2 : 0,
-            Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
-            0,
-            "YXZ",
-          ]}
-        >
-          <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
-          <meshLambertMaterial color={GROUND} />
-        </mesh>
-      )}
+      {hangs.map((hang, i) => {
+        const outLen = Math.hypot(hang.x, hang.z) || 1;
+        const ox = hang.x / outLen;
+        const oz = hang.z / outLen;
+        return (
+          <mesh
+            key={i}
+            position={[
+              hang.x * WORLD + ox * bailR * 0.75,
+              bailY,
+              hang.z * WORLD + oz * bailR * 0.75,
+            ]}
+            // YXZ: roll upright around the tip axis first, then yaw outward —
+            // same chain-ready orientation as RingViewer.
+            rotation={[
+              hangHorizontal ? Math.PI / 2 : 0,
+              Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
+              0,
+              "YXZ",
+            ]}
+          >
+            <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
+            <meshLambertMaterial color={GROUND} />
+          </mesh>
+        );
+      })}
       {roadGeo && (
         <mesh geometry={roadGeo}>
           <meshBasicMaterial vertexColors />
