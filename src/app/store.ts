@@ -1,5 +1,11 @@
 import { create } from "zustand";
+import { isRing } from "@/entities/ring/model/types";
 import type { HangPlace, JewelryType, Metal, Shape } from "@/entities/ring/model/types";
+
+// Base plate thickness (mm). Rings sit on a shank band, so they take a thinner
+// base than the pendant/bracelet plaques.
+const RING_THICKNESS = 0.3;
+const DEFAULT_THICKNESS = 0.5;
 
 interface DesignerState {
   // location
@@ -46,7 +52,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   lng: 86.925,
   name: "Mount Everest",
   jewelryType: "pendant",
-  hangPlace: "top",
+  hangPlace: 0, // hang angle in degrees (0 = top); see HangPlace
   hangSize: 1,
   hangRotation: 0,
   hangHorizontal: true,
@@ -55,13 +61,14 @@ export const useDesigner = create<DesignerState>((set) => ({
   areaKm: 40,
   width: 18, // mm — plaque side
   relief: 4.6, // mm — max relief height
-  thickness: 0.5, // mm — base thickness
+  thickness: DEFAULT_THICKNESS, // mm — base thickness (ring uses RING_THICKNESS)
   smooth: 0,
   showStreets: false,
   showBuildings: false,
   metal: "silver",
   setLocation: (lat, lng, name) => set({ lat, lng, name }),
-  setJewelryType: (jewelryType) => set({ jewelryType }),
+  setJewelryType: (jewelryType) =>
+    set({ jewelryType, thickness: isRing(jewelryType) ? RING_THICKNESS : DEFAULT_THICKNESS }),
   setHangPlace: (hangPlace) => set({ hangPlace }),
   setHangSize: (hangSize) => set({ hangSize }),
   setHangRotation: (hangRotation) => set({ hangRotation }),

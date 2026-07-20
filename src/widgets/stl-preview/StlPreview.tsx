@@ -54,6 +54,8 @@ function PrintMesh({ metal, ...meshInput }: StlPreviewProps) {
 export function StlPreview(props: StlPreviewProps) {
   return (
     <Canvas
+      // Render only on interaction / prop change — no idle auto-spin loop.
+      frameloop="demand"
       camera={{ position: [16, 22, 28], fov: 34 }}
       gl={{ alpha: true, antialias: true }}
       onCreated={({ gl }) => {
@@ -68,7 +70,7 @@ export function StlPreview(props: StlPreviewProps) {
       <directionalLight position={[-1, 10, -12]} intensity={1.1} color={0xffe8d0} />
       <SceneEnvironment />
       <PrintMesh {...props} />
-      <OrbitControls enablePan={false} autoRotate autoRotateSpeed={0.9} minDistance={20} maxDistance={70} maxPolarAngle={Math.PI * 0.52} />
+      <OrbitControls enablePan={false} minDistance={20} maxDistance={70} maxPolarAngle={Math.PI * 0.52} />
     </Canvas>
   );
 }

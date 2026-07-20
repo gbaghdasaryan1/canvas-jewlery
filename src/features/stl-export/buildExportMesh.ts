@@ -65,16 +65,21 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
       : null);
   if (!mesh) return null;
 
-  // Ring: yaw the plaque to the chosen orientation, then fuse a flat shank band
-  // beneath it (plaque base is at y = 0, so the band drops by its outer radius
-  // to seat the plaque on its crest). No bail. The heightfield vector-mesh path
-  // (skyline) keeps its own frame for now, so only the plaque path grows a band.
-  if (isRing(jewelryType) && !usingExportMesh) {
-    yawInPlace(mesh, ringRotation);
+  // Ring: fuse a flat shank band beneath the plate. Both the plaque and the
+  // skyline city mesh have their base at y = 0, so the band drops by its outer
+  // radius to seat the piece on its crest. No bail. The plaque yaws on a fixed
+  // band (matching RingViewer); the skyline keeps its map fixed and yaws the
+  // band instead (matching CityViewer), so preview and STL agree either way.
+  if (isRing(jewelryType)) {
     const dims = ringBandDims(width);
     const band = buildRingBandMesh(dims);
     const outerR = dims.innerR + dims.wall;
     for (let i = 1; i < band.positions.length; i += 3) band.positions[i] -= outerR;
+    if (usingExportMesh) {
+      yawInPlace(band, -ringRotation);
+    } else {
+      yawInPlace(mesh, ringRotation);
+    }
     return mergeMeshData(mesh, band);
   }
 

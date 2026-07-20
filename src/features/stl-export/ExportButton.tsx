@@ -1,4 +1,5 @@
 import { useDesigner } from "@/app/store";
+import { useT } from "@/shared/i18n";
 import { type Shape } from "@/entities/ring/model/types";
 import { type RingMeshData } from "@/shared/lib/ringGeometry";
 import { downloadSTL } from "@/shared/lib/stl";
@@ -27,6 +28,7 @@ export function ExportButton({ heightNorm, tag, exportMesh }: ExportButtonProps)
     shape, width, relief, thickness, name,
     jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
   } = useDesigner();
+  const t = useT();
 
   function exportStl() {
     const mesh = buildExportMesh({
@@ -40,7 +42,7 @@ export function ExportButton({ heightNorm, tag, exportMesh }: ExportButtonProps)
 
   return (
     <button className="btn" onClick={exportStl} disabled={!heightNorm}>
-      Download STL
+      {t.designer.downloadStl}
     </button>
   );
 }

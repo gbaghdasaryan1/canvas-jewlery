@@ -5,8 +5,9 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
-import type { Shape } from "@/entities/ring/model/types";
+import { isRing, type JewelryType, type Shape } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
+import { buildRingBandMesh, ringBandDims } from "@/shared/lib/ringGeometry";
 import {
   FRAME_MM,
   ROAD_DEFAULT,
@@ -87,12 +88,19 @@ interface CityViewerProps {
   /** When false, the solid base plate is omitted — only the frame and the
       streets/buildings remain, so the floor between them reads as empty. */
   solidFloor?: boolean;
+  /** What the piece is worn as. "ring" fuses a flat shank band under the plate
+      (like RingViewer); pendant/bracelet keep the bail(s). */
+  jewelryType?: JewelryType;
+  /** Ring only — yaw of the band under the plate, in degrees. */
+  ringRotation?: number;
 }
 
 export function CityViewer({
   buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
   hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
+  jewelryType = "pendant", ringRotation = 0,
 }: CityViewerProps) {
+  const ring = isRing(jewelryType);
   // lat/lng → the same normalized plane the mesh builders sample:
   // x = (lng-west)/dLng - 0.5 (east), z = (lat-south)/dLat - 0.5. World
   // coordinates keep this z axis (like the metal mesh), so the heart's
@@ -257,6 +265,22 @@ export function CityViewer({
     return geo;
   }, [outline, innerOutline, frameH]);
 
+  // Ring shank — the same flat band RingViewer fuses beneath the plaque, here
+  // sized to the city plate (WORLD = plate side) and hung under its base so the
+  // ring previews on /maps exactly like /mountains. Its crest sits at the plate
+  // bottom (y = -plateH); the band circle lies in X–Y with the finger axis +Z.
+  const ringBand = useMemo(() => {
+    if (!ring) return null;
+    const dims = ringBandDims(WORLD);
+    const { positions, indices } = buildRingBandMesh(dims);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    geo.computeVertexNormals();
+    return { geo, outerR: dims.innerR + dims.wall };
+  }, [ring]);
+  useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
+
   // Pendant bail — the same drop loop RingViewer shows on the metal piece,
   // here in the map's plate silver so the hang point previews in this view
   // too. Mid-height of the plate side, tip into the wall. Preview-only.
@@ -291,6 +315,15 @@ export function CityViewer({
       <mesh geometry={frameGeo}>
         <meshLambertMaterial color={GROUND} />
       </mesh>
+      {ringBand && (
+        <mesh
+          geometry={ringBand.geo}
+          position={[0, -plateH - ringBand.outerR, 0]}
+          rotation={[0, -(ringRotation * Math.PI) / 180, 0]}
+        >
+          <meshLambertMaterial color={GROUND} />
+        </mesh>
+      )}
       <lineLoop geometry={rimGeo}>
         <lineBasicMaterial color={RIM} />
       </lineLoop>
@@ -302,9 +335,9 @@ export function CityViewer({
           <mesh
             key={i}
             position={[
-              hang.x * WORLD + ox * bailR * 0.75,
+              hang.x * WORLD + ox * bailR * 0.65,
               bailY,
-              hang.z * WORLD + oz * bailR * 0.75,
+              hang.z * WORLD + oz * bailR * 0.65,
             ]}
             // YXZ: roll upright around the tip axis first, then yaw outward —
             // same chain-ready orientation as RingViewer.

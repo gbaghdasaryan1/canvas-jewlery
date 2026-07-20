@@ -28,48 +28,53 @@ export const JEWELRY_LABELS: Record<JewelryType, string> = {
     plate-orientation control instead of a hanging point. */
 export const isRing = (t: JewelryType): boolean => t === "ring";
 
-/** Where the bail/loop attaches on a pendant — every side and every corner. */
-export type HangPlace =
-  | "top" | "top-right" | "right" | "bottom-right"
-  | "bottom" | "bottom-left" | "left" | "top-left";
-/** Clockwise loop order — the UI cycle button steps through this. */
-export const HANG_PLACES: HangPlace[] = [
+/**
+ * Where the bail/loop attaches, as an angle in degrees around the plate:
+ * 0 = top, increasing clockwise (90 = right, 180 = bottom, 270 = left).
+ * An angle rather than a fixed set of named sides lets the cycle button offer
+ * any number of evenly-spaced positions.
+ */
+export type HangPlace = number;
+
+/** How many evenly-spaced stops each type's cycle button steps through. */
+export const PENDANT_HANG_STEPS = 8; // 45° apart, all the way round
+export const BRACELET_HANG_STEPS = 4; // a parallel pair → 4 distinct axes, 45° apart
+
+/** Compass names at 45° increments, for labelling angles that land on one. */
+const HANG_NAMES = [
   "top", "top-right", "right", "bottom-right",
   "bottom", "bottom-left", "left", "top-left",
 ];
-/** Prose form for captions and the order email ("top-left" → "top left"). */
-export const hangPlaceLabel = (h: HangPlace) => h.replace("-", " ");
 
-/** The place diametrically opposite `place` (top↔bottom, left↔right, …). */
-export const oppositePlace = (h: HangPlace): HangPlace =>
-  HANG_PLACES[(HANG_PLACES.indexOf(h) + 4) % HANG_PLACES.length];
+const norm360 = (deg: number) => ((deg % 360) + 360) % 360;
+
+/** Prose form for captions and the order summary — a compass name when the
+    angle sits on one (multiple of 45°), otherwise the rounded degrees. */
+export const hangPlaceLabel = (deg: number): string => {
+  const a = norm360(deg);
+  return a % 45 === 0 ? HANG_NAMES[a / 45].replace("-", " ") : `${Math.round(a)}°`;
+};
 
 /** Both ends of a bracelet's parallel pair, e.g. "top & bottom". */
-export const hangAxisLabel = (h: HangPlace) =>
-  `${hangPlaceLabel(h)} & ${hangPlaceLabel(oppositePlace(h))}`;
+export const hangAxisLabel = (deg: number) =>
+  `${hangPlaceLabel(deg)} & ${hangPlaceLabel(deg + 180)}`;
 
 /**
  * Advance the hanging point one step for the cycle button. Pendants step
- * through all 8 sides and corners; a bracelet's two bails are a parallel pair,
- * so it only has 4 distinct axes (stepping past them just swaps which end is
- * "first") — it wraps at 4.
+ * through PENDANT_HANG_STEPS evenly-spaced positions around the plate; a
+ * bracelet's two bails are a parallel pair, so its stops only span half the
+ * circle and wrap after BRACELET_HANG_STEPS distinct axes. The current angle
+ * is snapped to the grid before advancing, so an off-grid value still lands
+ * on a valid stop.
  */
-export function nextHangPlace(place: HangPlace, jewelryType: JewelryType): HangPlace {
-  const n = jewelryType === "bracelet" ? 4 : HANG_PLACES.length;
-  const i = HANG_PLACES.indexOf(place) % n;
-  return HANG_PLACES[(i + 1) % n];
+export function nextHangPlace(deg: number, jewelryType: JewelryType): HangPlace {
+  if (jewelryType === "bracelet") {
+    const step = 180 / BRACELET_HANG_STEPS; // axes span only half the circle
+    return norm360(Math.round(deg / step) * step + step) % 180;
+  }
+  const step = 360 / PENDANT_HANG_STEPS;
+  return norm360(Math.round(deg / step) * step + step);
 }
-
-const HANG_DIR: Record<HangPlace, { dx: number; dz: number }> = {
-  top: { dx: 0, dz: 1 },
-  "top-right": { dx: Math.SQRT1_2, dz: Math.SQRT1_2 },
-  right: { dx: 1, dz: 0 },
-  "bottom-right": { dx: Math.SQRT1_2, dz: -Math.SQRT1_2 },
-  bottom: { dx: 0, dz: -1 },
-  "bottom-left": { dx: -Math.SQRT1_2, dz: -Math.SQRT1_2 },
-  left: { dx: -1, dz: 0 },
-  "top-left": { dx: -Math.SQRT1_2, dz: Math.SQRT1_2 },
-};
 
 /**
  * Point on the plate outline where the pendant bail mounts, in the normalized
@@ -78,8 +83,10 @@ const HANG_DIR: Record<HangPlace, { dx: number; dz: number }> = {
  * centered on the side. Rectangle: edge/corner of the square; heart/circle:
  * the outline point in that direction.
  */
-export function hangAnchor(shape: Shape, place: HangPlace): { x: number; z: number } {
-  const { dx, dz } = HANG_DIR[place];
+export function hangAnchor(shape: Shape, deg: number): { x: number; z: number } {
+  const r = (deg * Math.PI) / 180;
+  const dx = Math.sin(r); // top = +z, clockwise
+  const dz = Math.cos(r);
   if (shape === "rectangle") {
     const t = 0.5 / Math.max(Math.abs(dx), Math.abs(dz));
     return { x: dx * t, z: dz * t };
@@ -110,7 +117,7 @@ export function hangAnchors(
 ): { x: number; z: number }[] {
   if (jewelryType === "pendant") return [hangAnchor(shape, hangPlace)];
   if (jewelryType === "bracelet")
-    return [hangAnchor(shape, hangPlace), hangAnchor(shape, oppositePlace(hangPlace))];
+    return [hangAnchor(shape, hangPlace), hangAnchor(shape, hangPlace + 180)];
   return [];
 }
 

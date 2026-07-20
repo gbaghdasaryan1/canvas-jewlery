@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useDesigner } from "@/app/store";
+import { useT } from "@/shared/i18n";
+import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
 import type { Shape } from "@/entities/ring/model/types";
 import { Designer } from "./Designer";
 
@@ -9,6 +11,7 @@ const VALID_SHAPES = new Set(["rectangle", "circle"]);
 /** The standalone design experience at /mountains. */
 export function DesignPage() {
   const setShape = useDesigner((s) => s.setShape);
+  const t = useT();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -28,9 +31,12 @@ export function DesignPage() {
             </svg>
             CAIRN
           </Link>
-          <span className="design-tagline mono">Design your piece</span>
-          <Link className="design-back" to="/maps">maps →</Link>
-          <Link className="design-back" to="/">← Home</Link>
+          <nav className="design-switch" aria-label="Design mode">
+            <Link className="design-switch-btn on" to="/mountains" aria-current="page">{t.designer.modeMountains}</Link>
+            <Link className="design-switch-btn" to="/maps">{t.designer.modeMaps}</Link>
+          </nav>
+          <LanguageSwitcher />
+          <Link className="design-back" to="/">{t.nav.home}</Link>
         </div>
       </header>
 

@@ -1,7 +1,8 @@
 import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
+import { useT } from "@/shared/i18n";
 import { useElevation } from "@/entities/mountains/api/useElevation";
-import { METALS, buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
+import { buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { GRID } from "@/shared/config/presets";
@@ -46,6 +47,8 @@ export function Designer() {
     lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth,
     showBuildings, metal,
   } = useDesigner();
+  const t = useT();
+  const d = t.designer;
   // Debounce the location inputs feeding the network queries: dragging the
   // "Sample area" slider or mashing the nudge pad would otherwise fire a
   // full elevation run (~3k points) + an Overpass request per tick.
@@ -107,7 +110,7 @@ export function Designer() {
   }
 
   const viewer = elevation.isLoading && !mountains ? (
-    <div className="stage-msg mono">Reading mountains…</div>
+    <div className="stage-msg mono">{d.readingMountains}</div>
   ) : (
     <RingViewer
       heightNorm={viewerHeightNorm}
@@ -129,20 +132,20 @@ export function Designer() {
         {/* Left — live preview + price/CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">Your {SHAPE_LABEL[shape]} {jewelryType} · <b>{METALS[metal].label}</b></div>
+            <div className="cap">{d.previewCaption(d.formName[shape], d.jewelry[jewelryType], d.metals[metal])}</div>
             <div className="stage">{viewer}</div>
           </div>
 
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
-            <div className="dz-price-sub mono">made to order in 3–4 weeks</div>
+            <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
                 className="btn-primary lg dz-order"
                 onClick={() => setOrderOpen(true)}
                 disabled={!heightNorm}
               >
-                Order this piece
+                {d.order}
               </button>
               <ExportButton heightNorm={heightNorm} />
             </div>
@@ -152,59 +155,27 @@ export function Designer() {
         <OrderModal
           open={orderOpen}
           onClose={() => setOrderOpen(false)}
-          summary={<>Ordering your <b>{name}</b> {SHAPE_LABEL[shape]} in {METALS[metal].label}.</>}
+          summary={t.order.summary(name, d.formName[shape], d.metals[metal])}
           buildPayload={buildPayload}
         />
 
         {/* Right — guided configuration */}
         <div className="dz-config">
-          <Step n={1} title="Choose your place" hint="Search a spot, drop a pin, or nudge to frame it.">
+          <Step n={1} title={d.step1MountainsTitle} hint={d.step1MountainsHint}>
             <LocationSearch />
-            <Panel className="dz-mappanel" label={<>Map</>}>
+            <Panel className="dz-mappanel" label={d.mapLabel}>
               <MountainsMap />
+              <button
+                className="dz-reread mono"
+                onClick={() => elevation.refetch()}
+                disabled={elevation.isFetching}
+              >
+                {elevation.isFetching ? d.readingMountains : d.reRead}
+              </button>
             </Panel>
-            {/* <div className="reliefrow">
-              <div className="reliefwrap">
-                <ReliefPreview
-                  mountains={mountains}
-                  smooth={smooth}
-                  lat={lat}
-                  lng={lng}
-                  areaKm={areaKm}
-                  streets={showStreets ? streets.data ?? null : null}
-                  buildings={showBuildings ? buildings.data ?? null : null}
-                />
-                <div className="relief-toggles">
-                  <button
-                    className={`relief-toggle mono ${showStreets ? "on" : ""}`}
-                    onClick={() => setShowStreets(!showStreets)}
-                  >
-                    {showStreets
-                      ? streets.isFetching ? "Streets…" : streets.isError ? "Streets ✕" : "Streets ✓"
-                      : "Streets"}
-                  </button>
-                  <button
-                    className={`relief-toggle mono ${showBuildings ? "on" : ""}`}
-                    onClick={() => setShowBuildings(!showBuildings)}
-                  >
-                    {showBuildings
-                      ? buildings.isFetching ? "Buildings…" : buildings.isError ? "Buildings ✕" : "Buildings ✓"
-                      : "Buildings"}
-                  </button>
-                </div>
-              </div>
-              <Readout lat={lat} lng={lng} areaKm={areaKm} mountains={mountains} />
-            </div> */}
-            <button
-              className="dz-reread mono"
-              onClick={() => elevation.refetch()}
-              disabled={elevation.isFetching}
-            >
-              {elevation.isFetching ? "Reading mountains…" : "↻ Re-read mountains"}
-            </button>
           </Step>
 
-          <Step n={2} title="Shape &amp; finish" hint="Pick a form, then fine-tune the relief and metal.">
+          <Step n={2} title={d.step2Title} hint={d.step2MountainsHint}>
             <RingControls />
           </Step>
         </div>

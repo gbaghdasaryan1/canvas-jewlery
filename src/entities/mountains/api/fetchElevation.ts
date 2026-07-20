@@ -1,5 +1,5 @@
 import { GRID } from "@/shared/config/presets";
-import { whenGoogleReady } from "@/shared/lib/googleMaps";
+// import { isGoogleAuthFailed, whenGoogleReady } from "@/shared/lib/googleMaps";
 import type { mountainsGrid } from "../model/types";
 import { proceduralmountains } from "../lib/procedural";
 
@@ -37,9 +37,9 @@ export async function fetchElevation(
 ): Promise<mountainsGrid> {
   // The Maps JS SDK is injected lazily by the map widget. Wait for it before
   // sampling real elevation; only fall back to procedural if it never arrives.
-  if (!(await whenGoogleReady())) {
-    return proceduralmountains(lat, lng);
-  }
+  // if (!(await whenGoogleReady())) {
+  //   return proceduralmountains(lat, lng);
+  // }
 
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
@@ -59,6 +59,10 @@ export async function fetchElevation(
   try {
     const elevator = new google.maps.ElevationService();
     for (let i = 0; i < locations.length; i += CHUNK) {
+      // The key can be rejected mid-run (auth check resolves after the SDK's
+      // classes exist). Bail the moment that happens so we don't fire the
+      // remaining chunks into the SDK's endless failed-request retry loop.
+      // if (isGoogleAuthFailed()) throw new Error("google auth failed");
       const chunk = locations.slice(i, i + CHUNK);
       const { results } = await withTimeout(
         elevator.getElevationForLocations({ locations: chunk }),

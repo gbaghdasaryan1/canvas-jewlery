@@ -41,16 +41,45 @@ function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
   return env;
 }
 
+/** Reflection map for the metal. Drop the liquid-metal photo here (served from
+    /public) to have the piece mirror it; absent, the procedural studio gradient
+    is used instead. */
+const REFLECTION_URL = "/textures/liquid-silver.jpg";
+
 export function SceneEnvironment() {
-  const { gl, scene } = useThree();
+  const { gl, scene, invalidate } = useThree();
   useEffect(() => {
-    const env = makeEnvMap(gl);
-    scene.environment = env;
+    // Start with the procedural studio gradient so the metal always has a
+    // reflection, then swap in the liquid-metal photo once (and if) it loads.
+    const fallback = makeEnvMap(gl);
+    scene.environment = fallback;
+
+    let mapped: THREE.Texture | null = null;
+    let cancelled = false;
+    new THREE.TextureLoader().load(
+      REFLECTION_URL,
+      (tex) => {
+        if (cancelled) { tex.dispose(); return; }
+        tex.mapping = THREE.EquirectangularReflectionMapping;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        const pmrem = new THREE.PMREMGenerator(gl);
+        mapped = pmrem.fromEquirectangular(tex).texture;
+        tex.dispose();
+        pmrem.dispose();
+        scene.environment = mapped;
+        invalidate(); // frameloop="demand" — repaint with the new reflections
+      },
+      undefined,
+      () => { /* file absent → keep the procedural fallback, no error surfaced */ },
+    );
+
     return () => {
+      cancelled = true;
       scene.environment = null;
-      env.dispose();
+      fallback.dispose();
+      mapped?.dispose();
     };
-  }, [gl, scene]);
+  }, [gl, scene, invalidate]);
   return null;
 }
 
@@ -198,6 +227,8 @@ export function RingViewer(props: RingMeshProps) {
     <Canvas
       // Remount on shape change so the camera/orbit reset to a fitting framing.
       key={props.shape}
+      // Render only on interaction / prop change — no idle auto-spin loop.
+      frameloop="demand"
       camera={{ position: [22, 34, 42], fov: 36 }}
       gl={{ alpha: true, antialias: true }}
       onCreated={({ gl }) => {
@@ -217,8 +248,6 @@ export function RingViewer(props: RingMeshProps) {
       <RingMesh {...props} />
       <OrbitControls
         enablePan={false}
-        autoRotate
-        autoRotateSpeed={0.8}
         minDistance={28}
         maxDistance={90}
         maxPolarAngle={Math.PI * 0.49}

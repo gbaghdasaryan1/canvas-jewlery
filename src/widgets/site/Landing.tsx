@@ -1,27 +1,45 @@
 import { Link } from "react-router-dom";
+import { useT } from "@/shared/i18n";
 import { LandingHeader } from "./LandingHeader";
 import { HomeHero } from "./HomeHero";
+import { TrustStrip } from "./TrustStrip";
 import { HeroStory } from "./HeroStory";
+import { Occasions } from "./Occasions";
 import { Collections } from "./Collections";
 import { Gallery } from "./Gallery";
+import { Testimonials } from "./Testimonials";
 import { HowItWorks } from "./HowItWorks";
+import { Faq } from "./Faq";
 
-/** The marketing landing page at /. */
+/**
+ * The marketing landing page at /. Ordered as a conversion funnel:
+ * hook → trust → why → who it's for → how → what you choose → proof →
+ * objections → close.
+ */
 export function Landing() {
+  const t = useT();
   return (
     <div className="home">
       <LandingHeader />
       <HomeHero />
+      <TrustStrip />
       <HeroStory />
+      <Occasions />
+      <HowItWorks />
       <Collections />
       <Gallery />
-      <HowItWorks />
+      <Testimonials />
+      <Faq />
 
       <section className="home-final">
         <div className="wrap home-final-inner">
-          <h2 className="home-h2">Your place, made to keep.</h2>
-          <p className="section-sub">It takes about a minute to design. Nothing to install.</p>
-          <Link className="btn-primary lg" to="/mountains">Start designing</Link>
+          <div className="eyebrow">{t.final.eyebrow}</div>
+          <h2 className="home-h2">{t.final.title}</h2>
+          <p className="section-sub">{t.final.sub}</p>
+          <Link className="btn-primary lg" to="/mountains">{t.final.cta}</Link>
+          <div className="home-final-guarantee">
+            {t.final.guarantee.map((g) => <span key={g}>✓ {g}</span>)}
+          </div>
         </div>
       </section>
 
@@ -29,10 +47,10 @@ export function Landing() {
         <div className="wrap home-foot-inner">
           <div>
             <div className="home-brand" style={{ marginBottom: 8 }}>CAIRN</div>
-            <div>Bespoke topographic jewelry · made to order</div>
+            <div>{t.footer.tagline}</div>
           </div>
           <div className="mono">
-            Map data © OpenStreetMap contributors
+            {t.footer.mapData}
           </div>
         </div>
       </footer>

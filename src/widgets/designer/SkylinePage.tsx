@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useDesigner } from "@/app/store";
+import { useT } from "@/shared/i18n";
+import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
 import { PRESETS } from "@/shared/config/presets";
 import type { Shape } from "@/entities/ring/model/types";
 import { SkylineDesigner } from "./SkylineDesigner";
@@ -13,6 +15,7 @@ export function SkylinePage() {
   const setShape = useDesigner((s) => s.setShape);
   const setLocation = useDesigner((s) => s.setLocation);
   const setAreaKm = useDesigner((s) => s.setAreaKm);
+  const t = useT();
   const [searchParams] = useSearchParams();
   // Don't mount the designer until the city defaults are in the store —
   // otherwise its queries fire once for the boot location (a mountain) and
@@ -40,9 +43,12 @@ export function SkylinePage() {
             </svg>
             CAIRN
           </Link>
-          <span className="design-tagline mono">Design your skyline</span>
-          <Link className="design-back" to="/mountains">mountains →</Link>
-          <Link className="design-back" to="/">← Home</Link>
+          <nav className="design-switch" aria-label="Design mode">
+            <Link className="design-switch-btn" to="/mountains">{t.designer.modeMountains}</Link>
+            <Link className="design-switch-btn on" to="/maps" aria-current="page">{t.designer.modeMaps}</Link>
+          </nav>
+          <LanguageSwitcher />
+          <Link className="design-back" to="/">{t.nav.home}</Link>
         </div>
       </header>
 

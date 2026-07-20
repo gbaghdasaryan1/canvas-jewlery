@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const PROMOS = [
-  "Handcrafted to order — each piece is unique to your place",
-  "Complimentary insured shipping worldwide",
-  "Recycled precious metals · 30-day returns",
-];
+import { useT } from "@/shared/i18n";
+import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
 
 function BrandMark() {
   return (
@@ -18,16 +14,20 @@ function BrandMark() {
 }
 
 export function LandingHeader() {
+  const t = useT();
+  const promos = t.promos;
   const [i, setI] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setI((v) => (v + 1) % PROMOS.length), 4200);
-    return () => clearInterval(t);
-  }, []);
+    const id = setInterval(() => setI((v) => (v + 1) % promos.length), 4200);
+    return () => clearInterval(id);
+  }, [promos.length]);
+  // Guard against index overflow when switching to a language with fewer promos.
+  const promo = promos[i % promos.length];
 
   return (
     <>
       <div className="promobar" role="status" aria-live="polite">
-        <span key={i} className="promobar-msg">{PROMOS[i]}</span>
+        <span key={`${promo}`} className="promobar-msg">{promo}</span>
       </div>
       <header className="home-top">
         <div className="wrap">
@@ -36,12 +36,12 @@ export function LandingHeader() {
             CAIRN
           </Link>
           <nav className="home-nav">
-            <a href="#collections">Collections</a>
-            <a href="#gallery">Gallery</a>
-            <Link to="/maps">maps</Link>
-            <a href="#how">How it's made</a>
+            <a href="#how">{t.nav.how}</a>
+            <a href="#gallery">{t.nav.gallery}</a>
+            <a href="#faq">{t.nav.faq}</a>
           </nav>
-          <Link className="btn-primary" to="/mountains">Design yours</Link>
+          <LanguageSwitcher />
+          <Link className="btn-primary" to="/mountains">{t.nav.designYours}</Link>
         </div>
       </header>
     </>

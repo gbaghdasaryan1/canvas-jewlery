@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ApiError } from "@/shared/lib/api";
+import { useT, type Dict } from "@/shared/i18n";
 import { createOrder, requestOtp, verifyOtp } from "./api/orderApi";
 import type { OrderPayload } from "./model/types";
 
@@ -31,6 +32,7 @@ function isValidPhone(raw: string): boolean {
 }
 
 export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalProps) {
+  const o = useT().order;
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("+374 ");
   const [code, setCode] = useState("");
@@ -105,7 +107,7 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
   async function sendCode() {
     setError(null);
     if (!isValidPhone(phone)) {
-      setError("Enter a valid phone number.");
+      setError(o.errValidPhone);
       return;
     }
     setBusy(true);
@@ -114,7 +116,7 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
       setStep("otp");
       setResendIn(res.expiresInSec && res.expiresInSec < 120 ? res.expiresInSec : 45);
     } catch (e) {
-      setError(messageFor(e, "Couldn't send the code. Try again."));
+      setError(messageFor(e, o.errSendFailed, o));
     } finally {
       setBusy(false);
     }
@@ -123,7 +125,7 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
   async function verifyAndOrder() {
     setError(null);
     if (code.trim().length < 4) {
-      setError("Enter the code we sent you.");
+      setError(o.errEnterCode);
       return;
     }
     const p = normalizePhone(phone);
@@ -132,16 +134,16 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
       const { verificationToken } = await verifyOtp(p, code.trim());
       const payload = buildPayload();
       if (!payload) {
-        setError("Your design isn't ready yet — close this and try again in a moment.");
+        setError(o.errNotReady);
         return;
       }
       await createOrder(p, verificationToken, payload);
       setStep("done");
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
-        setError("That code isn't right. Check it and try again.");
+        setError(o.errBadCode);
       } else {
-        setError(messageFor(e, "Couldn't place the order. Try again."));
+        setError(messageFor(e, o.errOrderFailed, o));
       }
     } finally {
       setBusy(false);
@@ -150,15 +152,15 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
 
   return createPortal(
     <div className="om-backdrop" onMouseDown={() => !busy && onClose()}>
-      <div ref={modalRef} className="om-modal" role="dialog" aria-modal="true" aria-label="Order this piece" onMouseDown={(e) => e.stopPropagation()}>
-        <button className="om-x" onClick={onClose} disabled={busy} aria-label="Close">×</button>
+      <div ref={modalRef} className="om-modal" role="dialog" aria-modal="true" aria-label={o.title} onMouseDown={(e) => e.stopPropagation()}>
+        <button className="om-x" onClick={onClose} disabled={busy} aria-label={o.close}>×</button>
 
         {step === "phone" && (
           <>
-            <div className="om-eyebrow mono">Order</div>
-            <h3 className="om-title">Confirm your number</h3>
-            <p className="om-sub">{summary ?? "We'll text you a code to verify it's really you."}</p>
-            <label className="om-label mono" htmlFor="om-phone">Phone number</label>
+            <div className="om-eyebrow mono">{o.eyebrow}</div>
+            <h3 className="om-title">{o.title}</h3>
+            <p className="om-sub">{summary ?? o.fallbackSummary}</p>
+            <label className="om-label mono" htmlFor="om-phone">{o.phoneLabel}</label>
             <input
               id="om-phone"
               className="om-input mono"
@@ -173,20 +175,20 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
             />
             {error && <div className="om-error mono">{error}</div>}
             <button className="btn-primary lg om-submit" onClick={sendCode} disabled={busy}>
-              {busy ? "Sending…" : "Send code"}
+              {busy ? o.sending : o.sendCode}
             </button>
           </>
         )}
 
         {step === "otp" && (
           <>
-            <div className="om-eyebrow mono">Verify</div>
-            <h3 className="om-title">Enter the code</h3>
+            <div className="om-eyebrow mono">{o.verifyEyebrow}</div>
+            <h3 className="om-title">{o.enterCodeTitle}</h3>
             <p className="om-sub">
-              Sent to <b>{normalizePhone(phone)}</b>.{" "}
-              <button className="om-link mono" onClick={() => setStep("phone")} disabled={busy}>Change</button>
+              {o.sentTo} <b>{normalizePhone(phone)}</b>.{" "}
+              <button className="om-link mono" onClick={() => setStep("phone")} disabled={busy}>{o.change}</button>
             </p>
-            <label className="om-label mono" htmlFor="om-code">6-digit code</label>
+            <label className="om-label mono" htmlFor="om-code">{o.codeLabel}</label>
             <input
               id="om-code"
               ref={codeRef}
@@ -202,14 +204,14 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
             />
             {error && <div className="om-error mono">{error}</div>}
             <button className="btn-primary lg om-submit" onClick={verifyAndOrder} disabled={busy}>
-              {busy ? "Placing order…" : "Verify & place order"}
+              {busy ? o.placing : o.verifyOrder}
             </button>
             <button
               className="om-link mono om-resend"
               onClick={sendCode}
               disabled={busy || resendIn > 0}
             >
-              {resendIn > 0 ? `Resend code in ${resendIn}s` : "Resend code"}
+              {resendIn > 0 ? o.resendIn(resendIn) : o.resend}
             </button>
           </>
         )}
@@ -217,12 +219,9 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
         {step === "done" && (
           <div className="om-done">
             <div className="om-check" aria-hidden>✓</div>
-            <h3 className="om-title">Order received</h3>
-            <p className="om-sub">
-              Thank you — we've got your piece and your number. Our studio will reach out
-              shortly to confirm details and payment.
-            </p>
-            <button className="btn-primary lg om-submit" onClick={onClose}>Done</button>
+            <h3 className="om-title">{o.doneTitle}</h3>
+            <p className="om-sub">{o.doneBody}</p>
+            <button className="btn-primary lg om-submit" onClick={onClose}>{o.done}</button>
           </div>
         )}
       </div>
@@ -231,16 +230,16 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
   );
 }
 
-function messageFor(e: unknown, fallback: string): string {
+function messageFor(e: unknown, fallback: string, o: Dict["order"]): string {
   if (e instanceof ApiError) {
     // Rate-limit + server/routing failures aren't actionable to the user, so
     // show a friendly line instead of the raw backend text ("Not Found" etc.).
-    if (e.status === 429) return "Too many attempts — wait a minute, then try again.";
-    if (e.status >= 500) return "Our studio server had a problem. Please try again.";
+    if (e.status === 429) return o.errRateLimit;
+    if (e.status >= 500) return o.errServer;
     if (e.status === 404) return fallback;
     return e.message || fallback;
   }
   // fetch() rejects with a TypeError when the network is down / CORS blocks it.
-  if (e instanceof TypeError) return "Can't reach the server. Check your connection and try again.";
+  if (e instanceof TypeError) return o.errNetwork;
   return fallback;
 }

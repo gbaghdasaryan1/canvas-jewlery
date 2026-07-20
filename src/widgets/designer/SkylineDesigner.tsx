@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesigner } from "@/app/store";
-import { METALS, buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
+import { useT } from "@/shared/i18n";
+import { buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useStreets } from "@/entities/streets/api/useStreets";
@@ -35,10 +36,9 @@ const CITY_PRESETS = PRESETS.filter((p) => p.city);
 
 type LayerMode = "all" | "buildings" | "streets";
 
-const LAYER_OPTIONS: { mode: LayerMode; label: string; icon: JSX.Element }[] = [
+const LAYER_OPTIONS: { mode: LayerMode; icon: JSX.Element }[] = [
   {
     mode: "all",
-    label: "All",
     icon: (
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 3 3 8l9 5 9-5-9-5Z" />
@@ -48,7 +48,6 @@ const LAYER_OPTIONS: { mode: LayerMode; label: string; icon: JSX.Element }[] = [
   },
   {
     mode: "buildings",
-    label: "Buildings",
     icon: (
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 21V9l6-4v16" />
@@ -60,7 +59,6 @@ const LAYER_OPTIONS: { mode: LayerMode; label: string; icon: JSX.Element }[] = [
   },
   {
     mode: "streets",
-    label: "Streets",
     icon: (
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 3 4 21" />
@@ -72,16 +70,24 @@ const LAYER_OPTIONS: { mode: LayerMode; label: string; icon: JSX.Element }[] = [
 ];
 
 const STREETS_RELIEF_MM = 1.15;
-const DEFAULT_RELIEF_MM = 4;
+const DEFAULT_RELIEF_MM = 2; // caps at the maps relief max (see RingControls reliefMax)
+const MAPS_RELIEF_MAX = 2;
 
 export function SkylineDesigner() {
   const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth, metal, setLocation, setRelief } =
     useDesigner();
+  const t = useT();
+  const d = t.designer;
 
   // Stage view: "map" renders the fetched city in the Mapbox map's style
   // (same colors, three.js); "metal" shows the cast piece.
   const [stageView] = useState<"map" | "metal">("map");
   const [layerMode, setLayerMode] = useState<LayerMode>("streets");
+  // STL print-geometry preview is collapsible — open by default on desktop,
+  // closed on phones where the sticky preview column otherwise fills the screen.
+  const [showStl, setShowStl] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 901px)").matches : true,
+  );
 
   // Streets default to a shallow relief. Applied on mount (streets is the
   // default layer) and whenever the layer changes.
@@ -187,9 +193,9 @@ export function SkylineDesigner() {
     !heightNorm;
 
   const viewer = loading ? (
-    <div className="stage-msg mono">Reading the city…</div>
+    <div className="stage-msg mono">{d.readingCity}</div>
   ) : empty ? (
-    <div className="stage-msg mono">No buildings or streets here — try a city spot.</div>
+    <div className="stage-msg mono">{d.noCity}</div>
   ) : stageView === "map" ? (
     <CityViewer
       buildings={activeBuildings}
@@ -206,6 +212,8 @@ export function SkylineDesigner() {
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
       solidFloor={layerMode !== "streets"}
+      jewelryType={jewelryType}
+      ringRotation={ringRotation}
     />
   ) : (
     <RingViewer
@@ -228,46 +236,55 @@ export function SkylineDesigner() {
         {/* Left — live preview + CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">Your skyline {jewelryType} · <b>{METALS[metal].label}</b></div>
+            <div className="cap">{d.skylineCaption(d.jewelry[jewelryType], d.metals[metal])}</div>
 
             <div className="stage">{viewer}</div>
           </div>
 
-          <div className="panel viewer dz-stl">
-            <div className="cap">STL preview · <b>print geometry</b></div>
-            <div className="stage">
-              {heightNorm ? (
-                <StlPreview
-                  shape={shape}
-                  heightNorm={heightNorm}
-                  width={width}
-                  relief={relief}
-                  thickness={thickness}
-                  jewelryType={jewelryType}
-                  hangPlace={hangPlace}
-                  hangSize={hangSize}
-                  hangRotation={hangRotation}
-                  hangHorizontal={hangHorizontal}
-                  ringRotation={ringRotation}
-                  exportMesh={exportMesh}
-                  metal={metal}
-                />
-              ) : (
-                <div className="stage-msg mono">No mesh yet</div>
-              )}
-            </div>
+          <div className={`panel viewer dz-stl ${showStl ? "open" : "collapsed"}`}>
+            <button
+              className="dz-stl-head"
+              onClick={() => setShowStl((v) => !v)}
+              aria-expanded={showStl}
+            >
+              <span className="dz-stl-title mono">{d.stlPreview}</span>
+              <span className="dz-stl-toggle mono">{showStl ? d.stlHide : d.stlShow}</span>
+            </button>
+            {showStl && (
+              <div className="stage">
+                {heightNorm ? (
+                  <StlPreview
+                    shape={shape}
+                    heightNorm={heightNorm}
+                    width={width}
+                    relief={relief}
+                    thickness={thickness}
+                    jewelryType={jewelryType}
+                    hangPlace={hangPlace}
+                    hangSize={hangSize}
+                    hangRotation={hangRotation}
+                    hangHorizontal={hangHorizontal}
+                    ringRotation={ringRotation}
+                    exportMesh={exportMesh}
+                    metal={metal}
+                  />
+                ) : (
+                  <div className="stage-msg mono">{d.noMesh}</div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
-            <div className="dz-price-sub mono">made to order in 3–4 weeks</div>
+            <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
                 className="btn-primary lg dz-order"
                 onClick={() => setOrderOpen(true)}
                 disabled={!heightNorm}
               >
-                Order this piece
+                {d.order}
               </button>
               <ExportButton heightNorm={heightNorm} tag="skyline" exportMesh={exportMesh} />
             </div>
@@ -277,34 +294,29 @@ export function SkylineDesigner() {
         <OrderModal
           open={orderOpen}
           onClose={() => setOrderOpen(false)}
-          summary={<>Ordering your <b>{name}</b> skyline {SHAPE_LABEL[shape]} in {METALS[metal].label}.</>}
+          summary={t.order.skylineSummary(name, d.formName[shape], d.metals[metal])}
           buildPayload={buildPayload}
         />
 
         {/* Right — guided configuration */}
         <div className="dz-config">
-          <Step n={1} title="Choose your city" hint="Search a city, drop a pin on a favorite block, or nudge to frame it.">
-            <LocationSearch
-              presets={CITY_PRESETS}
-              placeholder="Search a city — e.g. Yerevan, Manhattan, Hong Kong…"
-            />
-            <Panel className="dz-mappanel" label={<>City map · <b>3D</b></>}>
-              <CityMap lat={lat} lng={lng} onSelect={(la, lo) => setLocation(la, lo, "Custom location")} />
+          <Step n={1} title={d.step1CityTitle} hint={d.step1CityHint}>
+            <LocationSearch presets={CITY_PRESETS} placeholder={d.searchCityPlaceholder} />
+            <Panel className="dz-mappanel" label={d.cityMapLabel}>
+              <CityMap lat={lat} lng={lng} onSelect={(la, lo) => setLocation(la, lo, d.customLocation)} />
             </Panel>
             {(buildings.isFetching || streets.isFetching) && (
-              <div className="search-msg mono">Fetching buildings &amp; streets from OpenStreetMap…</div>
+              <div className="search-msg mono">{d.fetchingOsm}</div>
             )}
             {(buildings.isError || streets.isError) && (
-              <div className="search-msg mono">
-                OpenStreetMap is busy — some data may be missing. Try a smaller area or re-pick the spot.
-              </div>
+              <div className="search-msg mono">{d.osmBusy}</div>
             )}
           </Step>
 
-          <Step n={2} title="Shape &amp; finish" hint="Pick a form, then fine-tune the relief and metal.">
+          <Step n={2} title={d.step2Title} hint={d.step2CityHint}>
             <div className="field">
-              <label>Render layers</label>
-              <div className="layer-seg" role="radiogroup" aria-label="Render layers">
+              <label>{d.renderLayers}</label>
+              <div className="layer-seg" role="radiogroup" aria-label={d.renderLayers}>
                 {LAYER_OPTIONS.map((opt) => (
                   <button
                     key={opt.mode}
@@ -315,12 +327,12 @@ export function SkylineDesigner() {
                     onClick={() => setLayerMode(opt.mode)}
                   >
                     <span className="layer-seg-ico" aria-hidden>{opt.icon}</span>
-                    <span className="layer-seg-label">{opt.label}</span>
+                    <span className="layer-seg-label">{d.layers[opt.mode]}</span>
                   </button>
                 ))}
               </div>
             </div>
-            <RingControls areaMin={0.1} areaMax={5} />
+            <RingControls areaMin={0.1} areaMax={5} reliefMax={MAPS_RELIEF_MAX} />
           </Step>
         </div>
       </div>

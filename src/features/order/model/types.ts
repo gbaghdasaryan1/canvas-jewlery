@@ -15,7 +15,7 @@ export interface OrderOptions {
   areaKm: number;
   smooth: number;
   /** Hang/orientation controls (pendant/bracelet/ring). */
-  hangPlace: string;
+  hangPlace: number; // hang angle in degrees (0 = top)
   hangSize: number;
   hangRotation: number;
   hangHorizontal: boolean;
