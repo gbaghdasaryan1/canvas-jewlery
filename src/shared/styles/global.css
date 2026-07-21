@@ -362,25 +362,42 @@ body { -webkit-tap-highlight-color: transparent; }
 .home-top .btn-primary { margin-left: 20px; }
 @media (max-width: 720px) { .home-nav { display: none; } .home-top .btn-primary { margin-left: auto; } }
 
-/* hero */
-.home-hero { padding: 60px 0 40px; }
-.home-hero-inner { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; }
+/* hero — two-block slider with an absolutely-centred brand line */
+.home-hero { position: relative; isolation: isolate; display: flex; align-items: center;
+  justify-content: center; min-height: min(78vh, 760px); overflow: hidden; }
+
+/* Slider — parent div holding every slide's two blocks. */
+.home-hero-slider { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.home-hero-track { display: flex; height: 100%; width: 100%;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
+/* One slide = two blocks (left + right), each half the banner width. */
+.home-hero-slide { flex: 0 0 100%; display: flex; height: 100%; }
+.home-hero-block { flex: 1 1 0; min-width: 0; height: 100%; }
+.home-hero-block .contour-art { width: 100%; height: 100%; }
+
+/* Legibility scrim behind the centred brand — darker in the middle. */
+.home-hero-scrim { position: absolute; inset: 0;
+  background:
+    radial-gradient(58% 72% at 50% 50%, rgba(243,244,246,0.9) 0%, rgba(243,244,246,0.62) 48%, rgba(243,244,246,0.12) 100%),
+    linear-gradient(0deg, rgba(243,244,246,0.4), rgba(243,244,246,0) 40%); }
+
+/* Brand line — absolutely centred over the slider. */
+.home-hero-brand { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(720px, 90vw); text-align: center; padding: 0 20px; z-index: 1; }
 .home-hero-title { font-family: var(--display); font-weight: 400; color: var(--ink-1);
-  font-size: clamp(40px, 6.4vw, 74px); line-height: 0.99; letter-spacing: -0.015em; margin: 16px 0 0; }
+  font-size: clamp(40px, 6.4vw, 74px); line-height: 0.99; letter-spacing: -0.015em; margin: 14px 0 0; }
 .home-hero-title em { font-style: italic; color: var(--bronze); }
-.home-hero-moments { margin: 22px 0 0; display: flex; flex-direction: column; gap: 3px; }
-.home-hero-moments p { margin: 0; font-family: var(--display); font-style: italic; font-weight: 400; font-size: clamp(15px, 1.9vw, 19px); color: var(--ink-2); }
-.home-hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-.home-hero-trust { display: flex; flex-wrap: wrap; gap: 7px 20px; margin-top: 24px; }
-.home-hero-trust span { font-size: 12px; color: var(--ink-3); letter-spacing: 0.01em; }
-.home-hero-art { position: relative; }
-.hero-art-frame { aspect-ratio: 4 / 5; border-radius: 22px; overflow: hidden; border: 1px solid var(--paper-line);
-  box-shadow: 0 30px 70px -30px rgba(24,28,34,0.45); }
-.hero-art-badge { position: absolute; left: 14px; bottom: 14px; background: rgba(255,255,255,0.9);
-  border: 1px solid var(--paper-line); border-radius: 999px; padding: 6px 12px; font-size: 11px; color: var(--ink-2); }
+.home-hero-brand .home-hero-lead { margin: 20px auto 0; max-width: 42ch; }
+.home-hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; justify-content: center; }
+
+/* Slider dots */
+.home-hero-dots { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: flex; gap: 9px; z-index: 2; }
+.home-hero-dot { width: 9px; height: 9px; border-radius: 999px; padding: 0; cursor: pointer;
+  border: 1px solid var(--ink-3); background: transparent; transition: 0.2s; }
+.home-hero-dot.on { background: var(--ink-1); border-color: var(--ink-1); transform: scale(1.15); }
 @media (max-width: 860px) {
-  .home-hero-inner { grid-template-columns: 1fr; gap: 28px; }
-  .hero-art-frame { aspect-ratio: 16 / 11; }
+  .home-hero { min-height: 66vh; }
 }
 
 /* hero story */
@@ -479,6 +496,9 @@ body { -webkit-tap-highlight-color: transparent; }
 .design-tagline { margin: 0 auto; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); }
 
 .dz-wrap { padding: 22px 0 40px; }
+/* The designer gets a wider container than the marketing `.wrap` (1180) so the
+   preview + controls have more room on desktop. */
+.wrap.dz { max-width: 1360px; }
 .dz { display: grid; grid-template-columns: 1.02fr 1fr; gap: 30px; align-items: start; }
 
 /* Left: sticky preview + price/CTA */

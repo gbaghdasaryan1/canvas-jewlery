@@ -1,7 +1,7 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
-import { buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
+import { buildShapeMesh, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
 import { useStreets } from "@/entities/streets/api/useStreets";
@@ -14,9 +14,7 @@ import { slugify } from "@/shared/lib/format";
 import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 import { Panel } from "@/shared/ui/Panel";
 import { CityMap } from "@/widgets/city-map/CityMap";
-import { CityViewer } from "@/widgets/city-viewer/CityViewer";
 import { buildCityMesh } from "@/widgets/city-viewer/buildCityMesh";
-import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
 import { StlPreview } from "@/widgets/stl-preview/StlPreview";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
@@ -67,15 +65,10 @@ export function SkylineDesigner() {
   const t = useT();
   const d = t.designer;
 
-  // Stage view: "map" renders the fetched city in the Mapbox map's style
-  // (same colors, three.js); "metal" shows the cast piece.
-  const [stageView] = useState<"map" | "metal">("map");
   const [layerMode, setLayerMode] = useState<LayerMode>("streets");
   // STL print-geometry preview is collapsible — open by default on desktop,
   // closed on phones where the sticky preview column otherwise fills the screen.
-  const [showStl, setShowStl] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 901px)").matches : true,
-  );
+
 
   // Streets default to a shallow relief. Applied on mount (streets is the
   // default layer) and whenever the layer changes.
@@ -116,9 +109,6 @@ export function SkylineDesigner() {
     () => toShapeParams(shape, { width, relief, thickness }, undefined, !isRing(jewelryType)),
     [shape, width, relief, thickness, jewelryType],
   );
-
-  const viewerHeightNorm = useDeferredValue(heightNorm);
-  const viewerParams = useDeferredValue(params);
 
   const activeBuildings = layerMode !== "streets" ? buildings.data ?? null : null;
   const activeStreets = layerMode !== "buildings" ? streets.data ?? null : null;
@@ -177,102 +167,37 @@ export function SkylineDesigner() {
     };
   }
 
-  const hangs = hangAnchors(shape, jewelryType, hangPlace);
-
-  const relevantLoading =
-    (layerMode !== "streets" && buildings.isLoading) ||
-    (layerMode !== "buildings" && streets.isLoading);
-  const loading = relevantLoading && !heightNorm;
-  const empty =
-    !loading &&
-    !(layerMode !== "streets" && buildings.isLoading) &&
-    !(layerMode !== "buildings" && streets.isLoading) &&
-    !heightNorm;
-
-  const viewer = loading ? (
-    <div className="stage-msg mono">{d.readingCity}</div>
-  ) : empty ? (
-    <div className="stage-msg mono">{d.noCity}</div>
-  ) : stageView === "map" ? (
-    <CityViewer
-      buildings={activeBuildings}
-      streets={activeStreets}
-      shape={shape}
-      lat={qLat}
-      lng={qLng}
-      areaKm={qAreaKm}
-      widthMm={width}
-      thicknessMm={thickness}
-      reliefMm={relief}
-      hangs={hangs}
-      hangSize={hangSize}
-      hangRotation={hangRotation}
-      hangHorizontal={hangHorizontal}
-      solidFloor={solidFloor}
-      jewelryType={jewelryType}
-      ringRotation={ringRotation}
-      engraving={activeEngraving}
-    />
-  ) : (
-    <RingViewer
-      heightNorm={viewerHeightNorm}
-      shape={shape}
-      params={viewerParams}
-      metal={metal}
-      hangs={hangs}
-      hangSize={hangSize}
-      hangRotation={hangRotation}
-      hangHorizontal={hangHorizontal}
-      jewelryType={jewelryType}
-      ringRotation={ringRotation}
-      engraving={activeEngraving}
-    />
-  );
-
   return (
     <div className="dz-wrap">
       <div className="wrap dz">
         {/* Left — live preview + CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">{d.skylineCaption(d.jewelry[jewelryType], d.metals[metal])}</div>
+            {/* <div className="cap">{d.skylineCaption(d.jewelry[jewelryType], d.metals[metal])}</div> */}
 
-            <div className="stage">{viewer}</div>
+            {/* Same `.stage` wrapper as the mountains designer so the canvas is
+                the identical size (`.dz-stage .stage` height). */}
+            <div className="stage">
+              <StlPreview
+                shape={shape}
+                heightNorm={heightNorm}
+                width={width}
+                relief={relief}
+                thickness={thickness}
+                jewelryType={jewelryType}
+                hangPlace={hangPlace}
+                hangSize={hangSize}
+                hangRotation={hangRotation}
+                hangHorizontal={hangHorizontal}
+                ringRotation={ringRotation}
+                exportMesh={exportMesh}
+                metal={metal}
+                engraving={activeEngraving}
+              />
+            </div>
           </div>
 
-          <div className={`panel viewer dz-stl ${showStl ? "open" : "collapsed"}`}>
-            <button
-              className="dz-stl-head"
-              onClick={() => setShowStl((v) => !v)}
-              aria-expanded={showStl}
-            >
-              <span className="dz-stl-title mono">{d.stlPreview}</span>
-              <span className="dz-stl-toggle mono">{showStl ? d.stlHide : d.stlShow}</span>
-            </button>
-            {showStl && (
-              <div className="stage">
-                {heightNorm ? (
-                  <StlPreview
-                    shape={shape}
-                    heightNorm={heightNorm}
-                    width={width}
-                    relief={relief}
-                    thickness={thickness}
-                    jewelryType={jewelryType}
-                    hangPlace={hangPlace}
-                    hangSize={hangSize}
-                    hangRotation={hangRotation}
-                    hangHorizontal={hangHorizontal}
-                    ringRotation={ringRotation}
-                    exportMesh={exportMesh}
-                    metal={metal}
-                  />
-                ) : (
-                  <div className="stage-msg mono">{d.noMesh}</div>
-                )}
-              </div>
-            )}
-          </div>
+
 
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>

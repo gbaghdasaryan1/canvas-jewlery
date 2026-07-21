@@ -100,7 +100,9 @@ export function MapView({ lat, lng, onSelect, onCenterChange }: MapViewProps) {
         onIdle={handleIdle}
         options={{
           mapTypeControl: false,
-          mapTypeId: "satellite",
+          // "hybrid" = satellite imagery with place names, roads, and labels
+          // overlaid (plain "satellite" shows no titles).
+          mapTypeId: "hybrid",
           streetViewControl: false,
           fullscreenControl: true,
           // One finger scrolls the page; two fingers pan the map. Keeps the

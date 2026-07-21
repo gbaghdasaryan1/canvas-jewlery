@@ -5,10 +5,11 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
-import { isRing, type JewelryType, type Shape } from "@/entities/ring/model/types";
+import { METALS, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import { buildRingBandMesh, ringBandDims } from "@/shared/lib/ringGeometry";
 import { EngravingText } from "@/shared/ui/EngravingText";
+import { CameraDirector, SceneEnvironment } from "@/widgets/ring-viewer/RingViewer";
 import {
   FRAME_MM,
   ROAD_DEFAULT,
@@ -32,8 +33,6 @@ import {
  */
 
 // ——— palette mirrored from cityMapStyle.ts ———
-const BACKDROP = "#eef5fc"; // pale blue-white, so the shaped plate reads
-const GROUND = "#b9c2cc"; // silver-blue plate
 const RIM = "#9cc0e8"; // light blue edge line
 const BUILDING_STOPS: Array<[number, string]> = [
   [0, "#b9d7f2"], // low-rise: light blue
@@ -96,14 +95,31 @@ interface CityViewerProps {
   ringRotation?: number;
   /** Laser-engraving text — previewed on the back / inside the band. */
   engraving?: string;
+  /** Cast metal — drives the PBR material so the map piece previews in the
+      same silver/gold/platinum as the mountains viewer. */
+  metal?: Metal;
 }
 
 export function CityViewer({
   buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
   hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
-  jewelryType = "pendant", ringRotation = 0, engraving = "",
+  jewelryType = "pendant", ringRotation = 0, engraving = "", metal = "silver",
 }: CityViewerProps) {
   const ring = isRing(jewelryType);
+
+  // Single cast-metal material for the whole piece (plate, frame, buildings,
+  // roads, band, bail) — same PBR setup as RingViewer so /maps previews in
+  // metal exactly like /mountains. Reflections come from <SceneEnvironment>.
+  const metalMat = useMemo(() => {
+    const spec = METALS[metal];
+    return new THREE.MeshStandardMaterial({
+      color: spec.color,
+      metalness: 1.0,
+      roughness: spec.roughness,
+      envMapIntensity: 1.8,
+    });
+  }, [metal]);
+  useEffect(() => () => metalMat.dispose(), [metalMat]);
   // lat/lng → the same normalized plane the mesh builders sample:
   // x = (lng-west)/dLng - 0.5 (east), z = (lat-south)/dLat - 0.5. World
   // coordinates keep this z axis (like the metal mesh), so the heart's
@@ -320,29 +336,32 @@ export function CityViewer({
       // fragments for a preview that doesn't need it.
       dpr={[1, 2]}
       camera={{ position: [18, 62, 80], fov: 38 }}
-      gl={{ antialias: true }}
+      gl={{ alpha: true, antialias: true }}
+      onCreated={({ gl }) => {
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.2;
+      }}
       style={{ width: "100%", height: "100%", display: "block" }}
     >
-      <color attach="background" args={[BACKDROP]} />
-      {/* soft viewport light, like the map style's `light` */}
-      <hemisphereLight args={["#ffffff", "#c8ccd2", 0.9]} />
-      <directionalLight position={[40, 80, 20]} intensity={0.55} />
+      {/* Transparent canvas → the dark studio .viewer panel shows through, so
+          the map view and the STL preview share one background. */}
+      {/* Metal lighting — mirrors RingViewer so the cast piece reads the same. */}
+      <hemisphereLight args={[0xfff8f0, 0x14100c, 0.35]} />
+      <directionalLight position={[8, 14, 6]} intensity={2.8} color={0xfff8f0} />
+      <directionalLight position={[-10, 2, 4]} intensity={0.5} color={0xd0e0ff} />
+      <directionalLight position={[-1, 10, -12]} intensity={1.1} color={0xffe8d0} />
+      <SceneEnvironment />
       {solidFloor && (
-        <mesh geometry={groundGeo} position={[0, -0.01, 0]}>
-          <meshLambertMaterial color={GROUND} />
-        </mesh>
+        <mesh geometry={groundGeo} position={[0, -0.01, 0]} material={metalMat} />
       )}
-      <mesh geometry={frameGeo}>
-        <meshLambertMaterial color={GROUND} />
-      </mesh>
+      <mesh geometry={frameGeo} material={metalMat} />
       {ringBand && (
         <mesh
           geometry={ringBand.geo}
           position={[0, -plateH - ringBand.outerR, 0]}
           rotation={[0, -(ringRotation * Math.PI) / 180, 0]}
-        >
-          <meshLambertMaterial color={GROUND} />
-        </mesh>
+          material={metalMat}
+        />
       )}
       {/* Laser engraving — inside the band for a ring, on the flat back plate
           otherwise. Preview-only; the mark is a post-cast laser step. */}
@@ -381,6 +400,7 @@ export function CityViewer({
         return (
           <mesh
             key={i}
+            material={metalMat}
             position={[
               hang.x * WORLD + ox * bailR * 0.65,
               bailY,
@@ -396,21 +416,16 @@ export function CityViewer({
             ]}
           >
             <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
-            <meshLambertMaterial color={GROUND} />
           </mesh>
         );
       })}
-      {roadGeo && (
-        <mesh geometry={roadGeo}>
-          <meshBasicMaterial vertexColors />
-        </mesh>
-      )}
-      {buildingGeo && (
-        <mesh geometry={buildingGeo}>
-          <meshLambertMaterial vertexColors />
-        </mesh>
-      )}
+      {roadGeo && <mesh geometry={roadGeo} material={metalMat} />}
+      {buildingGeo && <mesh geometry={buildingGeo} material={metalMat} />}
+      {/* Swing to the engraved face (back plate / inside band) when the user
+          starts typing an engraving, so the preview text is visible. */}
+      <CameraDirector engraving={engraving} jewelryType={jewelryType} />
       <OrbitControls
+        makeDefault
         enablePan={false}
         minDistance={25}
         maxDistance={260}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -253,6 +253,54 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
   );
 }
 
+/**
+ * When the user starts typing an engraving, swing the camera to the engraved
+ * face (the flat underside for a pendant/bracelet, the inside of the band for a
+ * ring) so the preview text is actually visible. Only fires on the empty→typed
+ * transition, so it doesn't fight the user while they keep editing or orbit away.
+ */
+export function CameraDirector({ engraving = "", jewelryType = "pendant" }: { engraving?: string; jewelryType?: JewelryType }) {
+  const camera = useThree((s) => s.camera);
+  const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
+  const invalidate = useThree((s) => s.invalidate);
+  const prev = useRef(engraving);
+  const raf = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const had = prev.current.trim().length > 0;
+    const has = engraving.trim().length > 0;
+    prev.current = engraving;
+    if (!controls || !has || had) return;
+
+    // Direction (from the piece centre toward the camera) that puts the
+    // engraved face toward the viewer — below-front, more so for a ring whose
+    // text wraps the inner band wall. Keep the user's current zoom distance.
+    const dir = (isRing(jewelryType)
+      ? new THREE.Vector3(0.1, -0.55, 0.83)
+      : new THREE.Vector3(0.12, -0.86, 0.5)
+    ).normalize();
+    const R = camera.position.distanceTo(controls.target);
+    const to = dir.multiplyScalar(R).add(controls.target);
+    const from = camera.position.clone();
+    const start = performance.now();
+    const DUR = 700;
+
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / DUR);
+      const e = t * t * (3 - 2 * t); // smoothstep ease
+      camera.position.lerpVectors(from, to, e);
+      controls.update();
+      invalidate(); // frameloop="demand" — repaint each animation frame
+      if (t < 1) raf.current = requestAnimationFrame(tick);
+    };
+    if (raf.current) cancelAnimationFrame(raf.current);
+    raf.current = requestAnimationFrame(tick);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [engraving, controls, camera, invalidate, jewelryType]);
+
+  return null;
+}
+
 export function RingViewer(props: RingMeshProps) {
   return (
     <Canvas
@@ -278,7 +326,9 @@ export function RingViewer(props: RingMeshProps) {
       <directionalLight position={[-1, 10, -12]} intensity={1.1} color={0xffe8d0} />
       <SceneEnvironment />
       <RingMesh {...props} />
+      <CameraDirector engraving={props.engraving} jewelryType={props.jewelryType} />
       <OrbitControls
+        makeDefault
         enablePan={false}
         minDistance={28}
         maxDistance={90}

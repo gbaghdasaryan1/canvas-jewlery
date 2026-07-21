@@ -35,6 +35,11 @@ const MOUNTAINS_DEFAULT_RELIEF_MM = 4.6;
 // natural landmarks.
 const MOUNTAIN_PRESETS = PRESETS.filter((p) => !p.city);
 
+// Default landmark for /mountains — the first natural preset (Mt Ararat). The
+// designer store is a shared singleton, so visiting /maps (or moving the pin)
+// leaves a stale location behind; we reset to this on mount.
+const DEFAULT_MOUNTAIN = MOUNTAIN_PRESETS[0];
+
 export function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
   return (
     <section className="dz-step">
@@ -53,14 +58,17 @@ export function Step({ n, title, hint, children }: { n: number; title: string; h
 export function Designer() {
   const {
     lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth,
-    showBuildings, metal, engraving, setRelief,
+    showBuildings, metal, engraving, setRelief, setLocation, setAreaKm,
   } = useDesigner();
   const t = useT();
   const d = t.designer;
 
-  // Reset relief to the mountains default on mount — /maps clamps it low.
+  // Reset to the mountains defaults on mount: relief (/maps clamps it low) and
+  // the Mt Ararat landmark (the shared store may hold a stale /maps location).
   useEffect(() => {
     setRelief(MOUNTAINS_DEFAULT_RELIEF_MM);
+    setLocation(DEFAULT_MOUNTAIN.lat, DEFAULT_MOUNTAIN.lng, DEFAULT_MOUNTAIN.name);
+    if (DEFAULT_MOUNTAIN.areaKm) setAreaKm(DEFAULT_MOUNTAIN.areaKm);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Debounce the location inputs feeding the network queries: dragging the
@@ -148,7 +156,7 @@ export function Designer() {
         {/* Left — live preview + price/CTA (sticky on desktop) */}
         <aside className="dz-preview">
           <div className="panel viewer dz-stage">
-            <div className="cap">{d.previewCaption(d.formName[shape], d.jewelry[jewelryType], d.metals[metal])}</div>
+            {/* <div className="cap">{d.previewCaption(d.formName[shape], d.jewelry[jewelryType], d.metals[metal])}</div> */}
             <div className="stage">{viewer}</div>
           </div>
 

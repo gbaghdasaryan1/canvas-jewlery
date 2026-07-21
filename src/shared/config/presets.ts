@@ -8,7 +8,7 @@ export interface Preset {
 
 export const PRESETS: Preset[] = [
   // Himalaya / Karakoram
-  { name: "Mt Ararat",     lat:  39.6841381927097, lng:  44.33252033660726, areaKm: 33.9 },
+  { name: "Mt Ararat",     lat:  39.6841381927097, lng:  44.33252033660726, areaKm: 31.5 },
   { name: "Everest",       lat:  27.9881, lng:  86.9250, areaKm: 22 },
   { name: "K2",            lat:  35.8808, lng:  76.5133, areaKm: 13.6 },
   // Europe
@@ -71,4 +71,4 @@ export const PRESETS: Preset[] = [
   { name: "Hong Kong",     lat:  22.2799, lng: 114.1588, areaKm: 0.5, city: true },
 ];
 
-export const GRID = 80; // elevation samples per axis
+export const GRID = 110; // elevation samples per axis

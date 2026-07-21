@@ -53,7 +53,9 @@ interface DesignerState {
 export const ENGRAVING_MAX = 40;
 
 export const useDesigner = create<DesignerState>((set) => ({
-  // Default landmark — the first mountains preset (Mt Ararat).
+  // Default landmark — the first mountains preset (Mt Ararat). Keep lat/lng
+  // *and* areaKm in sync with that preset so the default canvas frames Ararat
+  // correctly on first load (selecting a preset later sets areaKm itself).
   lat: 39.6841381927097,
   lng: 44.33252033660726,
   name: "Mt Ararat",
@@ -64,7 +66,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   hangHorizontal: true,
   ringRotation: 0,
   shape: "rectangle",
-  areaKm: 22,
+  areaKm: 33.9, // Mt Ararat preset window (see PRESETS)
   width: 18, // mm — plaque side
   relief: 4.6, // mm — max relief height
   thickness: DEFAULT_THICKNESS, // mm — base thickness (ring uses RING_THICKNESS)
