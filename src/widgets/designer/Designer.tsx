@@ -16,7 +16,6 @@ import { MountainsMap } from "@/widgets/mountains-map/MountainsMap";
 import { RingViewer } from "@/widgets/ring-viewer/RingViewer";
 import { LocationSearch } from "@/features/location-search/LocationSearch";
 import { RingControls } from "@/features/ring-controls/RingControls";
-import { ExportButton } from "@/features/stl-export/ExportButton";
 import { buildExportMesh } from "@/features/stl-export/buildExportMesh";
 import { OrderModal, type OrderPayload } from "@/features/order";
 import type { Shape } from "@/entities/ring/model/types";
