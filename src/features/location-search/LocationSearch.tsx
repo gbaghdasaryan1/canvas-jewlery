@@ -3,6 +3,7 @@ import { useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
 import { PRESETS, type Preset } from "@/shared/config/presets";
 import { useGoogleMaps } from "@/shared/lib/googleMaps";
+import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
 
 interface LocationSearchProps {
   /** Preset chips to offer (defaults to all). */
@@ -19,6 +20,15 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
   const [msg, setMsg] = useState<string | null>(null);
   const [presetOpen, setPresetOpen] = useState(false);
   const presetRef = useRef<HTMLDivElement>(null);
+
+  // Places autocomplete state.
+  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const acServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const sessionRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
+  // Debounce keystrokes so we don't fire a prediction request per character.
+  const dq = useDebouncedValue(q, 180);
 
   // Close the preset menu on outside click / Escape.
   useEffect(() => {
@@ -37,9 +47,70 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
     };
   }, [presetOpen]);
 
+  // Fetch place predictions as the user types (Places AutocompleteService).
+  useEffect(() => {
+    const term = dq.trim();
+    if (!isLoaded || term.length < 2 || !google.maps.places) {
+      setPredictions([]);
+      return;
+    }
+    const svc =
+      acServiceRef.current ?? (acServiceRef.current = new google.maps.places.AutocompleteService());
+    if (!sessionRef.current) sessionRef.current = new google.maps.places.AutocompleteSessionToken();
+    let cancelled = false;
+    svc.getPlacePredictions({ input: term, sessionToken: sessionRef.current }, (preds) => {
+      if (!cancelled) setPredictions(preds ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dq, isLoaded]);
+
+  // Close the suggestions on outside click / Escape.
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (!searchRef.current?.contains(e.target as Node)) setSearchOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
+  // Resolve a picked prediction to coordinates (geocode by placeId — no extra
+  // PlacesService/map needed) and drop the pin there.
+  async function pickPrediction(pred: google.maps.places.AutocompletePrediction) {
+    const label = pred.structured_formatting?.main_text ?? pred.description.split(",")[0];
+    setQ(pred.description);
+    setPredictions([]);
+    setSearchOpen(false);
+    setMsg(null);
+    try {
+      const geocoder = new google.maps.Geocoder();
+      const { results } = await geocoder.geocode({ placeId: pred.place_id });
+      if (results[0]) {
+        const loc = results[0].geometry.location;
+        setLocation(loc.lat(), loc.lng(), label);
+      }
+    } catch {
+      setMsg(t.designer.searchNoResult(label));
+    } finally {
+      // A session token is spent once a place is picked — start a fresh one.
+      sessionRef.current = null;
+    }
+  }
+
   async function search() {
     const term = q.trim();
     if (!term) return;
+    setSearchOpen(false);
+    setPredictions([]);
     setBusy(true);
     setMsg(null);
     try {
@@ -82,24 +153,57 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
 
   return (
     <div className="loc">
-      <div className="findbar">
-        <span className="findbar-ico" aria-hidden>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.2-3.2" />
-          </svg>
-        </span>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && search()}
-          placeholder={placeholder ?? t.designer.searchMountainsPlaceholder}
-          autoComplete="off"
-          aria-label={t.designer.find}
-        />
-        <button className="findbar-go" onClick={search} disabled={busy}>
-          {busy ? "…" : t.designer.find}
-        </button>
+      <div className="findbar-wrap" ref={searchRef}>
+        <div className="findbar">
+          <span className="findbar-ico" aria-hidden>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.2-3.2" />
+            </svg>
+          </span>
+          <input
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setSearchOpen(true); }}
+            onFocus={() => setSearchOpen(true)}
+            onKeyDown={(e) => e.key === "Enter" && search()}
+            placeholder={placeholder ?? t.designer.searchMountainsPlaceholder}
+            autoComplete="off"
+            aria-label={t.designer.find}
+            aria-expanded={searchOpen && predictions.length > 0}
+            role="combobox"
+            aria-autocomplete="list"
+          />
+          <button className="findbar-go" onClick={search} disabled={busy}>
+            {busy ? "…" : t.designer.find}
+          </button>
+        </div>
+        {searchOpen && predictions.length > 0 && (
+          <div className="ac-menu" role="listbox" aria-label={t.designer.find}>
+            {predictions.map((p) => (
+              <button
+                key={p.place_id}
+                type="button"
+                role="option"
+                aria-selected={false}
+                className="ac-option"
+                onClick={() => pickPrediction(p)}
+              >
+                <span className="ac-ico" aria-hidden>
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 21s-7-6.4-7-11a7 7 0 0 1 14 0c0 4.6-7 11-7 11Z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                </span>
+                <span className="ac-text">
+                  <span className="ac-main">{p.structured_formatting?.main_text ?? p.description}</span>
+                  {p.structured_formatting?.secondary_text && (
+                    <span className="ac-sub">{p.structured_formatting.secondary_text}</span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       {msg && <div className="search-msg mono">{msg}</div>}
 

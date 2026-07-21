@@ -36,26 +36,24 @@ export function EngravingText({
 
   // Ring: wrap the engraving around the band's inner cylinder. troika bends
   // each glyph around the text's local Y axis with the front face turning
-  // toward the cylinder centre. The nested rotations map that onto the ring —
-  // local Y → the finger axis, front face → the ring centre — and `position`
-  // seats the mid-glyph at the bottom-inside of the wall.
+  // toward the cylinder centre. The rotation maps that onto the ring — local Y →
+  // the finger axis, front face → the ring centre (downward) — and `position`
+  // seats the mid-glyph at the top-inside of the wall.
   if (curveRadius != null) {
     return (
-      <group position={position} rotation={[0, Math.PI, 0]}>
-        <group rotation={[-Math.PI / 2, 0, 0]}>
-          <Text
-            // curveRadius is a valid troika-three-text prop (r3f sets it on the
-            // mesh) but isn't in drei's Text typings — cast it through.
-            {...({ curveRadius } as Record<string, unknown>)}
-            fontSize={fontSize}
-            color={color}
-            anchorX="center"
-            anchorY="middle"
-            letterSpacing={0.02}
-          >
-            {value}
-          </Text>
-        </group>
+      <group position={position} rotation={[Math.PI / 2, 0, 0]}>
+        <Text
+          // curveRadius is a valid troika-three-text prop (r3f sets it on the
+          // mesh) but isn't in drei's Text typings — cast it through.
+          {...({ curveRadius } as Record<string, unknown>)}
+          fontSize={fontSize}
+          color={color}
+          anchorX="center"
+          anchorY="middle"
+          letterSpacing={0.02}
+        >
+          {value}
+        </Text>
       </group>
     );
   }

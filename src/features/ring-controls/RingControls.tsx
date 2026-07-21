@@ -44,7 +44,7 @@ interface RingControlsProps {
   showEngraving?: boolean;
 }
 
-export function RingControls({ areaMin = 0.3, areaMax = 614, reliefMax = 4.8, showEngraving = true }: RingControlsProps) {
+export function RingControls({ areaMin = 0.3, areaMax = 50, reliefMax = 4.8, showEngraving = true }: RingControlsProps) {
   const s = useDesigner();
   const t = useT();
   const d = t.designer;
@@ -101,17 +101,20 @@ export function RingControls({ areaMin = 0.3, areaMax = 614, reliefMax = 4.8, sh
         </div>
       </div>
 
-      {isRing(s.jewelryType) ? (
-        <Range
-          label={d.ringOrientation}
-          value={`${Math.round(s.ringRotation)}°`}
-          min={0}
-          max={360}
-          step={1}
-          current={s.ringRotation}
-          onChange={s.setRingRotation}
-        />
-      ) : (
+      {/* Orientation — yaw the relief on its mount. For a ring it spins the
+          plaque on the band; for a pendant/bracelet it turns the design under
+          the fixed hang point. Offered for every type. */}
+      <Range
+        label={isRing(s.jewelryType) ? d.ringOrientation : d.orientation}
+        value={`${Math.round(s.ringRotation)}°`}
+        min={0}
+        max={360}
+        step={1}
+        current={s.ringRotation}
+        onChange={s.setRingRotation}
+      />
+
+      {!isRing(s.jewelryType) && (
         <div className="field">
           <label>{d.hangingPoint}</label>
           {/* One button loops the bail(s) around the plate: a pendant steps

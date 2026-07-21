@@ -53,9 +53,10 @@ interface DesignerState {
 export const ENGRAVING_MAX = 40;
 
 export const useDesigner = create<DesignerState>((set) => ({
-  lat: 27.9881,
-  lng: 86.925,
-  name: "Mount Everest",
+  // Default landmark — the first mountains preset (Mt Ararat).
+  lat: 39.6841381927097,
+  lng: 44.33252033660726,
+  name: "Mt Ararat",
   jewelryType: "pendant",
   hangPlace: 0, // hang angle in degrees (0 = top); see HangPlace
   hangSize: 1,
@@ -63,7 +64,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   hangHorizontal: true,
   ringRotation: 0,
   shape: "rectangle",
-  areaKm: 40,
+  areaKm: 22,
   width: 18, // mm — plaque side
   relief: 4.6, // mm — max relief height
   thickness: DEFAULT_THICKNESS, // mm — base thickness (ring uses RING_THICKNESS)

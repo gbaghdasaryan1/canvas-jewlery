@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { GoogleMap, Marker } from "@react-google-maps/api";
+import { GoogleMap } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY, useGoogleMaps } from "@/shared/lib/googleMaps";
 
 const containerStyle = { width: "100%", height: "100%" };
@@ -16,39 +16,54 @@ export interface MapViewProps {
 /**
  * Google Maps point picker. Fills its container — `.map-canvas` supplies the
  * explicit height. Requires VITE_GOOGLE_MAPS_API_KEY (Maps JavaScript API).
+ *
+ * The marker is created imperatively on the map instance (not via the
+ * @react-google-maps/api `<Marker>` wrapper, which intermittently fails to
+ * mount) so the pin always shows.
  */
 export function MapView({ lat, lng, onSelect, onCenterChange }: MapViewProps) {
   const mapRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
   const idleTimer = useRef<number | undefined>(undefined);
   const { isLoaded, loadError } = useGoogleMaps();
 
-  // Keep the map centered on external lat/lng changes (search, presets,
-  // nudge, manual coordinate edits) without remounting.
+  // Keep the latest coords/callback without re-running the one-time map load.
+  const coordsRef = useRef({ lat, lng });
+  coordsRef.current = { lat, lng };
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+
+  // Keep the map centered and the pin positioned on external lat/lng changes
+  // (search, presets, nudge, manual coordinate edits) without remounting.
   useEffect(() => {
     mapRef.current?.setCenter({ lat, lng });
+    markerRef.current?.setPosition({ lat, lng });
   }, [lat, lng]);
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
+    const marker = new google.maps.Marker({
+      map,
+      position: coordsRef.current,
+      draggable: true,
+      title: "Selected location",
+      // Default Google Maps pin (standard red marker).
+    });
+    marker.addListener("dragend", (e: google.maps.MapMouseEvent) => {
+      if (e.latLng) onSelectRef.current(e.latLng.lat(), e.latLng.lng());
+    });
+    markerRef.current = marker;
   }, []);
 
   const onMapUnmount = useCallback(() => {
+    markerRef.current?.setMap(null);
+    markerRef.current = null;
     mapRef.current = null;
   }, []);
 
-  const handleClick = useCallback(
-    (e: google.maps.MapMouseEvent) => {
-      if (e.latLng) onSelect(e.latLng.lat(), e.latLng.lng());
-    },
-    [onSelect],
-  );
-
-  const handleDragEnd = useCallback(
-    (e: google.maps.MapMouseEvent) => {
-      if (e.latLng) onSelect(e.latLng.lat(), e.latLng.lng());
-    },
-    [onSelect],
-  );
+  const handleClick = useCallback((e: google.maps.MapMouseEvent) => {
+    if (e.latLng) onSelectRef.current(e.latLng.lat(), e.latLng.lng());
+  }, []);
 
   const handleIdle = useCallback(() => {
     if (!onCenterChange) return;
@@ -93,14 +108,7 @@ export function MapView({ lat, lng, onSelect, onCenterChange }: MapViewProps) {
           gestureHandling: "cooperative",
           zoomControl: true,
         }}
-      >
-        <Marker
-          position={{ lat, lng }}
-          title="Selected location"
-          draggable
-          onDragEnd={handleDragEnd}
-        />
-      </GoogleMap>
+      />
     </div>
   );
 }

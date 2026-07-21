@@ -158,7 +158,6 @@ export function Designer() {
               <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
               <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
             </div>
-            <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
                 className="btn-primary lg dz-order"
@@ -180,7 +179,7 @@ export function Designer() {
 
         {/* Right — guided configuration */}
         <div className="dz-config">
-          <Step n={1} title={d.step1MountainsTitle} hint={d.step1MountainsHint}>
+          <Step n={1} title={d.step1MountainsTitle} hint={""}>
             <LocationSearch presets={MOUNTAIN_PRESETS} />
             <Panel className="dz-mappanel" label={d.mapLabel}>
               <MountainsMap />

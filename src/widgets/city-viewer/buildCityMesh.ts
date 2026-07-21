@@ -34,6 +34,9 @@ export interface CityMeshInput {
   /** When false, the solid base plate is omitted — only the frame and the
       streets/buildings remain (matches the canvas's hollow-floor mode). */
   solidFloor?: boolean;
+  /** Orientation (degrees): rotate the inner content (buildings + streets)
+      about the plate centre while the base + frame stay fixed. 0 = none. */
+  contentYawDeg?: number;
 }
 
 const MIN_BUILDING_MM = 0.25; // castability floor for tiny buildings
@@ -46,7 +49,7 @@ const MIN_BUILDING_MM = 0.25; // castability floor for tiny buildings
  * plate (standard multi-shell STL; slicers and casting prep union them).
  */
 export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
-  const { buildings, streets, shape, lat, lng, areaKm, widthMm, baseMm, reliefMm, solidFloor = true } = input;
+  const { buildings, streets, shape, lat, lng, areaKm, widthMm, baseMm, reliefMm, solidFloor = true, contentYawDeg = 0 } = input;
   if (!buildings?.length && !streets?.length) return null;
   // Same soft-knee vertical scale as the canvas (see makeHeightScale).
   const heightScale = makeHeightScale(buildings?.map((b) => b.height) ?? []);
@@ -78,6 +81,14 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
   const nz = (la: number) => (la - south) / dLat - 0.5;
   const mmPerM = widthMm / (areaKm * 1000); // true physical scale
 
+  // Orientation: rotate a normalized (x, z) point about the plate centre.
+  // Applied to building/street coords only, so the base + frame stay put and
+  // the rotated content is clipped by the fixed outline.
+  const yaw = (contentYawDeg * Math.PI) / 180;
+  const yc = Math.cos(yaw), ys = Math.sin(yaw);
+  const rot = (x: number, z: number): Pt =>
+    yaw ? { x: x * yc - z * ys, z: x * ys + z * yc } : { x, z };
+
   const geoms: THREE.BufferGeometry[] = [];
 
   // Closed vertical prism over a normalized-plane polygon, y0..y1 in mm.
@@ -106,7 +117,7 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
 
   if (buildings?.length) {
     for (const b of buildings) {
-      const pts: Pt[] = b.ring.map(([la, lo]) => ({ x: nx(lo), z: nz(la) }));
+      const pts: Pt[] = b.ring.map(([la, lo]) => rot(nx(lo), nz(la)));
       if (pts.length < 3) continue;
       const allIn = pts.every((p) => inside(p.x, p.z));
       const h = Math.max(heightScale(b.height) * reliefMm, MIN_BUILDING_MM);
@@ -142,8 +153,10 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
       const style = ROAD_STYLES[st.cls] ?? ROAD_DEFAULT;
       const half = Math.max((style.widthM * mmPerM) / widthMm, 0.0012) / 2; // normalized units
       for (let i = 1; i < st.pts.length; i++) {
-        let ax = nx(st.pts[i - 1][1]), az = nz(st.pts[i - 1][0]);
-        let bx = nx(st.pts[i][1]), bz = nz(st.pts[i][0]);
+        const aPt = rot(nx(st.pts[i - 1][1]), nz(st.pts[i - 1][0]));
+        const bPt = rot(nx(st.pts[i][1]), nz(st.pts[i][0]));
+        let ax = aPt.x, az = aPt.z;
+        let bx = bPt.x, bz = bPt.z;
         const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
         if (!aIn && !bIn) continue;
         if (!bIn) { const p = streetClip(ax, az, bx, bz); bx = p.x; bz = p.z; }

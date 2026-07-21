@@ -29,7 +29,6 @@ export function Gallery() {
               <ContourArt seed={(i + 3) * 97} tone={TONES[i % TONES.length]} />
               <div className="gallery-cap">
                 <span>{p}</span>
-                <span className="mono">◷ {t.gallery.madeToOrder}</span>
               </div>
             </Link>
           ))}

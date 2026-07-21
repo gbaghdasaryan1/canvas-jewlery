@@ -58,23 +58,38 @@ export async function fetchElevation(
 
   try {
     const elevator = new google.maps.ElevationService();
-    // Fire every chunk concurrently — the SDK samples ~3k points, and awaiting
-    // each chunk in turn stacked ~6 network round-trips into the render delay.
-    // Running them in parallel collapses that to a single round-trip's latency.
     const offsets: number[] = [];
     for (let i = 0; i < locations.length; i += CHUNK) offsets.push(i);
-    await Promise.all(
-      offsets.map(async (i) => {
-        const chunk = locations.slice(i, i + CHUNK);
-        const { results } = await withTimeout(
-          elevator.getElevationForLocations({ locations: chunk }),
-          REQUEST_TIMEOUT_MS,
-        );
-        for (let k = 0; k < results.length; k++) {
-          out[i + k] = results[k].elevation;
+
+    // Fetch one chunk, retrying transient failures (Google throttles bursts
+    // with OVER_QUERY_LIMIT) with a short backoff before giving up.
+    const fetchChunk = async (i: number): Promise<void> => {
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const { results } = await withTimeout(
+            elevator.getElevationForLocations({ locations: locations.slice(i, i + CHUNK) }),
+            REQUEST_TIMEOUT_MS,
+          );
+          for (let k = 0; k < results.length; k++) out[i + k] = results[k].elevation;
+          return;
+        } catch (e) {
+          lastErr = e;
+          await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
         }
-      }),
-    );
+      }
+      throw lastErr;
+    };
+
+    // Bounded concurrency — a dense grid (GRID² points) is many chunks; firing
+    // them all at once trips Google's rate limit and the whole run fails over
+    // to procedural terrain. A small pool stays fast without getting throttled.
+    const CONCURRENCY = 5;
+    let cursor = 0;
+    const worker = async () => {
+      while (cursor < offsets.length) await fetchChunk(offsets[cursor++]);
+    };
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, offsets.length) }, worker));
 
     let mn = Infinity, mx = -Infinity;
     for (const e of out) {

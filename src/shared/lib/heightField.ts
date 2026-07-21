@@ -67,3 +67,42 @@ export function composeCityField(
   }
   return smoothGrid(out, smooth);
 }
+
+/**
+ * Rotate a square (N×N, row-major) heightfield about its centre by `degrees`,
+ * resampling bilinearly. Used for the "Orientation" control: rotating the field
+ * (rather than the mesh) turns the relief while leaving the edge-based frame and
+ * the plate outline fixed — so only the inner design spins under the frame.
+ * Out-of-bounds samples clamp to the edge, and since the perimeter sits under
+ * the frame band, the corners swept in by rotation stay hidden.
+ */
+export function rotateHeightField(src: Float32Array, degrees: number): Float32Array {
+  if (!degrees) return src;
+  const N = Math.round(Math.sqrt(src.length));
+  const out = new Float32Array(src.length);
+  const rad = (degrees * Math.PI) / 180;
+  const cos = Math.cos(rad), sin = Math.sin(rad);
+  const c = (N - 1) / 2;
+
+  const sample = (x: number, y: number): number => {
+    x = Math.min(Math.max(x, 0), N - 1);
+    y = Math.min(Math.max(y, 0), N - 1);
+    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const x1 = Math.min(x0 + 1, N - 1), y1 = Math.min(y0 + 1, N - 1);
+    const tx = x - x0, ty = y - y0;
+    const a = src[y0 * N + x0], b = src[y0 * N + x1];
+    const d = src[y1 * N + x0], e = src[y1 * N + x1];
+    return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty;
+  };
+
+  for (let j = 0; j < N; j++) {
+    for (let i = 0; i < N; i++) {
+      const dx = i - c, dy = j - c;
+      // Inverse-rotate the output cell back into the source field.
+      const sx = c + dx * cos + dy * sin;
+      const sy = c - dx * sin + dy * cos;
+      out[j * N + i] = sample(sx, sy);
+    }
+  }
+  return out;
+}

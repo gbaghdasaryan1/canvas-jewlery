@@ -8,6 +8,7 @@ import {
   type Shape,
 } from "@/entities/ring/model/types";
 import { buildRingBandMesh, ringBandDims, mergeMeshData, type RingMeshData } from "@/shared/lib/ringGeometry";
+import { rotateHeightField } from "@/shared/lib/heightField";
 import { buildBailMesh } from "@/shared/lib/bailCurve";
 
 /** Rotate a mesh's positions about the vertical (Y) axis, in place. */
@@ -58,10 +59,16 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
 
   // Both ring types drop the bezel frame so the relief sits flush on the shank.
   const framed = !isRing(jewelryType);
+  // Orientation: rotate the relief field (not the mesh) so the frame + outline
+  // stay put and only the inner design turns. Rings have no frame and yaw the
+  // whole plaque below instead, so they keep the field unrotated here.
+  const field = heightNorm && !isRing(jewelryType)
+    ? rotateHeightField(heightNorm, ringRotation)
+    : heightNorm;
   let mesh =
     exportMesh?.() ??
-    (heightNorm
-      ? buildShapeMesh(shape, heightNorm, toShapeParams(shape, { width, relief, thickness }, undefined, framed))
+    (field
+      ? buildShapeMesh(shape, field, toShapeParams(shape, { width, relief, thickness }, undefined, framed))
       : null);
   if (!mesh) return null;
 

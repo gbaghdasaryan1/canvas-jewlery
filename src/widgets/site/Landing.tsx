@@ -11,11 +11,7 @@ import { Testimonials } from "./Testimonials";
 import { HowItWorks } from "./HowItWorks";
 import { Faq } from "./Faq";
 
-/**
- * The marketing landing page at /. Ordered as a conversion funnel:
- * hook → trust → why → who it's for → how → what you choose → proof →
- * objections → close.
- */
+
 export function Landing() {
   const t = useT();
   return (

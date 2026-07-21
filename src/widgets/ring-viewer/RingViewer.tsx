@@ -3,6 +3,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { FRAME_HEIGHT_MM, buildRingBandMesh, ringBandDims, type SlabParams } from "@/shared/lib/ringGeometry";
+import { rotateHeightField } from "@/shared/lib/heightField";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import { EngravingText } from "@/shared/ui/EngravingText";
 import { METALS, buildShapeMesh, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
@@ -137,7 +138,11 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
   const { geometry, offset } = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     if (!heightContrast) return { geometry: geo, offset: new THREE.Vector3() };
-    const { positions, indices } = buildShapeMesh(shape, heightContrast, params);
+    // Orientation: pendant/bracelet rotate the relief field so the frame +
+    // outline stay fixed and only the inner design turns. Rings have no frame
+    // and yaw the whole plaque group instead (below), so keep the field as-is.
+    const field = ring ? heightContrast : rotateHeightField(heightContrast, ringRotation);
+    const { positions, indices } = buildShapeMesh(shape, field, params);
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
     geo.computeVertexNormals();
@@ -145,7 +150,7 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
     const c = geo.boundingBox!.getCenter(new THREE.Vector3());
     geo.center();
     return { geometry: geo, offset: c };
-  }, [heightContrast, shape, params]);
+  }, [heightContrast, shape, params, ring, ringRotation]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
 
@@ -183,8 +188,8 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
   const bailCurve = useMemo(() => new DropBailCurve(bailR), [bailR]);
   return (
     <>
-      {/* Ring plaque yaws on the band so the wearer can aim the relief; every
-          other type renders the plaque unrotated. */}
+      {/* Orientation: a ring yaws the whole plaque on its band; pendant/bracelet
+          keep the frame fixed and rotate only the relief field (built above). */}
       <group rotation={[0, ring ? (ringRotation * Math.PI) / 180 : 0, 0]}>
         <mesh geometry={geometry} material={material} />
       </group>
@@ -201,7 +206,7 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
         ? ringBand && (
           <EngravingText
             text={engraving}
-            position={[0, -offset.y - ringBand.topLocalY - ringBand.innerR + 0.06, 0]}
+            position={[0, -offset.y - ringBand.topLocalY + ringBand.innerR - 0.06, 0]}
             curveRadius={ringBand.innerR}
             fontSize={Math.max(0.9, ringBand.innerR * 0.3)}
             color="#2b3038"

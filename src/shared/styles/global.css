@@ -82,6 +82,27 @@ h1.display em { font-style: italic; color: var(--champagne); }
 .chip:hover { border-color: var(--gold); color: var(--ivory); }
 .chip.active { background: var(--gold); color: #14171b; border-color: var(--gold); }
 
+/* Search autocomplete (Google Places predictions) */
+.findbar-wrap { position: relative; }
+.ac-menu { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 1100;
+  max-height: 300px; overflow-y: auto; padding: 6px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--line); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  scrollbar-width: thin; }
+.ac-option { display: flex; align-items: center; gap: 11px; width: 100%; padding: 9px 11px;
+  border: 0; border-radius: 8px; background: transparent; color: var(--mist); text-align: left;
+  cursor: pointer; transition: background 0.12s, color 0.12s; }
+.ac-option:hover { background: var(--panel-2); color: var(--ivory); }
+.ac-ico { flex: none; display: flex; color: var(--gold); }
+.ac-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.ac-main { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ac-sub { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.02em; color: var(--faint);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.design-app .ac-menu { background: var(--card); border-color: var(--paper-line); box-shadow: 0 16px 40px rgba(28, 32, 38, 0.16); }
+.design-app .ac-option { color: var(--ink-2); }
+.design-app .ac-option:hover { background: var(--paper-2); color: var(--ink-1); }
+.design-app .ac-ico { color: var(--bronze); }
+.design-app .ac-sub { color: var(--ink-3); }
+
 /* Preset dropdown (custom, replaces the chip row) */
 .preset-field { position: relative; margin-top: 12px; }
 .preset-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px;

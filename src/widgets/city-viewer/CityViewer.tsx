@@ -116,6 +116,13 @@ export function CityViewer({
   const nz = (la: number) => (la - south) / dLat - 0.5;
   const mToU = WORLD / (areaKm * 1000); // metres → world units
 
+  // Orientation: rotate the inner content (buildings + streets) about the plate
+  // centre while the base + frame stay fixed. Ring yaws its band instead.
+  const contentYaw = ring ? 0 : (ringRotation * Math.PI) / 180;
+  const yc = Math.cos(contentYaw), ys = Math.sin(contentYaw);
+  const rot = (x: number, z: number) =>
+    contentYaw ? { x: x * yc - z * ys, z: x * ys + z * yc } : { x, z };
+
   const outline = useMemo<Pt[]>(() => shapeOutline(shape), [shape]);
   // City content stops at the inner edge of the raised frame band — same
   // clipping buildCityMesh uses for the STL, so nothing renders on the frame.
@@ -148,7 +155,7 @@ export function CityViewer({
       let allIn = true;
       const pts: Array<{ x: number; y: number }> = [];
       for (const [la, lo] of b.ring) {
-        const x = nx(lo), z = nz(la);
+        const { x, z } = rot(nx(lo), nz(la));
         if (!inside(x, z)) { allIn = false; break; }
         // ExtrudeGeometry + rotateX(-π/2) maps shape (x, y) → world (x, -y),
         // so shape.y = -worldZ.
@@ -190,7 +197,7 @@ export function CityViewer({
     merged.computeVertexNormals();
     return merged;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [buildings, shape, lat, lng, areaKm, reliefMm, widthMm]);
+  }, [buildings, shape, lat, lng, areaKm, reliefMm, widthMm, contentYaw]);
 
   const roadGeo = useMemo(() => {
     if (!streets?.length) return null;
@@ -203,8 +210,10 @@ export function CityViewer({
       const half = Math.max(style.widthM * mToU, 0.12) / 2;
       const y = 0.02 + style.lift * 0.025; // stack classes to avoid z-fighting
       for (let i = 1; i < st.pts.length; i++) {
-        let ax = nx(st.pts[i - 1][1]), az = nz(st.pts[i - 1][0]);
-        let bx = nx(st.pts[i][1]), bz = nz(st.pts[i][0]);
+        const aPt = rot(nx(st.pts[i - 1][1]), nz(st.pts[i - 1][0]));
+        const bPt = rot(nx(st.pts[i][1]), nz(st.pts[i][0]));
+        let ax = aPt.x, az = aPt.z;
+        let bx = bPt.x, bz = bPt.z;
         // Clip segments at the outline: roads end exactly at the plate edge
         // instead of poking past it (or leaving gaps short of it).
         const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
@@ -234,7 +243,7 @@ export function CityViewer({
     geo.computeVertexNormals();
     return geo;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [streets, shape, lat, lng, areaKm, solidFloor, widthMm]);
+  }, [streets, shape, lat, lng, areaKm, solidFloor, widthMm, contentYaw]);
 
   // Shaped ground plate + rim, matching the piece's outline. The plate is a
   // real slab: its thickness follows the "Base thickness" slider at true
@@ -345,7 +354,7 @@ export function CityViewer({
           <group rotation={[0, -(ringRotation * Math.PI) / 180, 0]}>
             <EngravingText
               text={engraving}
-              position={[0, -plateH - ringBand.outerR - ringBand.innerR + WORLD * 0.006, 0]}
+              position={[0, -plateH - ringBand.outerR + ringBand.innerR - WORLD * 0.006, 0]}
               curveRadius={ringBand.innerR}
               fontSize={Math.max(1, ringBand.innerR * 0.3)}
               color="#3a4048"

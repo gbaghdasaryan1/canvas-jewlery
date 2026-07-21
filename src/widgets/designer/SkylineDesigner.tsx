@@ -143,6 +143,8 @@ export function SkylineDesigner() {
       baseMm: Math.max(0.5, thickness),
       reliefMm: relief,
       solidFloor,
+      // Ring yaws its band (below); every other type turns the inner content.
+      contentYawDeg: isRing(jewelryType) ? 0 : ringRotation,
     });
   }
 
@@ -278,7 +280,6 @@ export function SkylineDesigner() {
               <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
               <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
             </div>
-            <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
                 className="btn-primary lg dz-order"
@@ -300,7 +301,7 @@ export function SkylineDesigner() {
 
         {/* Right — guided configuration */}
         <div className="dz-config">
-          <Step n={1} title={d.step1CityTitle} hint={d.step1CityHint}>
+          <Step n={1} title={d.step1CityTitle} hint={""}>
             <LocationSearch presets={CITY_PRESETS} placeholder={d.searchCityPlaceholder} />
             <Panel className="dz-mappanel" label={d.cityMapLabel}>
               <CityMap lat={lat} lng={lng} onSelect={(la, lo) => setLocation(la, lo, d.customLocation)} />
