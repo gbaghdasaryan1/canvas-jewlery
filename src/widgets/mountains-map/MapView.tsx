@@ -84,8 +84,8 @@ export function MapView({ lat, lng, onSelect, onCenterChange }: MapViewProps) {
         onClick={handleClick}
         onIdle={handleIdle}
         options={{
-          mapTypeControl: true,
-          mapTypeId: "terrain",
+          mapTypeControl: false,
+          mapTypeId: "satellite",
           streetViewControl: false,
           fullscreenControl: true,
           // One finger scrolls the page; two fingers pan the map. Keeps the

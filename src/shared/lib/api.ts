@@ -1,3 +1,5 @@
+import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from "axios";
+
 /**
  * Backend base URL. Point it at the API with `VITE_API_BASE`
  * (e.g. https://api.cairn.studio). Empty string = same-origin `/…` paths,
@@ -13,43 +15,45 @@ export class ApiError extends Error {
   }
 }
 
-function url(path: string): string {
-  return `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
-}
+/** Shared axios instance — every request in the app goes through this. */
+export const http: AxiosInstance = axios.create({
+  baseURL: API_BASE || undefined,
+});
 
-async function parse<T>(res: Response): Promise<T> {
-  const text = await res.text();
-  const data = text ? safeJson(text) : null;
-  if (!res.ok) {
-    let message = res.statusText || `Request failed (${res.status})`;
+/**
+ * Normalize every failure into an `ApiError` so callers only branch on
+ * `status`/`message` (matches the old fetch behaviour). `status` is 0 when the
+ * request never reached the server (network down, CORS, timeout).
+ */
+http.interceptors.response.use(
+  (res) => res,
+  (error: AxiosError) => {
+    const status = error.response?.status ?? 0;
+    const data = error.response?.data;
+    let message = error.message;
     if (data && typeof data === "object" && "message" in data) {
       message = String((data as { message: unknown }).message);
+    } else if (typeof data === "string" && data) {
+      message = data;
     }
-    throw new ApiError(res.status, message);
-  }
-  return data as T;
-}
+    return Promise.reject(new ApiError(status, message || `Request failed (${status})`));
+  },
+);
 
-function safeJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
+/** GET JSON. */
+export async function apiGet<T>(path: string, config?: AxiosRequestConfig): Promise<T> {
+  const res = await http.get<T>(path, config);
+  return res.data;
 }
 
 /** POST a JSON body. */
-export async function apiPostJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(url(path), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return parse<T>(res);
+export async function apiPostJson<T>(path: string, body: unknown, config?: AxiosRequestConfig): Promise<T> {
+  const res = await http.post<T>(path, body, config);
+  return res.data;
 }
 
-/** POST multipart form-data (no explicit Content-Type — the browser sets the boundary). */
-export async function apiPostForm<T>(path: string, form: FormData): Promise<T> {
-  const res = await fetch(url(path), { method: "POST", body: form });
-  return parse<T>(res);
+/** POST multipart form-data (axios sets the boundary Content-Type from the FormData). */
+export async function apiPostForm<T>(path: string, form: FormData, config?: AxiosRequestConfig): Promise<T> {
+  const res = await http.post<T>(path, form, config);
+  return res.data;
 }

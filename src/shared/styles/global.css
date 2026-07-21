@@ -82,6 +82,40 @@ h1.display em { font-style: italic; color: var(--champagne); }
 .chip:hover { border-color: var(--gold); color: var(--ivory); }
 .chip.active { background: var(--gold); color: #14171b; border-color: var(--gold); }
 
+/* Preset dropdown (custom, replaces the chip row) */
+.preset-field { position: relative; margin-top: 12px; }
+.preset-trigger { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 12px 14px; border-radius: 12px; background: var(--panel-2);
+  border: 1px solid var(--line); color: var(--ivory); cursor: pointer; outline: none;
+  font-size: 13px; letter-spacing: 0.03em; text-align: left; transition: border-color 0.15s, box-shadow 0.15s; }
+.preset-trigger:hover { border-color: var(--gold); }
+.preset-field.open .preset-trigger { border-color: var(--gold); }
+.preset-trigger:focus-visible { border-color: var(--gold); }
+.preset-current { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.preset-current.placeholder { color: var(--faint); }
+.preset-caret { display: flex; flex: none; color: var(--faint); transition: transform 0.18s ease; }
+.preset-field.open .preset-caret { transform: rotate(180deg); }
+
+.preset-menu { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 1100;
+  max-height: 264px; overflow-y: auto; padding: 6px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--line); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  scrollbar-width: thin; }
+.preset-option { display: block; width: 100%; padding: 9px 11px; border: 0; border-radius: 8px;
+  background: transparent; color: var(--mist); font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em;
+  text-align: left; cursor: pointer; transition: background 0.12s, color 0.12s; }
+.preset-option:hover { background: var(--panel-2); color: var(--ivory); }
+.preset-option.on { color: var(--ink); background: var(--gold); }
+
+/* Light (paper) theme — the designer studios */
+.design-app .preset-trigger { background: var(--card); border-color: var(--paper-line); color: var(--ink-1); }
+.design-app .preset-trigger:hover, .design-app .preset-field.open .preset-trigger { border-color: var(--bronze); }
+.design-app .preset-current.placeholder { color: var(--ink-3); }
+.design-app .preset-caret { color: var(--ink-3); }
+.design-app .preset-menu { background: var(--card); border-color: var(--paper-line); box-shadow: 0 16px 40px rgba(28, 32, 38, 0.16); }
+.design-app .preset-option { color: var(--ink-2); }
+.design-app .preset-option:hover { background: var(--paper-2); color: var(--ink-1); }
+.design-app .preset-option.on { background: var(--ink-1); color: var(--paper); }
+
 .reliefrow { display: flex; gap: 14px; margin-top: 16px; align-items: stretch; }
 .reliefwrap { position: relative; flex: none; width: 132px; height: 132px; }
 .relief { width: 132px; height: 132px; flex: none; border-radius: 10px; border: 1px solid var(--line); background: #0c0e11; display: block; }
@@ -92,7 +126,7 @@ h1.display em { font-style: italic; color: var(--champagne); }
 .relief-toggle.on { color: var(--ink); background: var(--gold); border-color: var(--gold); }
 
 /* Render-layers segmented control (skyline designer) */
-.layer-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 5px; background: rgba(13, 11, 8, 0.5); border: 1px solid var(--line); border-radius: 12px; }
+.layer-seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 5px; background: rgba(13, 11, 8, 0.5); border: 1px solid var(--line); border-radius: 12px; }
 .layer-seg-btn { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 6px 10px; cursor: pointer; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--mist); transition: 0.18s ease; }
 .layer-seg-btn:hover { color: var(--ivory); border-color: var(--gold); background: var(--graphite); }
 .layer-seg-btn .layer-seg-ico { display: flex; color: var(--gold); transition: transform 0.18s ease; }
@@ -433,8 +467,10 @@ body { -webkit-tap-highlight-color: transparent; }
 .dz-stl .stage { height: 240px; }
 .dz-buy { background: linear-gradient(180deg, var(--panel), var(--graphite)); border: 1px solid var(--line);
   border-radius: var(--r); padding: 16px 18px; }
-.dz-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.dz-price-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 6px; }
 .dz-price { font-family: var(--display); font-size: 26px; color: var(--ivory); }
+.dz-price-label { color: var(--faint); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+.dz-price-amount { font-family: var(--display); font-size: 22px; color: var(--ivory); white-space: nowrap; }
 .dz-place { color: var(--ivory); font-size: 15px; letter-spacing: 0.02em; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dz-price-sub { color: var(--faint); font-size: 11px; margin-top: 4px; letter-spacing: 0.03em; }
 .dz-cta { display: flex; gap: 10px; margin-top: 14px; }
@@ -521,6 +557,8 @@ body { -webkit-tap-highlight-color: transparent; }
 .design-app .dz-price { color: var(--ink-1); }
 .design-app .dz-place { color: var(--ink-1); }
 .design-app .dz-price-sub { color: var(--ink-3); }
+.design-app .dz-price-label { color: var(--ink-3); }
+.design-app .dz-price-amount { color: var(--ink-1); }
 
 /* map panel + map (lighter) */
 .design-app .panel { background: var(--card); border-color: var(--paper-line); }
@@ -697,6 +735,13 @@ body { -webkit-tap-highlight-color: transparent; }
 .ctl-grid { grid-template-columns: 1fr 1fr; gap: 18px 20px; }
 @media (max-width: 460px) { .ctl-grid { grid-template-columns: 1fr; } }
 
+/* — Engraving text input — */
+.engrave-input { width: 100%; padding: 11px 13px; border-radius: 10px;
+  border: 1px solid var(--paper-line); background: var(--card); color: var(--ink-1);
+  font-family: var(--body); font-size: 14px; outline: none; transition: 0.15s; }
+.engrave-input::placeholder { color: var(--ink-3); }
+.engrave-input:focus-visible { border-color: var(--bronze); box-shadow: 0 0 0 3px rgba(201, 138, 94, 0.18); }
+
 /* — Light-theme render-layers control (skyline) — */
 .design-app .layer-seg { background: rgba(28, 32, 38, 0.05); border-color: var(--paper-line); }
 .design-app .layer-seg-btn { background: transparent; border-color: transparent; color: var(--ink-3); }
@@ -710,10 +755,15 @@ body { -webkit-tap-highlight-color: transparent; }
 .dz-place { font-family: var(--display); font-size: 18px; }
 .dz-cta { margin-top: 16px; }
 
-/* — Phones: tighten the header, keep the switch usable — */
+/* — Phones: header wraps to two rows so the four items never crowd —
+   brand · language · home on top, mode switch full-width below. — */
 @media (max-width: 560px) {
-  .design-switch-btn { padding: 7px 12px; font-size: 12px; }
-  .design-top-inner { gap: 8px; }
+  .design-top-inner { flex-wrap: wrap; height: auto; gap: 10px 8px; padding-top: 10px; padding-bottom: 10px; }
+  .design-brand { order: 1; }
+  .lang-switch { order: 2; margin-left: auto; }
+  .design-back { order: 3; margin-left: 0; }
+  .design-switch { order: 4; width: 100%; margin: 0; }
+  .design-switch-btn { flex: 1; text-align: center; padding: 8px 12px; font-size: 12px; }
   .design-app .findbar input { font-size: 16px; }  /* ≥16px avoids iOS focus zoom */
   .design-app .dz-step { padding: 16px; border-radius: 16px; }
 }
@@ -822,7 +872,7 @@ body { -webkit-tap-highlight-color: transparent; }
 .lang-switch { position: relative; display: inline-flex; border-radius: 999px; }
 .lang-trigger { display: inline-flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 76px; padding: 8px 11px; border: 0; border-radius: 999px; background: transparent; cursor: pointer;
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; line-height: 1; transition: 0.15s; }
-.lang-chevron { font-size: 15px; line-height: 0.7; transform: translateY(-1px); }
+.lang-chevron { flex: none; display: block; opacity: 0.7; }
 .lang-switch--light { background: rgba(28, 32, 38, 0.05); border: 1px solid var(--paper-line); }
 .lang-switch--light .lang-trigger { color: var(--ink-3); }
 .lang-switch--light .lang-trigger:hover, .lang-switch--light .lang-trigger:focus-visible { color: var(--ink-1); outline: none; }

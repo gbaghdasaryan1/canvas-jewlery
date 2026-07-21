@@ -27,6 +27,7 @@ interface DesignerState {
   smooth: number; // relief smoothing passes (0 = sharp)
   showStreets: boolean; // overlay the OSM street network on the relief
   showBuildings: boolean; // overlay OSM building footprints on the relief
+  engraving: string; // laser-engraving text: back of pendant/bracelet, inside a ring
   metal: Metal;
   // actions
   setLocation: (lat: number, lng: number, name: string) => void;
@@ -44,8 +45,12 @@ interface DesignerState {
   setSmooth: (v: number) => void;
   setShowStreets: (v: boolean) => void;
   setShowBuildings: (v: boolean) => void;
+  setEngraving: (v: string) => void;
   setMetal: (m: Metal) => void;
 }
+
+/** Max engraving length — a laser mark on the back/inside stays short. */
+export const ENGRAVING_MAX = 40;
 
 export const useDesigner = create<DesignerState>((set) => ({
   lat: 27.9881,
@@ -65,6 +70,7 @@ export const useDesigner = create<DesignerState>((set) => ({
   smooth: 0,
   showStreets: false,
   showBuildings: false,
+  engraving: "",
   metal: "silver",
   setLocation: (lat, lng, name) => set({ lat, lng, name }),
   setJewelryType: (jewelryType) =>
@@ -82,5 +88,6 @@ export const useDesigner = create<DesignerState>((set) => ({
   setSmooth: (smooth) => set({ smooth }),
   setShowStreets: (showStreets) => set({ showStreets }),
   setShowBuildings: (showBuildings) => set({ showBuildings }),
+  setEngraving: (engraving) => set({ engraving: engraving.slice(0, ENGRAVING_MAX) }),
   setMetal: (metal) => set({ metal }),
 }));

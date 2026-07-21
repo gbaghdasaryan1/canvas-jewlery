@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { FRAME_HEIGHT_MM, buildRingBandMesh, ringBandDims, type SlabParams } from "@/shared/lib/ringGeometry";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
+import { EngravingText } from "@/shared/ui/EngravingText";
 import { METALS, buildShapeMesh, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
 
 function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
@@ -44,7 +45,7 @@ function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
 /** Reflection map for the metal. Drop the liquid-metal photo here (served from
     /public) to have the piece mirror it; absent, the procedural studio gradient
     is used instead. */
-const REFLECTION_URL = "/textures/liquid-silver.jpg";
+const REFLECTION_URL = "/textures/liquid-metal.jpg";
 
 export function SceneEnvironment() {
   const { gl, scene, invalidate } = useThree();
@@ -102,6 +103,9 @@ interface RingMeshProps {
   jewelryType?: JewelryType;
   /** Ring only — yaw of the plaque on the band, in degrees. */
   ringRotation?: number;
+  /** Laser-engraving text — previewed on the back (pendant/bracelet) or inside
+      the band (ring). Blank hides it. Not part of the exported mesh. */
+  engraving?: string;
 }
 
 /**
@@ -119,7 +123,7 @@ function contrastCurve(h: Float32Array): Float32Array {
   return out;
 }
 
-function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, jewelryType = "pendant", ringRotation = 0 }: RingMeshProps) {
+function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, jewelryType = "pendant", ringRotation = 0, engraving = "" }: RingMeshProps) {
   const ring = isRing(jewelryType);
   // Rings show the raw relief — the smoothstep contrast curve is skipped so the
   // profile matches the exported/priced mesh exactly.
@@ -166,7 +170,7 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
     geo.computeVertexNormals();
-    return { geo, topLocalY };
+    return { geo, topLocalY, innerR: dims.innerR };
   }, [ring, params.width]);
   useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
 
@@ -191,6 +195,28 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
           position={[0, -offset.y - ringBand.topLocalY, 0]}
         />
       )}
+      {/* Laser engraving — inside the band for a ring, on the flat back face
+          otherwise. Preview-only; the real mark is a post-cast laser step. */}
+      {heightContrast && (ring
+        ? ringBand && (
+          <EngravingText
+            text={engraving}
+            position={[0, -offset.y - ringBand.topLocalY - ringBand.innerR + 0.06, 0]}
+            curveRadius={ringBand.innerR}
+            fontSize={Math.max(0.9, ringBand.innerR * 0.3)}
+            color="#2b3038"
+          />
+        )
+        : (
+          <EngravingText
+            text={engraving}
+            position={[0, -offset.y - 0.05, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            fontSize={params.width * 0.085}
+            maxWidth={params.width * 0.82}
+            color="#2b3038"
+          />
+        ))}
       {heightContrast && hangs.map((hang, i) => {
         const outLen = Math.hypot(hang.x, hang.z) || 1;
         const ox = hang.x / outLen;
@@ -229,6 +255,7 @@ export function RingViewer(props: RingMeshProps) {
       key={props.shape}
       // Render only on interaction / prop change — no idle auto-spin loop.
       frameloop="demand"
+      dpr={[1, 2]}
       camera={{ position: [22, 34, 42], fov: 36 }}
       gl={{ alpha: true, antialias: true }}
       onCreated={({ gl }) => {
@@ -250,7 +277,10 @@ export function RingViewer(props: RingMeshProps) {
         enablePan={false}
         minDistance={28}
         maxDistance={90}
-        maxPolarAngle={Math.PI * 0.49}
+        // Allow tilting past the equator so the flat back / inside of the band
+        // (where the engraving sits) can be inspected — stop just shy of the
+        // pole to avoid the gimbal flip when looking straight up.
+        maxPolarAngle={Math.PI * 0.95}
       />
     </Canvas>
   );

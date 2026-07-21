@@ -7,7 +7,7 @@ import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings"
 import { useStreets } from "@/entities/streets/api/useStreets";
 import { rasterizeStreets } from "@/entities/streets/lib/rasterizeStreets";
 import { GRID, PRESETS } from "@/shared/config/presets";
-import { estimatePrice } from "@/shared/lib/pricing";
+import { estimatePrice, JEWELRY_PRICE_AMD, formatAMD } from "@/shared/lib/pricing";
 import { composeCityField } from "@/shared/lib/heightField";
 import { buildStlBlob } from "@/shared/lib/stl";
 import { slugify } from "@/shared/lib/format";
@@ -47,17 +47,6 @@ const LAYER_OPTIONS: { mode: LayerMode; icon: JSX.Element }[] = [
     ),
   },
   {
-    mode: "buildings",
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 21V9l6-4v16" />
-        <path d="M10 21V11l8-3v13" />
-        <path d="M3 21h18" />
-        <path d="M14 12h.01M14 15h.01M7 12h.01M7 15h.01" />
-      </svg>
-    ),
-  },
-  {
     mode: "streets",
     icon: (
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -74,7 +63,7 @@ const DEFAULT_RELIEF_MM = 2; // caps at the maps relief max (see RingControls re
 const MAPS_RELIEF_MAX = 2;
 
 export function SkylineDesigner() {
-  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth, metal, setLocation, setRelief } =
+  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth, metal, engraving, setLocation, setRelief } =
     useDesigner();
   const t = useT();
   const d = t.designer;
@@ -135,6 +124,12 @@ export function SkylineDesigner() {
   const activeBuildings = layerMode !== "streets" ? buildings.data ?? null : null;
   const activeStreets = layerMode !== "buildings" ? streets.data ?? null : null;
 
+  // Streets-only pieces are hollow (no base plate), so there's no solid back to
+  // laser-engrave. Engraving is only offered when a solid floor is present.
+  const canEngrave = layerMode !== "streets";
+  const activeEngraving = canEngrave ? engraving : "";
+  const solidFloor = layerMode !== "streets";
+
   // The STL is built from the same vector data + clipping the canvas renders,
   // so the downloaded file matches what's on screen exactly.
   function exportMesh() {
@@ -148,7 +143,7 @@ export function SkylineDesigner() {
       widthMm: width,
       baseMm: Math.max(0.5, thickness),
       reliefMm: relief,
-      solidFloor: layerMode !== "streets",
+      solidFloor,
     });
   }
 
@@ -174,8 +169,9 @@ export function SkylineDesigner() {
         jewelryType, shape, metal,
         width, relief, thickness, areaKm, smooth,
         hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+        engraving: activeEngraving,
         overlays: { buildings: layerMode !== "streets", streets: layerMode !== "buildings" },
-        estimate: { amd: price.amd, grams: price.grams },
+        estimate: { amd: JEWELRY_PRICE_AMD[jewelryType], grams: price.grams },
       },
     };
   }
@@ -211,9 +207,10 @@ export function SkylineDesigner() {
       hangSize={hangSize}
       hangRotation={hangRotation}
       hangHorizontal={hangHorizontal}
-      solidFloor={layerMode !== "streets"}
+      solidFloor={solidFloor}
       jewelryType={jewelryType}
       ringRotation={ringRotation}
+      engraving={activeEngraving}
     />
   ) : (
     <RingViewer
@@ -227,6 +224,7 @@ export function SkylineDesigner() {
       hangHorizontal={hangHorizontal}
       jewelryType={jewelryType}
       ringRotation={ringRotation}
+      engraving={activeEngraving}
     />
   );
 
@@ -277,6 +275,10 @@ export function SkylineDesigner() {
 
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
+            <div className="dz-price-row">
+              <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
+              <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
+            </div>
             <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
@@ -286,7 +288,6 @@ export function SkylineDesigner() {
               >
                 {d.order}
               </button>
-              <ExportButton heightNorm={heightNorm} tag="skyline" exportMesh={exportMesh} />
             </div>
           </div>
         </aside>
@@ -332,7 +333,7 @@ export function SkylineDesigner() {
                 ))}
               </div>
             </div>
-            <RingControls areaMin={0.1} areaMax={5} reliefMax={MAPS_RELIEF_MAX} />
+            <RingControls areaMin={0.1} areaMax={5} reliefMax={MAPS_RELIEF_MAX} showEngraving={canEngrave} />
           </Step>
         </div>
       </div>

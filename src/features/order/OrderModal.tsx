@@ -234,12 +234,14 @@ function messageFor(e: unknown, fallback: string, o: Dict["order"]): string {
   if (e instanceof ApiError) {
     // Rate-limit + server/routing failures aren't actionable to the user, so
     // show a friendly line instead of the raw backend text ("Not Found" etc.).
+    if (e.status === 0) return o.errNetwork; // request never reached the server
     if (e.status === 429) return o.errRateLimit;
     if (e.status >= 500) return o.errServer;
     if (e.status === 404) return fallback;
     return e.message || fallback;
   }
-  // fetch() rejects with a TypeError when the network is down / CORS blocks it.
+  // Non-ApiError (shouldn't happen — the axios interceptor normalizes all
+  // failures — but keep a safe fallback).
   if (e instanceof TypeError) return o.errNetwork;
   return fallback;
 }

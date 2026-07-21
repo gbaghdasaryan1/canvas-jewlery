@@ -1,5 +1,16 @@
-import type { Metal } from "@/entities/ring/model/types";
+import type { JewelryType, Metal } from "@/entities/ring/model/types";
 import type { RingMeshData } from "./ringGeometry";
+
+/**
+ * Flat retail price in AMD per jewelry type. Every piece of a given type costs
+ * the same regardless of place, shape, or metal — this is what the customer
+ * actually pays, shown in the buy panel and sent with the order.
+ */
+export const JEWELRY_PRICE_AMD: Record<JewelryType, number> = {
+  pendant: 25900,
+  ring: 32900,
+  bracelet: 27900,
+};
 
 /** Density of sterling silver, g/cm³. All mass is computed in silver. */
 export const SILVER_DENSITY = 10.49;

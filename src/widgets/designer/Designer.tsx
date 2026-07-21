@@ -1,12 +1,12 @@
-import { useDeferredValue, useMemo, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
 import { useElevation } from "@/entities/mountains/api/useElevation";
 import { buildShapeMesh, hangAnchors, isRing, toShapeParams } from "@/entities/ring/model/types";
 import { useBuildings } from "@/entities/buildings/api/useBuildings";
 import { rasterizeBuildings } from "@/entities/buildings/lib/rasterizeBuildings";
-import { GRID } from "@/shared/config/presets";
-import { estimatePrice } from "@/shared/lib/pricing";
+import { GRID, PRESETS } from "@/shared/config/presets";
+import { estimatePrice, JEWELRY_PRICE_AMD, formatAMD } from "@/shared/lib/pricing";
 import { composeHeightField } from "@/shared/lib/heightField";
 import { buildStlBlob } from "@/shared/lib/stl";
 import { slugify } from "@/shared/lib/format";
@@ -27,6 +27,15 @@ const SHAPE_LABEL: Record<Shape, string> = {
   circle: "disc",
 };
 
+// /maps overwrites the shared `relief` (down to ~1.15–2mm) — restore the
+// mountains default whenever this designer mounts so returning from maps
+// doesn't leave the relief flattened.
+const MOUNTAINS_DEFAULT_RELIEF_MM = 4.6;
+
+// City presets belong to the /maps studio — the mountains picker only offers
+// natural landmarks.
+const MOUNTAIN_PRESETS = PRESETS.filter((p) => !p.city);
+
 export function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
   return (
     <section className="dz-step">
@@ -45,10 +54,16 @@ export function Step({ n, title, hint, children }: { n: number; title: string; h
 export function Designer() {
   const {
     lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth,
-    showBuildings, metal,
+    showBuildings, metal, engraving, setRelief,
   } = useDesigner();
   const t = useT();
   const d = t.designer;
+
+  // Reset relief to the mountains default on mount — /maps clamps it low.
+  useEffect(() => {
+    setRelief(MOUNTAINS_DEFAULT_RELIEF_MM);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // Debounce the location inputs feeding the network queries: dragging the
   // "Sample area" slider or mashing the nudge pad would otherwise fire a
   // full elevation run (~3k points) + an Overpass request per tick.
@@ -103,8 +118,9 @@ export function Designer() {
         jewelryType, shape, metal,
         width, relief, thickness, areaKm, smooth,
         hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+        engraving,
         overlays: { buildings: showBuildings, streets: false },
-        estimate: { amd: price.amd, grams: price.grams },
+        estimate: { amd: JEWELRY_PRICE_AMD[jewelryType], grams: price.grams },
       },
     };
   }
@@ -123,6 +139,7 @@ export function Designer() {
       hangHorizontal={hangHorizontal}
       jewelryType={jewelryType}
       ringRotation={ringRotation}
+      engraving={engraving}
     />
   );
 
@@ -138,6 +155,10 @@ export function Designer() {
 
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
+            <div className="dz-price-row">
+              <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
+              <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
+            </div>
             <div className="dz-price-sub mono">{d.madeToOrder}</div>
             <div className="dz-cta">
               <button
@@ -147,7 +168,6 @@ export function Designer() {
               >
                 {d.order}
               </button>
-              <ExportButton heightNorm={heightNorm} />
             </div>
           </div>
         </aside>
@@ -162,16 +182,10 @@ export function Designer() {
         {/* Right — guided configuration */}
         <div className="dz-config">
           <Step n={1} title={d.step1MountainsTitle} hint={d.step1MountainsHint}>
-            <LocationSearch />
+            <LocationSearch presets={MOUNTAIN_PRESETS} />
             <Panel className="dz-mappanel" label={d.mapLabel}>
               <MountainsMap />
-              <button
-                className="dz-reread mono"
-                onClick={() => elevation.refetch()}
-                disabled={elevation.isFetching}
-              >
-                {elevation.isFetching ? d.readingMountains : d.reRead}
-              </button>
+
             </Panel>
           </Step>
 

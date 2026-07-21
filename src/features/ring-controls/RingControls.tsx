@@ -1,4 +1,4 @@
-import { useDesigner } from "@/app/store";
+import { ENGRAVING_MAX, useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
 import { hangAxisLabel, hangPlaceLabel, isRing, nextHangPlace, type Shape } from "@/entities/ring/model/types";
 
@@ -39,9 +39,12 @@ interface RingControlsProps {
   areaMax?: number;
   /** Max "Relief depth" (mm) — maps cap lower than mountains. */
   reliefMax?: number;
+  /** Show the engraving input. Hidden for streets-only maps pieces, which are
+      hollow and have no solid back to laser-engrave. */
+  showEngraving?: boolean;
 }
 
-export function RingControls({ areaMin = 0.3, areaMax = 614, reliefMax = 8 }: RingControlsProps) {
+export function RingControls({ areaMin = 0.3, areaMax = 614, reliefMax = 4.8, showEngraving = true }: RingControlsProps) {
   const s = useDesigner();
   const t = useT();
   const d = t.designer;
@@ -130,6 +133,23 @@ export function RingControls({ areaMin = 0.3, areaMax = 614, reliefMax = 8 }: Ri
         <Range label={d.reliefDepth} value={`${s.relief.toFixed(1)} ${d.mm}`} min={0.4} max={reliefMax} step={0.2} current={s.relief} onChange={s.setRelief} />
         <Range label={d.sampleArea} value={`${s.areaKm} ${d.km}`} min={areaMin} max={areaMax} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
       </div>
+
+      {showEngraving && (
+        <div className="field">
+          <label>
+            {isRing(s.jewelryType) ? d.engravingInside : d.engravingBack}
+            <b>{s.engraving.length}/{ENGRAVING_MAX}</b>
+          </label>
+          <input
+            type="text"
+            className="engrave-input"
+            maxLength={ENGRAVING_MAX}
+            value={s.engraving}
+            onChange={(e) => s.setEngraving(e.target.value)}
+            placeholder={d.engravingPlaceholder}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -41,7 +41,9 @@ export function LanguageSwitcher({ variant = "light" }: LanguageSwitcherProps) {
         onClick={() => setOpen((value) => !value)}
       >
         {LANG_LABELS[lang]}
-        <span className="lang-chevron" aria-hidden="true">⌄</span>
+        <svg className="lang-chevron" viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="m3 4.5 3 3 3-3" />
+        </svg>
       </button>
       {open && (
         <div className="lang-menu" role="listbox" aria-label="Language options">

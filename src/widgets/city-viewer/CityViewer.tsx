@@ -8,6 +8,7 @@ import type { StreetLine } from "@/entities/streets/api/fetchStreets";
 import { isRing, type JewelryType, type Shape } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import { buildRingBandMesh, ringBandDims } from "@/shared/lib/ringGeometry";
+import { EngravingText } from "@/shared/ui/EngravingText";
 import {
   FRAME_MM,
   ROAD_DEFAULT,
@@ -93,12 +94,14 @@ interface CityViewerProps {
   jewelryType?: JewelryType;
   /** Ring only — yaw of the band under the plate, in degrees. */
   ringRotation?: number;
+  /** Laser-engraving text — previewed on the back / inside the band. */
+  engraving?: string;
 }
 
 export function CityViewer({
   buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
   hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
-  jewelryType = "pendant", ringRotation = 0,
+  jewelryType = "pendant", ringRotation = 0, engraving = "",
 }: CityViewerProps) {
   const ring = isRing(jewelryType);
   // lat/lng → the same normalized plane the mesh builders sample:
@@ -277,7 +280,7 @@ export function CityViewer({
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
     geo.computeVertexNormals();
-    return { geo, outerR: dims.innerR + dims.wall };
+    return { geo, outerR: dims.innerR + dims.wall, innerR: dims.innerR };
   }, [ring]);
   useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
 
@@ -299,6 +302,14 @@ export function CityViewer({
 
   return (
     <Canvas
+      // Render only on interaction / prop change — no idle auto-spin loop.
+      // (drei's OrbitControls calls invalidate() on change, so drags still
+      // repaint.) Without this the city view burns a full 60fps loop while
+      // idle, alongside the STL preview and the Mapbox map on the same page.
+      frameloop="demand"
+      // Cap the device-pixel-ratio so retina screens don't render at 4× the
+      // fragments for a preview that doesn't need it.
+      dpr={[1, 2]}
       camera={{ position: [18, 62, 80], fov: 38 }}
       gl={{ antialias: true }}
       style={{ width: "100%", height: "100%", display: "block" }}
@@ -324,6 +335,33 @@ export function CityViewer({
           <meshLambertMaterial color={GROUND} />
         </mesh>
       )}
+      {/* Laser engraving — inside the band for a ring, on the flat back plate
+          otherwise. Preview-only; the mark is a post-cast laser step. */}
+      {ring
+        ? ringBand && (
+          // Same inside-band engraving as RingViewer (mountains): the text is
+          // wrapped around the band's inner wall via curveRadius. Wrapped in the
+          // band's yaw so it tracks ringRotation.
+          <group rotation={[0, -(ringRotation * Math.PI) / 180, 0]}>
+            <EngravingText
+              text={engraving}
+              position={[0, -plateH - ringBand.outerR - ringBand.innerR + WORLD * 0.006, 0]}
+              curveRadius={ringBand.innerR}
+              fontSize={Math.max(1, ringBand.innerR * 0.3)}
+              color="#3a4048"
+            />
+          </group>
+        )
+        : (
+          <EngravingText
+            text={engraving}
+            position={[0, -plateH - WORLD * 0.004, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            fontSize={WORLD * 0.085}
+            maxWidth={WORLD * 0.82}
+            color="#3a4048"
+          />
+        )}
       <lineLoop geometry={rimGeo}>
         <lineBasicMaterial color={RIM} />
       </lineLoop>
@@ -367,7 +405,9 @@ export function CityViewer({
         enablePan={false}
         minDistance={25}
         maxDistance={260}
-        maxPolarAngle={Math.PI * 0.46}
+        // Tilt past the equator so the plate's back / the inside of the ring
+        // band (engraving side) can be inspected.
+        maxPolarAngle={Math.PI * 0.95}
       />
     </Canvas>
   );

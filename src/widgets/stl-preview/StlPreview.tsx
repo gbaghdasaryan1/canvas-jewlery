@@ -56,6 +56,7 @@ export function StlPreview(props: StlPreviewProps) {
     <Canvas
       // Render only on interaction / prop change — no idle auto-spin loop.
       frameloop="demand"
+      dpr={[1, 2]}
       camera={{ position: [16, 22, 28], fov: 34 }}
       gl={{ alpha: true, antialias: true }}
       onCreated={({ gl }) => {

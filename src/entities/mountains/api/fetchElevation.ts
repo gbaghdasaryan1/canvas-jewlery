@@ -3,7 +3,7 @@ import { GRID } from "@/shared/config/presets";
 import type { mountainsGrid } from "../model/types";
 import { proceduralmountains } from "../lib/procedural";
 
-const CHUNK = 256; // Google Elevation API accepts up to 512 locations per request
+const CHUNK = 512; // Google Elevation API accepts up to 512 locations per request
 const REQUEST_TIMEOUT_MS = 10000;
 
 /**
@@ -58,20 +58,23 @@ export async function fetchElevation(
 
   try {
     const elevator = new google.maps.ElevationService();
-    for (let i = 0; i < locations.length; i += CHUNK) {
-      // The key can be rejected mid-run (auth check resolves after the SDK's
-      // classes exist). Bail the moment that happens so we don't fire the
-      // remaining chunks into the SDK's endless failed-request retry loop.
-      // if (isGoogleAuthFailed()) throw new Error("google auth failed");
-      const chunk = locations.slice(i, i + CHUNK);
-      const { results } = await withTimeout(
-        elevator.getElevationForLocations({ locations: chunk }),
-        REQUEST_TIMEOUT_MS,
-      );
-      for (let k = 0; k < results.length; k++) {
-        out[i + k] = results[k].elevation;
-      }
-    }
+    // Fire every chunk concurrently — the SDK samples ~3k points, and awaiting
+    // each chunk in turn stacked ~6 network round-trips into the render delay.
+    // Running them in parallel collapses that to a single round-trip's latency.
+    const offsets: number[] = [];
+    for (let i = 0; i < locations.length; i += CHUNK) offsets.push(i);
+    await Promise.all(
+      offsets.map(async (i) => {
+        const chunk = locations.slice(i, i + CHUNK);
+        const { results } = await withTimeout(
+          elevator.getElevationForLocations({ locations: chunk }),
+          REQUEST_TIMEOUT_MS,
+        );
+        for (let k = 0; k < results.length; k++) {
+          out[i + k] = results[k].elevation;
+        }
+      }),
+    );
 
     let mn = Infinity, mx = -Infinity;
     for (const e of out) {

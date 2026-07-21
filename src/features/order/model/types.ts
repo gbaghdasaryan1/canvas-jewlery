@@ -20,6 +20,8 @@ export interface OrderOptions {
   hangRotation: number;
   hangHorizontal: boolean;
   ringRotation: number;
+  /** Laser-engraving text for the back/inside — blank if none. */
+  engraving: string;
   overlays: { buildings: boolean; streets: boolean };
   /** Live price estimate at order time. */
   estimate: { amd: number; grams: number } | null;
