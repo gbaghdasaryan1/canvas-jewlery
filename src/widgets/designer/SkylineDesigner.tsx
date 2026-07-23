@@ -251,11 +251,8 @@ export function SkylineDesigner() {
           </div>
 
           <div className="dz-buy">
-            <div className="dz-place mono">{name}</div>
             <div className="dz-price-row">
-              <span className="dz-price-label mono">
-                {d.priceLabel} · {d.jewelry[jewelryType]}
-              </span>
+
               <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
             </div>
             <div className="dz-cta">

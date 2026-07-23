@@ -9,7 +9,7 @@ export const en = {
   nav: {
     how: "How it's made",
     materials: "Materials",
-    gallery: "Gallery",
+    gallery: "Products",
     faq: "FAQ",
     designYours: "Design yours",
     home: "Home",
@@ -22,10 +22,10 @@ export const en = {
   ],
 
   hero: {
-    eyebrow: "Bespoke topographic jewelry",
-    title: { l1: "Wear the Place", l2: "That Made ", em: "You" },
-    lead: "We turn the real topography of a place you love — a summit, a coastline, a city block — into a cast-metal piece you can wear. You design it in about a minute; we hand-finish it in recycled silver, gold, or platinum.",
-    ctaPrimary: "Design yours — free to try",
+    eyebrow: "",
+    title: { l1: "Every unforgettable moment", l2: " ", em: "has a place." },
+    lead: "At Mémoire, we transform the real landscape of that place into a handcrafted silver piece you'll carry for a lifetime. Whether it's a mountain summit, a quiet street, or the place where everything changed, every contour is preserved in precious metal—turning geography into memory.",
+    ctaPrimary: "Design yours",
     ctaSecondary: "See the gallery",
     trust: [
       "Milled from real elevation data",
@@ -42,7 +42,7 @@ export const en = {
   ],
 
   story: {
-    eyebrow: "The idea behind Cairn",
+    eyebrow: "The idea behind Mémoire",
     title: "Every Place Tells a Story",
     opening: "Some places change our lives.",
     lines: [
@@ -190,12 +190,12 @@ export const en = {
     title: "Your place, made to keep.",
     sub: "Designing is free and takes about a minute. You only pay when you order.",
     cta: "Design yours",
-    guarantee: ["Made to order in 3–4 weeks", "Insured worldwide shipping", "30-day returns"],
+    guarantee: ["Made to order in 1–2 weeks"],
   },
 
   footer: {
-    tagline: "Bespoke topographic jewelry · made to order",
-    mapData: "Map data © OpenStreetMap contributors",
+    tagline: "Bespoke topographic jewelry",
+    mapData: "Map data © Google Maps and Mapbox.",
   },
 
   designer: {

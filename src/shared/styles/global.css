@@ -372,14 +372,13 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
    ============================================================ */
 .design-app {
   min-height: 100vh;
-  background: var(--ink);
+  background: white;
 }
 .design-top {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: linear-gradient(var(--ink), rgba(15, 17, 20, 0.8));
-  backdrop-filter: blur(10px);
+  background: white;
   border-bottom: 1px solid var(--line);
 }
 .design-top-inner {
@@ -644,7 +643,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
 
 /* top bar + footer */
 .design-app .design-top {
-  background: rgba(243, 244, 246, 0.85);
+  background: rgb(255, 255, 255);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--paper-line);
 }
@@ -707,7 +706,7 @@ input[type="range"]:focus-visible::-webkit-slider-thumb {
   .design-app .dz-buy {
     box-shadow: 0 -16px 34px -16px rgba(24, 28, 34, 0.4);
     border-top-color: var(--paper-line);
-    padding: 10px 8px calc(12px + env(safe-area-inset-bottom));
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
   }
 }
 .design-app .dz-place {

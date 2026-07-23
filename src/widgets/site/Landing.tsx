@@ -6,7 +6,6 @@ import { HeroStory } from "./HeroStory";
 import { Occasions } from "./Occasions";
 import { Collections } from "./Collections";
 import { Gallery } from "./Gallery";
-import { Testimonials } from "./Testimonials";
 import { HowItWorks } from "./HowItWorks";
 import { Faq } from "./Faq";
 import styles from "./Landing.module.css";
@@ -22,7 +21,6 @@ export function Landing() {
       <HowItWorks />
       <Collections />
       <Gallery />
-      <Testimonials />
       <Faq />
 
       <section className={styles.final}>
@@ -45,7 +43,7 @@ export function Landing() {
         <div className={`wrap ${styles.footInner}`}>
           <div>
             <div className="home-brand" style={{ marginBottom: 8 }}>
-              CAIRN
+              Mémoire
             </div>
             <div>{t.footer.tagline}</div>
           </div>

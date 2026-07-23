@@ -31,7 +31,6 @@ export function Gallery() {
             <div className="eyebrow">{t.gallery.eyebrow}</div>
             <h2 className="home-h2">{t.gallery.title}</h2>
           </div>
-          <p className="section-sub">{t.gallery.sub}</p>
         </div>
 
         <div className={styles.grid}>

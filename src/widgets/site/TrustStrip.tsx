@@ -31,7 +31,7 @@ const ICONS = [
 export function TrustStrip() {
   const t = useT();
   return (
-    <section className={styles.strip} aria-label="Cairn">
+    <section className={styles.strip} aria-label="Mémoire">
       <div className={`wrap ${styles.grid}`}>
         {t.trust.map((it, i) => (
           <div className={styles.item} key={it.title}>

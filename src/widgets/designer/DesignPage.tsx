@@ -5,6 +5,7 @@ import { useT } from "@/shared/i18n";
 import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
 import type { Shape } from "@/entities/ring/model/types";
 import { Designer } from "./Designer";
+import { BrandMark } from "../site/LandingHeader";
 
 const VALID_SHAPES = new Set(["rectangle", "circle"]);
 
@@ -24,12 +25,8 @@ export function DesignPage() {
       <header className="design-top">
         <div className="wrap design-top-inner">
           <Link className="design-brand" to="/">
-            <svg viewBox="0 0 20 24" fill="none" aria-hidden width="16" height="20">
-              <path d="M10 1 14 6H6L10 1Z" fill="var(--bronze-2)" />
-              <path d="M6.5 8 13.5 8 16 13H4L6.5 8Z" fill="var(--bronze)" />
-              <path d="M3.5 15h13L20 22H0L3.5 15Z" fill="#98a2ae" />
-            </svg>
-            CAIRN
+            <BrandMark />
+            Mémoire
           </Link>
           <nav className="design-switch" aria-label="Design mode">
             <Link className="design-switch-btn on" to="/mountains" aria-current="page">
@@ -40,9 +37,7 @@ export function DesignPage() {
             </Link>
           </nav>
           <LanguageSwitcher />
-          <Link className="design-back" to="/">
-            {t.nav.home}
-          </Link>
+
         </div>
       </header>
 
@@ -50,7 +45,7 @@ export function DesignPage() {
 
       <footer className="design-foot">
         <div className="wrap mono">
-          CAIRN · made to order · map data © OpenStreetMap contributors
+          Mémoire · made to order · map data © OpenStreetMap contributors
         </div>
       </footer>
     </div>

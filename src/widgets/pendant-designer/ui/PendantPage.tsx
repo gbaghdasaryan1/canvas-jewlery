@@ -37,7 +37,7 @@ export function PendantPage() {
   return (
     <PageShell>
       <TopBar>
-        <Brand to="/">CAIRN</Brand>
+        <Brand to="/">Mémoire</Brand>
         <Tagline>Design your pendant</Tagline>
         <TopSpacer />
         <Toolbar />

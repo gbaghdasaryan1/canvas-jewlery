@@ -7,7 +7,6 @@ export function HowItWorks() {
     <section id="how" className={styles.section}>
       <div className="wrap">
         <div className="eyebrow">{t.how.eyebrow}</div>
-        <h2 className="section-title">{t.how.title}</h2>
         <div className={styles.steps}>
           {t.how.steps.map((s) => (
             <div className={styles.step} key={s.n}>
