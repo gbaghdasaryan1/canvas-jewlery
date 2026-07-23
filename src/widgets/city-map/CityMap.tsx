@@ -77,9 +77,12 @@ export function CityMap({ lat, lng, onSelect }: CityMapProps) {
       // feature, surface that feature's details.
       onSelectRef.current(e.lngLat.lat, e.lngLat.lng);
       const feature = map.queryRenderedFeatures(e.point, { layers: INTERACTIVE_LAYERS })[0] as
-        | PickedFeature
-        | undefined;
-      if (feature) popup.setLngLat(e.lngLat).setDOMContent(popupContent(feature.properties ?? {})).addTo(map);
+        PickedFeature | undefined;
+      if (feature)
+        popup
+          .setLngLat(e.lngLat)
+          .setDOMContent(popupContent(feature.properties ?? {}))
+          .addTo(map);
       else popup.remove();
     });
 
@@ -96,15 +99,22 @@ export function CityMap({ lat, lng, onSelect }: CityMapProps) {
       }
     };
     for (const layer of INTERACTIVE_LAYERS) {
-      map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
+      map.on("mouseenter", layer, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", layer, () => {
+        map.getCanvas().style.cursor = "";
+      });
     }
     map.on("mousemove", "road-line", (e) => {
       const f = e.features?.[0] as PickedFeature | undefined;
       if (!f || f.id === undefined || f.id === hoveredRoad) return;
       clearRoadHover();
       hoveredRoad = f.id;
-      map.setFeatureState({ source: "streets", sourceLayer: "road", id: hoveredRoad }, { hover: true });
+      map.setFeatureState(
+        { source: "streets", sourceLayer: "road", id: hoveredRoad },
+        { hover: true },
+      );
     });
     map.on("mouseleave", "road-line", clearRoadHover);
 

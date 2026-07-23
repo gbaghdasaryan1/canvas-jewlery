@@ -116,10 +116,7 @@ export function UploadArea() {
         <>
           <Hint>{progress.message}</Hint>
           <ProgressTrack>
-            <ProgressFill
-              $pct={progress.progress}
-              $indeterminate={progress.progress === 0}
-            />
+            <ProgressFill $pct={progress.progress} $indeterminate={progress.progress === 0} />
           </ProgressTrack>
         </>
       )}
@@ -148,8 +145,8 @@ export function UploadArea() {
       {importedStl && (
         <>
           <Hint>
-            {importedStl.name} — {importedStl.size.x.toFixed(1)} ×{" "}
-            {importedStl.size.y.toFixed(1)} × {importedStl.size.z.toFixed(1)} mm ·{" "}
+            {importedStl.name} — {importedStl.size.x.toFixed(1)} × {importedStl.size.y.toFixed(1)} ×{" "}
+            {importedStl.size.z.toFixed(1)} mm ·{" "}
             {Math.round(importedStl.triangles).toLocaleString()} triangles
           </Hint>
           <Row>

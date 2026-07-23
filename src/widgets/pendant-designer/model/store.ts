@@ -9,7 +9,10 @@ import type {
   SilhouetteInfo,
 } from "@/entities/pendant/model/types";
 import { autoFit, defaultHole, mainContourMm, resolveHole } from "@/entities/pendant/lib/geometry";
-import { createSegmentationService, type SegmentationProgress } from "@/features/image-segmentation";
+import {
+  createSegmentationService,
+  type SegmentationProgress,
+} from "@/features/image-segmentation";
 import { parseSTL } from "@/features/stl-import/parseStl";
 
 export type PendantStatus = "idle" | "processing" | "ready" | "error";
@@ -122,7 +125,13 @@ export const usePendant = create<PendantState>((set, get) => {
     importedStl: null,
 
     loadImage: async (file) => {
-      set({ status: "processing", error: null, progress: null, fileName: file.name, viewMode: "2d" });
+      set({
+        status: "processing",
+        error: null,
+        progress: null,
+        fileName: file.name,
+        viewMode: "2d",
+      });
       try {
         const service = createSegmentationService();
         const silhouette = await service.process(file, (progress) => set({ progress }));
@@ -198,14 +207,11 @@ export const usePendant = create<PendantState>((set, get) => {
         d.config.hole.y = pos.y;
       }, true),
 
-    updateConfig: (patch, record = true) =>
-      apply((d) => Object.assign(d.config, patch), record),
+    updateConfig: (patch, record = true) => apply((d) => Object.assign(d.config, patch), record),
 
-    updateHole: (patch, record = true) =>
-      apply((d) => Object.assign(d.config.hole, patch), record),
+    updateHole: (patch, record = true) => apply((d) => Object.assign(d.config.hole, patch), record),
 
-    updateObject: (patch, record = true) =>
-      apply((d) => Object.assign(d.object, patch), record),
+    updateObject: (patch, record = true) => apply((d) => Object.assign(d.object, patch), record),
 
     beginEdit: () => {
       const { design, past } = get();

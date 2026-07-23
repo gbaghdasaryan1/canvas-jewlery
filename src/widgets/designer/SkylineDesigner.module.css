@@ -1,0 +1,90 @@
+/* Render-layers segmented control (skyline / maps designer). Base is the dark
+   scaffold; the app renders inside `:global(.design-app)` (light editorial), so
+   the light overrides below are what's actually seen. The `.on` state class is
+   global (shared across segmented controls). */
+
+.layerSeg {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  padding: 5px;
+  background: rgba(13, 11, 8, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.layerSegBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 6px 10px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--mist);
+  transition: 0.18s ease;
+}
+.layerSegBtn:hover {
+  color: var(--ivory);
+  border-color: var(--gold);
+  background: var(--graphite);
+}
+.layerSegBtn .layerSegIco {
+  display: flex;
+  color: var(--gold);
+  transition: transform 0.18s ease;
+}
+.layerSegBtn:hover .layerSegIco {
+  transform: translateY(-1px);
+}
+.layerSegLabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.layerSegBtn:global(.on) {
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--champagne), var(--gold));
+  border-color: var(--gold);
+  box-shadow:
+    0 4px 14px -6px var(--gold),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.layerSegBtn:global(.on) .layerSegIco {
+  color: var(--ink);
+  transform: none;
+}
+.layerSegBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+/* Light editorial theme (the live context) */
+:global(.design-app) .layerSeg {
+  background: rgba(28, 32, 38, 0.05);
+  border-color: var(--paper-line);
+}
+:global(.design-app) .layerSegBtn {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-3);
+}
+:global(.design-app) .layerSegBtn:hover {
+  background: var(--card);
+  border-color: var(--paper-line);
+  color: var(--ink-1);
+}
+:global(.design-app) .layerSegBtn .layerSegIco {
+  color: var(--bronze);
+}
+:global(.design-app) .layerSegBtn:global(.on) {
+  background: var(--card);
+  border-color: var(--paper-line);
+  color: var(--ink-1);
+  box-shadow: 0 2px 8px -3px rgba(24, 28, 34, 0.4);
+}
+:global(.design-app) .layerSegBtn:global(.on) .layerSegIco {
+  color: var(--ink-1);
+}

@@ -3,11 +3,11 @@
  * imagery without any external image assets. Deterministic from `seed`.
  */
 const TONES: Record<string, [string, string, string]> = {
-  gold:   ["#f0f2f5", "#dbe0e6", "#7f8892"],
+  gold: ["#f0f2f5", "#dbe0e6", "#7f8892"],
   silver: ["#eef0f2", "#d3d7db", "#8f959b"],
   bronze: ["#e8ebee", "#c2c9d1", "#6f7a86"],
-  sage:   ["#e4e8e6", "#c0ccc7", "#6f8279"],
-  stone:  ["#eceef0", "#d0d4d9", "#83898f"],
+  sage: ["#e4e8e6", "#c0ccc7", "#6f8279"],
+  stone: ["#eceef0", "#d0d4d9", "#83898f"],
 };
 
 function mulberry32(a: number) {
@@ -20,7 +20,13 @@ function mulberry32(a: number) {
   };
 }
 
-export function ContourArt({ seed = 1, tone = "gold" }: { seed?: number; tone?: keyof typeof TONES | string }) {
+export function ContourArt({
+  seed = 1,
+  tone = "gold",
+}: {
+  seed?: number;
+  tone?: keyof typeof TONES | string;
+}) {
   const rnd = mulberry32((seed * 2654435761) >>> 0);
   const cx = 50 + (rnd() - 0.5) * 34;
   const cy = 50 + (rnd() - 0.5) * 34;
@@ -31,7 +37,8 @@ export function ContourArt({ seed = 1, tone = "gold" }: { seed?: number; tone?: 
   for (let r = 5; r < 78; r += 4.5) {
     let d = "";
     for (let a = 0; a <= Math.PI * 2 + 0.05; a += 0.22) {
-      const wob = Math.sin(a * 3 + phase + r * 0.045) * r * 0.09 + Math.sin(a * 5 + r * 0.02) * r * 0.045;
+      const wob =
+        Math.sin(a * 3 + phase + r * 0.045) * r * 0.09 + Math.sin(a * 5 + r * 0.02) * r * 0.045;
       const rr = r + wob;
       const x = cx + Math.cos(a) * rr * 1.12;
       const y = cy + Math.sin(a) * rr * squash;
@@ -44,7 +51,12 @@ export function ContourArt({ seed = 1, tone = "gold" }: { seed?: number; tone?: 
   const gid = `g${seed}`;
 
   return (
-    <svg className="contour-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden>
+    <svg
+      className="contour-art"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
+    >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor={c0} />

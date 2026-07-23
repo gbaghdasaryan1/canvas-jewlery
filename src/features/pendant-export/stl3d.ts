@@ -27,18 +27,32 @@ export function buildBinarySTLFromGeometries(geometries: THREE.BufferGeometry[])
       const A = vx(f, 0);
       const B = vx(f, 1);
       const C = vx(f, 2);
-      const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2];
-      const wx = C[0] - A[0], wy = C[1] - A[1], wz = C[2] - A[2];
+      const ux = B[0] - A[0],
+        uy = B[1] - A[1],
+        uz = B[2] - A[2];
+      const wx = C[0] - A[0],
+        wy = C[1] - A[1],
+        wz = C[2] - A[2];
       let nx = uy * wz - uz * wy;
       let ny = uz * wx - ux * wz;
       let nz = ux * wy - uy * wx;
       const len = Math.hypot(nx, ny, nz) || 1;
-      nx /= len; ny /= len; nz /= len;
+      nx /= len;
+      ny /= len;
+      nz /= len;
 
-      dv.setFloat32(o, nx, true); dv.setFloat32(o + 4, ny, true); dv.setFloat32(o + 8, nz, true);
-      dv.setFloat32(o + 12, A[0], true); dv.setFloat32(o + 16, A[1], true); dv.setFloat32(o + 20, A[2], true);
-      dv.setFloat32(o + 24, B[0], true); dv.setFloat32(o + 28, B[1], true); dv.setFloat32(o + 32, B[2], true);
-      dv.setFloat32(o + 36, C[0], true); dv.setFloat32(o + 40, C[1], true); dv.setFloat32(o + 44, C[2], true);
+      dv.setFloat32(o, nx, true);
+      dv.setFloat32(o + 4, ny, true);
+      dv.setFloat32(o + 8, nz, true);
+      dv.setFloat32(o + 12, A[0], true);
+      dv.setFloat32(o + 16, A[1], true);
+      dv.setFloat32(o + 20, A[2], true);
+      dv.setFloat32(o + 24, B[0], true);
+      dv.setFloat32(o + 28, B[1], true);
+      dv.setFloat32(o + 32, B[2], true);
+      dv.setFloat32(o + 36, C[0], true);
+      dv.setFloat32(o + 40, C[1], true);
+      dv.setFloat32(o + 44, C[2], true);
       dv.setUint16(o + 48, 0, true);
       o += 50;
     }
@@ -46,10 +60,7 @@ export function buildBinarySTLFromGeometries(geometries: THREE.BufferGeometry[])
   return buf;
 }
 
-export function downloadGeometrySTL(
-  geometries: THREE.BufferGeometry[],
-  fileName: string,
-): void {
+export function downloadGeometrySTL(geometries: THREE.BufferGeometry[], fileName: string): void {
   const blob = new Blob([buildBinarySTLFromGeometries(geometries)], { type: "model/stl" });
   const url = URL.createObjectURL(blob);
   downloadUrl(fileName, url);

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useT } from "@/shared/i18n";
 import { ContourArt } from "./ContourArt";
+import styles from "./Occasions.module.css";
 
 const ART = [
   { tone: "gold", seed: 23 },
@@ -23,15 +24,15 @@ export function Occasions() {
           <p className="section-sub">{t.occasions.sub}</p>
         </div>
 
-        <div className="occasions-grid">
+        <div className={styles.grid}>
           {t.occasions.items.map((o, i) => (
-            <Link key={o.label} className="occasion-card" to="/mountains" aria-label={o.label}>
-              <div className="occasion-art">
+            <Link key={o.label} className={styles.card} to="/mountains" aria-label={o.label}>
+              <div className={styles.art}>
                 <ContourArt seed={ART[i].seed} tone={ART[i].tone} />
               </div>
-              <div className="occasion-body">
-                <div className="occasion-label">{o.label}</div>
-                <p className="occasion-line">{o.line}</p>
+              <div className={styles.body}>
+                <div className={styles.label}>{o.label}</div>
+                <p className={styles.line}>{o.line}</p>
               </div>
             </Link>
           ))}

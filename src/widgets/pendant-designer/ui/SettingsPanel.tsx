@@ -28,11 +28,7 @@ export function SettingsPanel() {
 
       <SegRow>
         {SHAPES.map((s) => (
-          <SegButton
-            key={s.id}
-            $active={config.shape === s.id}
-            onClick={() => setShape(s.id)}
-          >
+          <SegButton key={s.id} $active={config.shape === s.id} onClick={() => setShape(s.id)}>
             {s.label}
           </SegButton>
         ))}
@@ -56,9 +52,7 @@ export function SettingsPanel() {
           onChange={(v) => updateConfig({ height: v }, false)}
         />
       )}
-      {freeform && (
-        <Hint>The outline follows the object's contour with the border below.</Hint>
-      )}
+      {freeform && <Hint>The outline follows the object's contour with the border below.</Hint>}
 
       <SliderField
         label="Border thickness"

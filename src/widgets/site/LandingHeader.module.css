@@ -1,0 +1,70 @@
+.promobar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-1);
+  color: #dfe3e8;
+  overflow: hidden;
+}
+.promobarMsg {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  animation: promoFade 4.2s ease;
+}
+@keyframes promoFade {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  12%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(243, 244, 246, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--paper-line);
+}
+.top :global(.wrap) {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 68px;
+}
+.nav {
+  display: flex;
+  gap: 26px;
+  margin-left: auto;
+  font-size: 14px;
+}
+.nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.nav a:hover {
+  color: var(--ink-1);
+}
+.top :global(.btn-primary) {
+  margin-left: 20px;
+}
+@media (max-width: 720px) {
+  .nav {
+    display: none;
+  }
+  .top :global(.btn-primary) {
+    margin-left: auto;
+  }
+}

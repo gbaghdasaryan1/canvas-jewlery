@@ -18,8 +18,14 @@ function withTimeout<T>(p: Promise<T> | undefined, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("elevation request timed out")), ms);
     p.then(
-      (v) => { clearTimeout(timer); resolve(v); },
-      (e) => { clearTimeout(timer); reject(e); },
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
     );
   });
 }
@@ -91,7 +97,8 @@ export async function fetchElevation(
     };
     await Promise.all(Array.from({ length: Math.min(CONCURRENCY, offsets.length) }, worker));
 
-    let mn = Infinity, mx = -Infinity;
+    let mn = Infinity,
+      mx = -Infinity;
     for (const e of out) {
       if (e < mn) mn = e;
       if (e > mx) mx = e;

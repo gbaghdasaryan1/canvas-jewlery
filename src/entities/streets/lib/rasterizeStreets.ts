@@ -29,7 +29,8 @@ export function rasterizeStreets(
   const stamp = (r: number, c: number, rad: number) => {
     for (let dr = -rad; dr <= rad; dr++)
       for (let dc = -rad; dc <= rad; dc++) {
-        const rr = r + dr, cc = c + dc;
+        const rr = r + dr,
+          cc = c + dc;
         if (rr >= 0 && rr < gridN && cc >= 0 && cc < gridN) field[rr * gridN + cc] = 1;
       }
   };
@@ -37,8 +38,10 @@ export function rasterizeStreets(
   for (const st of streets) {
     const rad = radiusFor(st.cls);
     for (let i = 1; i < st.pts.length; i++) {
-      const r0 = toRow(st.pts[i - 1][0]), c0 = toCol(st.pts[i - 1][1]);
-      const r1 = toRow(st.pts[i][0]), c1 = toCol(st.pts[i][1]);
+      const r0 = toRow(st.pts[i - 1][0]),
+        c0 = toCol(st.pts[i - 1][1]);
+      const r1 = toRow(st.pts[i][0]),
+        c1 = toCol(st.pts[i][1]);
       const steps = Math.max(1, Math.ceil(Math.max(Math.abs(r1 - r0), Math.abs(c1 - c0)) * 2));
       for (let s = 0; s <= steps; s++) {
         const t = s / steps;

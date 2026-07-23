@@ -202,9 +202,7 @@ async function detectContoursCv(
 
     const maxArea = raw.reduce((m, c) => Math.max(m, c.area), 0);
     const minArea = Math.max(100, maxArea * 0.02);
-    return raw
-      .filter((c) => c.area >= minArea)
-      .map((c) => chaikinSmooth(c.poly, 1));
+    return raw.filter((c) => c.area >= minArea).map((c) => chaikinSmooth(c.poly, 1));
   } finally {
     src.delete();
     kernel.delete();

@@ -40,7 +40,17 @@ const MOUNTAIN_PRESETS = PRESETS.filter((p) => !p.city);
 // leaves a stale location behind; we reset to this on mount.
 const DEFAULT_MOUNTAIN = MOUNTAIN_PRESETS[0];
 
-export function Step({ n, title, hint, children }: { n: number; title: string; hint: string; children: ReactNode }) {
+export function Step({
+  n,
+  title,
+  hint,
+  children,
+}: {
+  n: number;
+  title: string;
+  hint: string;
+  children: ReactNode;
+}) {
   return (
     <section className="dz-step">
       <header className="dz-step-head">
@@ -57,8 +67,27 @@ export function Step({ n, title, hint, children }: { n: number; title: string; h
 
 export function Designer() {
   const {
-    lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth,
-    showBuildings, metal, engraving, setRelief, setLocation, setAreaKm,
+    lat,
+    lng,
+    name,
+    jewelryType,
+    hangPlace,
+    hangSize,
+    hangRotation,
+    hangHorizontal,
+    ringRotation,
+    shape,
+    areaKm,
+    width,
+    relief,
+    thickness,
+    smooth,
+    showBuildings,
+    metal,
+    engraving,
+    setRelief,
+    setLocation,
+    setAreaKm,
   } = useDesigner();
   const t = useT();
   const d = t.designer;
@@ -91,7 +120,10 @@ export function Designer() {
   );
 
   const heightNorm = useMemo(
-    () => (mountains ? composeHeightField(mountains.data, mountains.min, mountains.max, structures, smooth) : null),
+    () =>
+      mountains
+        ? composeHeightField(mountains.data, mountains.min, mountains.max, structures, smooth)
+        : null,
     [mountains, structures, smooth],
   );
   const params = useMemo(
@@ -111,8 +143,17 @@ export function Designer() {
   function buildPayload(): OrderPayload | null {
     if (!heightNorm) return null;
     const mesh = buildExportMesh({
-      shape, heightNorm, width, relief, thickness,
-      jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+      shape,
+      heightNorm,
+      width,
+      relief,
+      thickness,
+      jewelryType,
+      hangPlace,
+      hangSize,
+      hangRotation,
+      hangHorizontal,
+      ringRotation,
     });
     if (!mesh) return null;
     const price = estimatePrice(buildShapeMesh(shape, heightNorm, params), metal);
@@ -122,9 +163,19 @@ export function Designer() {
       options: {
         product: "mountains",
         place: { name, lat, lng },
-        jewelryType, shape, metal,
-        width, relief, thickness, areaKm, smooth,
-        hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+        jewelryType,
+        shape,
+        metal,
+        width,
+        relief,
+        thickness,
+        areaKm,
+        smooth,
+        hangPlace,
+        hangSize,
+        hangRotation,
+        hangHorizontal,
+        ringRotation,
         engraving,
         overlays: { buildings: showBuildings, streets: false },
         estimate: { amd: JEWELRY_PRICE_AMD[jewelryType], grams: price.grams },
@@ -132,23 +183,24 @@ export function Designer() {
     };
   }
 
-  const viewer = elevation.isLoading && !mountains ? (
-    <div className="stage-msg mono">{d.readingMountains}</div>
-  ) : (
-    <RingViewer
-      heightNorm={viewerHeightNorm}
-      shape={shape}
-      params={viewerParams}
-      metal={metal}
-      hangs={hangAnchors(shape, jewelryType, hangPlace)}
-      hangSize={hangSize}
-      hangRotation={hangRotation}
-      hangHorizontal={hangHorizontal}
-      jewelryType={jewelryType}
-      ringRotation={ringRotation}
-      engraving={engraving}
-    />
-  );
+  const viewer =
+    elevation.isLoading && !mountains ? (
+      <div className="stage-msg mono">{d.readingMountains}</div>
+    ) : (
+      <RingViewer
+        heightNorm={viewerHeightNorm}
+        shape={shape}
+        params={viewerParams}
+        metal={metal}
+        hangs={hangAnchors(shape, jewelryType, hangPlace)}
+        hangSize={hangSize}
+        hangRotation={hangRotation}
+        hangHorizontal={hangHorizontal}
+        jewelryType={jewelryType}
+        ringRotation={ringRotation}
+        engraving={engraving}
+      />
+    );
 
   return (
     <div className="dz-wrap">
@@ -161,9 +213,7 @@ export function Designer() {
           </div>
 
           <div className="dz-buy">
-            <div className="dz-place mono">{name}</div>
             <div className="dz-price-row">
-              <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
               <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
             </div>
             <div className="dz-cta">
@@ -191,7 +241,6 @@ export function Designer() {
             <LocationSearch presets={MOUNTAIN_PRESETS} />
             <Panel className="dz-mappanel" label={d.mapLabel}>
               <MountainsMap />
-
             </Panel>
           </Step>
 

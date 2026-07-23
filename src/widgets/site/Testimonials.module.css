@@ -1,0 +1,47 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.card {
+  margin: 0;
+  background: var(--card);
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.stars {
+  color: var(--bronze);
+  letter-spacing: 2px;
+  font-size: 13px;
+}
+.card blockquote {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--ink-1);
+}
+.card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: auto;
+}
+.name {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.place {
+  font-size: 11px;
+  color: var(--ink-3);
+}
+@media (max-width: 820px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -22,6 +22,7 @@ import { buildExportMesh } from "@/features/stl-export/buildExportMesh";
 import { OrderModal, type OrderPayload } from "@/features/order";
 import type { Shape } from "@/entities/ring/model/types";
 import { Step } from "./Designer";
+import styles from "./SkylineDesigner.module.css";
 
 const SHAPE_LABEL: Record<Shape, string> = {
   rectangle: "plaque",
@@ -37,7 +38,16 @@ const LAYER_OPTIONS: { mode: LayerMode; icon: JSX.Element }[] = [
   {
     mode: "all",
     icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M12 3 3 8l9 5 9-5-9-5Z" />
         <path d="m3 13 9 5 9-5" />
       </svg>
@@ -46,7 +56,16 @@ const LAYER_OPTIONS: { mode: LayerMode; icon: JSX.Element }[] = [
   {
     mode: "streets",
     icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <path d="M8 3 4 21" />
         <path d="M16 3l4 18" />
         <path d="M12 4v2M12 11v2M12 18v2" />
@@ -60,15 +79,33 @@ const DEFAULT_RELIEF_MM = 2; // caps at the maps relief max (see RingControls re
 const MAPS_RELIEF_MAX = 2;
 
 export function SkylineDesigner() {
-  const { lat, lng, name, jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, shape, areaKm, width, relief, thickness, smooth, metal, engraving, setLocation, setRelief } =
-    useDesigner();
+  const {
+    lat,
+    lng,
+    name,
+    jewelryType,
+    hangPlace,
+    hangSize,
+    hangRotation,
+    hangHorizontal,
+    ringRotation,
+    shape,
+    areaKm,
+    width,
+    relief,
+    thickness,
+    smooth,
+    metal,
+    engraving,
+    setLocation,
+    setRelief,
+  } = useDesigner();
   const t = useT();
   const d = t.designer;
 
   const [layerMode, setLayerMode] = useState<LayerMode>("streets");
   // STL print-geometry preview is collapsible — open by default on desktop,
   // closed on phones where the sticky preview column otherwise fills the screen.
-
 
   // Streets default to a shallow relief. Applied on mount (streets is the
   // default layer) and whenever the layer changes.
@@ -88,14 +125,11 @@ export function SkylineDesigner() {
 
   const buildingField = useMemo(
     () =>
-      buildings.data?.length
-        ? rasterizeBuildings(buildings.data, qLat, qLng, qAreaKm, GRID)
-        : null,
+      buildings.data?.length ? rasterizeBuildings(buildings.data, qLat, qLng, qAreaKm, GRID) : null,
     [buildings.data, qLat, qLng, qAreaKm],
   );
   const streetField = useMemo(
-    () =>
-      streets.data?.length ? rasterizeStreets(streets.data, qLat, qLng, qAreaKm, GRID) : null,
+    () => (streets.data?.length ? rasterizeStreets(streets.data, qLat, qLng, qAreaKm, GRID) : null),
     [streets.data, qLat, qLng, qAreaKm],
   );
 
@@ -110,8 +144,8 @@ export function SkylineDesigner() {
     [shape, width, relief, thickness, jewelryType],
   );
 
-  const activeBuildings = layerMode !== "streets" ? buildings.data ?? null : null;
-  const activeStreets = layerMode !== "buildings" ? streets.data ?? null : null;
+  const activeBuildings = layerMode !== "streets" ? (buildings.data ?? null) : null;
+  const activeStreets = layerMode !== "buildings" ? (streets.data ?? null) : null;
 
   // Streets-only pieces are hollow (no base plate), so there's no solid back to
   // laser-engrave. Engraving is only offered when a solid floor is present.
@@ -145,8 +179,17 @@ export function SkylineDesigner() {
   function buildPayload(): OrderPayload | null {
     if (!heightNorm) return null;
     const mesh = buildExportMesh({
-      shape, heightNorm, width, relief, thickness,
-      jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+      shape,
+      heightNorm,
+      width,
+      relief,
+      thickness,
+      jewelryType,
+      hangPlace,
+      hangSize,
+      hangRotation,
+      hangHorizontal,
+      ringRotation,
       exportMesh,
     });
     if (!mesh) return null;
@@ -157,9 +200,19 @@ export function SkylineDesigner() {
       options: {
         product: "skyline",
         place: { name, lat, lng },
-        jewelryType, shape, metal,
-        width, relief, thickness, areaKm, smooth,
-        hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation,
+        jewelryType,
+        shape,
+        metal,
+        width,
+        relief,
+        thickness,
+        areaKm,
+        smooth,
+        hangPlace,
+        hangSize,
+        hangRotation,
+        hangHorizontal,
+        ringRotation,
         engraving: activeEngraving,
         overlays: { buildings: layerMode !== "streets", streets: layerMode !== "buildings" },
         estimate: { amd: JEWELRY_PRICE_AMD[jewelryType], grams: price.grams },
@@ -197,12 +250,12 @@ export function SkylineDesigner() {
             </div>
           </div>
 
-
-
           <div className="dz-buy">
             <div className="dz-place mono">{name}</div>
             <div className="dz-price-row">
-              <span className="dz-price-label mono">{d.priceLabel} · {d.jewelry[jewelryType]}</span>
+              <span className="dz-price-label mono">
+                {d.priceLabel} · {d.jewelry[jewelryType]}
+              </span>
               <span className="dz-price-amount">{formatAMD(JEWELRY_PRICE_AMD[jewelryType])}</span>
             </div>
             <div className="dz-cta">
@@ -229,7 +282,11 @@ export function SkylineDesigner() {
           <Step n={1} title={d.step1CityTitle} hint={""}>
             <LocationSearch presets={CITY_PRESETS} placeholder={d.searchCityPlaceholder} />
             <Panel className="dz-mappanel" label={d.cityMapLabel}>
-              <CityMap lat={lat} lng={lng} onSelect={(la, lo) => setLocation(la, lo, d.customLocation)} />
+              <CityMap
+                lat={lat}
+                lng={lng}
+                onSelect={(la, lo) => setLocation(la, lo, d.customLocation)}
+              />
             </Panel>
             {(buildings.isFetching || streets.isFetching) && (
               <div className="search-msg mono">{d.fetchingOsm}</div>
@@ -242,23 +299,30 @@ export function SkylineDesigner() {
           <Step n={2} title={d.step2Title} hint={d.step2CityHint}>
             <div className="field">
               <label>{d.renderLayers}</label>
-              <div className="layer-seg" role="radiogroup" aria-label={d.renderLayers}>
+              <div className={styles.layerSeg} role="radiogroup" aria-label={d.renderLayers}>
                 {LAYER_OPTIONS.map((opt) => (
                   <button
                     key={opt.mode}
                     type="button"
                     role="radio"
                     aria-checked={layerMode === opt.mode}
-                    className={`layer-seg-btn ${layerMode === opt.mode ? "on" : ""}`}
+                    className={`${styles.layerSegBtn} ${layerMode === opt.mode ? "on" : ""}`}
                     onClick={() => setLayerMode(opt.mode)}
                   >
-                    <span className="layer-seg-ico" aria-hidden>{opt.icon}</span>
-                    <span className="layer-seg-label">{d.layers[opt.mode]}</span>
+                    <span className={styles.layerSegIco} aria-hidden>
+                      {opt.icon}
+                    </span>
+                    <span className={styles.layerSegLabel}>{d.layers[opt.mode]}</span>
                   </button>
                 ))}
               </div>
             </div>
-            <RingControls areaMin={0.1} areaMax={5} reliefMax={MAPS_RELIEF_MAX} showEngraving={canEngrave} />
+            <RingControls
+              areaMin={0.1}
+              areaMax={5}
+              reliefMax={MAPS_RELIEF_MAX}
+              showEngraving={canEngrave}
+            />
           </Step>
         </div>
       </div>

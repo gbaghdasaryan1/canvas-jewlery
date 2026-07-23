@@ -1,5 +1,10 @@
 import polygonClipping from "polygon-clipping";
-import { heartBoundary, circleBoundary, FRAME_MM, FRAME_HEIGHT_MM } from "@/shared/lib/ringGeometry";
+import {
+  heartBoundary,
+  circleBoundary,
+  FRAME_MM,
+  FRAME_HEIGHT_MM,
+} from "@/shared/lib/ringGeometry";
 import type { Shape } from "@/entities/ring/model/types";
 
 export { FRAME_MM, FRAME_HEIGHT_MM };
@@ -35,7 +40,10 @@ export const ROAD_STYLES: Record<string, RoadStyle> = {
 };
 
 export const RECT_OUTLINE: Pt[] = [
-  { x: -0.5, z: -0.5 }, { x: 0.5, z: -0.5 }, { x: 0.5, z: 0.5 }, { x: -0.5, z: 0.5 },
+  { x: -0.5, z: -0.5 },
+  { x: 0.5, z: -0.5 },
+  { x: 0.5, z: 0.5 },
+  { x: -0.5, z: 0.5 },
 ];
 
 /**
@@ -48,22 +56,34 @@ export function insetOutline(outline: Pt[], d: number): Pt[] {
   const n = outline.length;
   let area = 0;
   for (let i = 0; i < n; i++) {
-    const a = outline[i], b = outline[(i + 1) % n];
+    const a = outline[i],
+      b = outline[(i + 1) % n];
     area += a.x * b.z - b.x * a.z;
   }
   const s = area >= 0 ? 1 : -1;
   const inward = (a: Pt, b: Pt): Pt => {
-    const dx = b.x - a.x, dz = b.z - a.z;
+    const dx = b.x - a.x,
+      dz = b.z - a.z;
     const len = Math.hypot(dx, dz) || 1;
     return { x: (-dz / len) * s, z: (dx / len) * s };
   };
   const out: Pt[] = [];
   for (let i = 0; i < n; i++) {
-    const prev = outline[(i - 1 + n) % n], cur = outline[i], next = outline[(i + 1) % n];
-    const n1 = inward(prev, cur), n2 = inward(cur, next);
-    let mx = n1.x + n2.x, mz = n1.z + n2.z;
+    const prev = outline[(i - 1 + n) % n],
+      cur = outline[i],
+      next = outline[(i + 1) % n];
+    const n1 = inward(prev, cur),
+      n2 = inward(cur, next);
+    let mx = n1.x + n2.x,
+      mz = n1.z + n2.z;
     const ml = Math.hypot(mx, mz);
-    if (ml < 1e-6) { mx = n2.x; mz = n2.z; } else { mx /= ml; mz /= ml; }
+    if (ml < 1e-6) {
+      mx = n2.x;
+      mz = n2.z;
+    } else {
+      mx /= ml;
+      mz /= ml;
+    }
     const cos = Math.max(mx * n1.x + mz * n1.z, 0.25);
     out.push({ x: cur.x + (mx * d) / cos, z: cur.z + (mz * d) / cos });
   }
@@ -99,8 +119,7 @@ export function makeHeightScale(heights: number[]): (h: number) => number {
   const p95 = sorted[Math.floor(0.95 * (sorted.length - 1))];
   if (p95 <= 0 || p95 >= max) return (h) => h / max;
   const KNEE = 0.85;
-  return (h) =>
-    h <= p95 ? (h / p95) * KNEE : KNEE + (1 - KNEE) * ((h - p95) / (max - p95));
+  return (h) => (h <= p95 ? (h / p95) * KNEE : KNEE + (1 - KNEE) * ((h - p95) / (max - p95)));
 }
 
 /** The plate outline for a shape, in the normalized [-0.5, 0.5] plane — the
@@ -115,7 +134,8 @@ export function shapeOutline(shape: Shape): Pt[] {
 export function insidePoly(x: number, z: number, poly: Pt[]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const a = poly[i], b = poly[j];
+    const a = poly[i],
+      b = poly[j];
     if (a.z > z !== b.z > z && x < ((b.x - a.x) * (z - a.z)) / (b.z - a.z) + a.x) {
       inside = !inside;
     }
@@ -125,7 +145,8 @@ export function insidePoly(x: number, z: number, poly: Pt[]): boolean {
 
 export function makeInside(shape: Shape, outline: Pt[]) {
   if (shape === "rectangle") {
-    let hx = 0, hz = 0;
+    let hx = 0,
+      hz = 0;
     for (const p of outline) {
       hx = Math.max(hx, Math.abs(p.x));
       hz = Math.max(hz, Math.abs(p.z));
@@ -150,7 +171,8 @@ export function clipRingToOutline(ring: Pt[], outline: Pt[]): Pt[][] {
     return res
       .map((poly) => {
         const r = poly[0].map(([x, z]) => ({ x, z }));
-        const first = r[0], last = r[r.length - 1];
+        const first = r[0],
+          last = r[r.length - 1];
         if (r.length > 1 && first.x === last.x && first.z === last.z) r.pop();
         return r;
       })
@@ -164,7 +186,8 @@ export function clipRingToOutline(ring: Pt[], outline: Pt[]): Pt[][] {
     point (ox,oz) crosses the outline — bisection, works for any shape. */
 export function makeClipToBoundary(inside: (x: number, z: number) => boolean) {
   return (ix: number, iz: number, ox: number, oz: number): Pt => {
-    let lo = 0, hi = 1;
+    let lo = 0,
+      hi = 1;
     for (let k = 0; k < 14; k++) {
       const mid = (lo + hi) / 2;
       if (inside(ix + (ox - ix) * mid, iz + (oz - iz) * mid)) lo = mid;

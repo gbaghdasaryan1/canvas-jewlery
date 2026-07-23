@@ -2,35 +2,49 @@ import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { FRAME_HEIGHT_MM, buildRingBandMesh, ringBandDims, type SlabParams } from "@/shared/lib/ringGeometry";
+import {
+  FRAME_HEIGHT_MM,
+  buildRingBandMesh,
+  ringBandDims,
+  type SlabParams,
+} from "@/shared/lib/ringGeometry";
 import { rotateHeightField } from "@/shared/lib/heightField";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import { EngravingText } from "@/shared/ui/EngravingText";
-import { METALS, buildShapeMesh, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
+import {
+  METALS,
+  buildShapeMesh,
+  isRing,
+  type JewelryType,
+  type Metal,
+  type Shape,
+} from "@/entities/ring/model/types";
 
 function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
-  const W = 128, H = 512;
+  const W = 128,
+    H = 512;
   const c = document.createElement("canvas");
-  c.width = W; c.height = H;
+  c.width = W;
+  c.height = H;
   const ctx = c.getContext("2d")!;
 
   // Studio sky-to-floor gradient
   const sky = ctx.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0.00, "#ffffff");
+  sky.addColorStop(0.0, "#ffffff");
   sky.addColorStop(0.06, "#f4f7fa");
   sky.addColorStop(0.22, "#c8cfd7");
   sky.addColorStop(0.42, "#7c8289");
   sky.addColorStop(0.62, "#3d4249");
   sky.addColorStop(0.82, "#121519");
-  sky.addColorStop(1.00, "#050607");
+  sky.addColorStop(1.0, "#050607");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, W, H);
 
   // Key-light bloom centred at top for a sharp specular hot-spot
   const bloom = ctx.createRadialGradient(W * 0.5, 0, 0, W * 0.5, 0, H * 0.28);
-  bloom.addColorStop(0.00, "rgba(255,255,255,1.0)");
+  bloom.addColorStop(0.0, "rgba(255,255,255,1.0)");
   bloom.addColorStop(0.25, "rgba(248,251,254,0.7)");
-  bloom.addColorStop(1.00, "rgba(255,255,255,0.0)");
+  bloom.addColorStop(1.0, "rgba(255,255,255,0.0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, W, H * 0.28);
 
@@ -61,7 +75,10 @@ export function SceneEnvironment() {
     new THREE.TextureLoader().load(
       REFLECTION_URL,
       (tex) => {
-        if (cancelled) { tex.dispose(); return; }
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
         tex.mapping = THREE.EquirectangularReflectionMapping;
         tex.colorSpace = THREE.SRGBColorSpace;
         const pmrem = new THREE.PMREMGenerator(gl);
@@ -72,7 +89,9 @@ export function SceneEnvironment() {
         invalidate(); // frameloop="demand" — repaint with the new reflections
       },
       undefined,
-      () => { /* file absent → keep the procedural fallback, no error surfaced */ },
+      () => {
+        /* file absent → keep the procedural fallback, no error surfaced */
+      },
     );
 
     return () => {
@@ -124,7 +143,19 @@ function contrastCurve(h: Float32Array): Float32Array {
   return out;
 }
 
-function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, jewelryType = "pendant", ringRotation = 0, engraving = "" }: RingMeshProps) {
+function RingMesh({
+  heightNorm,
+  shape,
+  params,
+  metal,
+  hangs = [],
+  hangSize = 1,
+  hangRotation = 0,
+  hangHorizontal = false,
+  jewelryType = "pendant",
+  ringRotation = 0,
+  engraving = "",
+}: RingMeshProps) {
   const ring = isRing(jewelryType);
   // Rings show the raw relief — the smoothstep contrast curve is skipped so the
   // profile matches the exported/priced mesh exactly.
@@ -202,17 +233,18 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
       )}
       {/* Laser engraving — inside the band for a ring, on the flat back face
           otherwise. Preview-only; the real mark is a post-cast laser step. */}
-      {heightContrast && (ring
-        ? ringBand && (
-          <EngravingText
-            text={engraving}
-            position={[0, -offset.y - ringBand.topLocalY + ringBand.innerR - 0.06, 0]}
-            curveRadius={ringBand.innerR}
-            fontSize={Math.max(0.9, ringBand.innerR * 0.3)}
-            color="#2b3038"
-          />
-        )
-        : (
+      {heightContrast &&
+        (ring ? (
+          ringBand && (
+            <EngravingText
+              text={engraving}
+              position={[0, -offset.y - ringBand.topLocalY + ringBand.innerR - 0.06, 0]}
+              curveRadius={ringBand.innerR}
+              fontSize={Math.max(0.9, ringBand.innerR * 0.3)}
+              color="#2b3038"
+            />
+          )
+        ) : (
           <EngravingText
             text={engraving}
             position={[0, -offset.y - 0.05, 0]}
@@ -222,33 +254,34 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
             color="#2b3038"
           />
         ))}
-      {heightContrast && hangs.map((hang, i) => {
-        const outLen = Math.hypot(hang.x, hang.z) || 1;
-        const ox = hang.x / outLen;
-        const oz = hang.z / outLen;
-        return (
-          <mesh
-            key={i}
-            material={material}
-            position={[
-              hang.x * params.width + ox * bailR * 0.75 - offset.x,
-              (params.base + FRAME_HEIGHT_MM) / 2 - offset.y,
-              hang.z * params.depth + oz * bailR * 0.75 - offset.z,
-            ]}
-            // YXZ: roll the loop upright around its own tip axis first, then
-            // yaw it outward — the chain hole stays tangent to the plate edge
-            // on every side, so a chain threads straight through.
-            rotation={[
-              hangHorizontal ? Math.PI / 2 : 0,
-              Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
-              0,
-              "YXZ",
-            ]}
-          >
-            <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
-          </mesh>
-        );
-      })}
+      {heightContrast &&
+        hangs.map((hang, i) => {
+          const outLen = Math.hypot(hang.x, hang.z) || 1;
+          const ox = hang.x / outLen;
+          const oz = hang.z / outLen;
+          return (
+            <mesh
+              key={i}
+              material={material}
+              position={[
+                hang.x * params.width + ox * bailR * 0.75 - offset.x,
+                (params.base + FRAME_HEIGHT_MM) / 2 - offset.y,
+                hang.z * params.depth + oz * bailR * 0.75 - offset.z,
+              ]}
+              // YXZ: roll the loop upright around its own tip axis first, then
+              // yaw it outward — the chain hole stays tangent to the plate edge
+              // on every side, so a chain threads straight through.
+              rotation={[
+                hangHorizontal ? Math.PI / 2 : 0,
+                Math.atan2(oz, -ox) + (hangRotation * Math.PI) / 180,
+                0,
+                "YXZ",
+              ]}
+            >
+              <tubeGeometry args={[bailCurve, 48, bailTube, 10, true]} />
+            </mesh>
+          );
+        })}
     </>
   );
 }
@@ -259,9 +292,18 @@ function RingMesh({ heightNorm, shape, params, metal, hangs = [], hangSize = 1, 
  * ring) so the preview text is actually visible. Only fires on the empty→typed
  * transition, so it doesn't fight the user while they keep editing or orbit away.
  */
-export function CameraDirector({ engraving = "", jewelryType = "pendant" }: { engraving?: string; jewelryType?: JewelryType }) {
+export function CameraDirector({
+  engraving = "",
+  jewelryType = "pendant",
+}: {
+  engraving?: string;
+  jewelryType?: JewelryType;
+}) {
   const camera = useThree((s) => s.camera);
-  const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
+  const controls = useThree((s) => s.controls) as unknown as {
+    target: THREE.Vector3;
+    update: () => void;
+  } | null;
   const invalidate = useThree((s) => s.invalidate);
   const prev = useRef(engraving);
   const raf = useRef<number | undefined>(undefined);
@@ -275,9 +317,10 @@ export function CameraDirector({ engraving = "", jewelryType = "pendant" }: { en
     // Direction (from the piece centre toward the camera) that puts the
     // engraved face toward the viewer — below-front, more so for a ring whose
     // text wraps the inner band wall. Keep the user's current zoom distance.
-    const dir = (isRing(jewelryType)
-      ? new THREE.Vector3(0.1, -0.55, 0.83)
-      : new THREE.Vector3(0.12, -0.86, 0.5)
+    const dir = (
+      isRing(jewelryType)
+        ? new THREE.Vector3(0.1, -0.55, 0.83)
+        : new THREE.Vector3(0.12, -0.86, 0.5)
     ).normalize();
     const R = camera.position.distanceTo(controls.target);
     const to = dir.multiplyScalar(R).add(controls.target);
@@ -295,7 +338,9 @@ export function CameraDirector({ engraving = "", jewelryType = "pendant" }: { en
     };
     if (raf.current) cancelAnimationFrame(raf.current);
     raf.current = requestAnimationFrame(tick);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    return () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+    };
   }, [engraving, controls, camera, invalidate, jewelryType]);
 
   return null;

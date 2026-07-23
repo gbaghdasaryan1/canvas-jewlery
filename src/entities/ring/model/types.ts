@@ -42,8 +42,14 @@ export const BRACELET_HANG_STEPS = 4; // a parallel pair → 4 distinct axes, 45
 
 /** Compass names at 45° increments, for labelling angles that land on one. */
 const HANG_NAMES = [
-  "top", "top-right", "right", "bottom-right",
-  "bottom", "bottom-left", "left", "top-left",
+  "top",
+  "top-right",
+  "right",
+  "bottom-right",
+  "bottom",
+  "bottom-left",
+  "left",
+  "top-left",
 ];
 
 const norm360 = (deg: number) => ((deg % 360) + 360) % 360;
@@ -98,7 +104,10 @@ export function hangAnchor(shape: Shape, deg: number): { x: number; z: number } 
   for (const p of outline) {
     let d = Math.abs(Math.atan2(p.z, p.x) - target);
     if (d > Math.PI) d = 2 * Math.PI - d;
-    if (d < bestDiff) { bestDiff = d; best = p; }
+    if (d < bestDiff) {
+      bestDiff = d;
+      best = p;
+    }
   }
   return best;
 }
@@ -129,9 +138,9 @@ export interface MetalSpec {
 }
 
 export const METALS: Record<Metal, MetalSpec> = {
-  gold:     { label: "14k gold",        color: 0xcba063, roughness: 0.15, priceFrom: 1290 },
-  silver:   { label: "sterling silver", color: 0xcbced2, roughness: 0.18, priceFrom: 680 },
-  platinum: { label: "platinum",        color: 0xdadde2, roughness: 0.10, priceFrom: 2400 },
+  gold: { label: "14k gold", color: 0xcba063, roughness: 0.15, priceFrom: 1290 },
+  silver: { label: "sterling silver", color: 0xcbced2, roughness: 0.18, priceFrom: 680 },
+  platinum: { label: "platinum", color: 0xdadde2, roughness: 0.1, priceFrom: 2400 },
 };
 
 export interface DesignInput {
@@ -143,7 +152,11 @@ export interface DesignInput {
 /** Map user-facing design inputs to concrete relief-plaque geometry parameters
     (mm). `res` sets the top-surface vertex density — the live viewer uses the
     GRID default; STL export may pass a denser value. */
-export function toSlabParams({ width, relief, thickness }: DesignInput, res: number = GRID - 1, frame = true): SlabParams {
+export function toSlabParams(
+  { width, relief, thickness }: DesignInput,
+  res: number = GRID - 1,
+  frame = true,
+): SlabParams {
   return {
     width, // mm: plate side is exactly the slider value
     depth: width,
@@ -157,7 +170,12 @@ export function toSlabParams({ width, relief, thickness }: DesignInput, res: num
 
 /** Geometry parameters for the given shape from the user's design inputs.
     `frame` gates the raised bezel wall — pass false for rings. */
-export function toShapeParams(_shape: Shape, input: DesignInput, res?: number, frame = true): SlabParams {
+export function toShapeParams(
+  _shape: Shape,
+  input: DesignInput,
+  res?: number,
+  frame = true,
+): SlabParams {
   return toSlabParams(input, res, frame);
 }
 

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useT } from "@/shared/i18n";
 import { ContourArt } from "./ContourArt";
+import styles from "./Collections.module.css";
 
 const OPTION_META = [
   { shape: "rectangle", tone: "stone", seed: 11 },
@@ -21,16 +22,20 @@ export function Collections() {
           <p className="section-sub">{t.collections.sub}</p>
         </div>
 
-        <div className="options-grid">
+        <div className={styles.grid}>
           {t.collections.options.map((o, i) => (
-            <Link key={OPTION_META[i].shape} className="option-card" to={`/mountains?shape=${OPTION_META[i].shape}`}>
-              <div className="option-art">
+            <Link
+              key={OPTION_META[i].shape}
+              className={styles.card}
+              to={`/mountains?shape=${OPTION_META[i].shape}`}
+            >
+              <div className={styles.art}>
                 <ContourArt seed={OPTION_META[i].seed} tone={OPTION_META[i].tone} />
               </div>
-              <div className="option-body">
-                <h3 className="option-title">{o.title}</h3>
-                <p className="option-blurb">{o.blurb}</p>
-                <span className="option-link">{t.collections.link}</span>
+              <div className={styles.body}>
+                <h3 className={styles.title}>{o.title}</h3>
+                <p className={styles.blurb}>{o.blurb}</p>
+                <span className={styles.link}>{t.collections.link}</span>
               </div>
             </Link>
           ))}

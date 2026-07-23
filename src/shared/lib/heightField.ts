@@ -54,7 +54,8 @@ export function composeCityField(
   if (n === 0) return out;
 
   let maxH = 0;
-  if (buildingHeights) for (let i = 0; i < n; i++) if (buildingHeights[i] > maxH) maxH = buildingHeights[i];
+  if (buildingHeights)
+    for (let i = 0; i < n; i++) if (buildingHeights[i] > maxH) maxH = buildingHeights[i];
 
   const STREET_H = 0.1; // street ridge height (fraction of full relief)
   const BASE = 0.24; // even a 1-storey building clears the streets
@@ -81,23 +82,30 @@ export function rotateHeightField(src: Float32Array, degrees: number): Float32Ar
   const N = Math.round(Math.sqrt(src.length));
   const out = new Float32Array(src.length);
   const rad = (degrees * Math.PI) / 180;
-  const cos = Math.cos(rad), sin = Math.sin(rad);
+  const cos = Math.cos(rad),
+    sin = Math.sin(rad);
   const c = (N - 1) / 2;
 
   const sample = (x: number, y: number): number => {
     x = Math.min(Math.max(x, 0), N - 1);
     y = Math.min(Math.max(y, 0), N - 1);
-    const x0 = Math.floor(x), y0 = Math.floor(y);
-    const x1 = Math.min(x0 + 1, N - 1), y1 = Math.min(y0 + 1, N - 1);
-    const tx = x - x0, ty = y - y0;
-    const a = src[y0 * N + x0], b = src[y0 * N + x1];
-    const d = src[y1 * N + x0], e = src[y1 * N + x1];
+    const x0 = Math.floor(x),
+      y0 = Math.floor(y);
+    const x1 = Math.min(x0 + 1, N - 1),
+      y1 = Math.min(y0 + 1, N - 1);
+    const tx = x - x0,
+      ty = y - y0;
+    const a = src[y0 * N + x0],
+      b = src[y0 * N + x1];
+    const d = src[y1 * N + x0],
+      e = src[y1 * N + x1];
     return (a + (b - a) * tx) * (1 - ty) + (d + (e - d) * tx) * ty;
   };
 
   for (let j = 0; j < N; j++) {
     for (let i = 0; i < N; i++) {
-      const dx = i - c, dy = j - c;
+      const dx = i - c,
+        dy = j - c;
       // Inverse-rotate the output cell back into the source field.
       const sx = c + dx * cos + dy * sin;
       const sy = c - dx * sin + dy * cos;

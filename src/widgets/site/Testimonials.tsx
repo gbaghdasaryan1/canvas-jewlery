@@ -1,4 +1,5 @@
 import { useT } from "@/shared/i18n";
+import styles from "./Testimonials.module.css";
 
 // NOTE: placeholder testimonials (in every dictionary) — replace with real,
 // attributable customer quotes (with permission) before going live.
@@ -7,7 +8,7 @@ import { useT } from "@/shared/i18n";
 export function Testimonials() {
   const t = useT();
   return (
-    <section className="home-section testimonials-section" aria-label={t.testimonials.title}>
+    <section className="home-section" aria-label={t.testimonials.title}>
       <div className="wrap">
         <div className="section-head">
           <div>
@@ -17,14 +18,16 @@ export function Testimonials() {
           <p className="section-sub">{t.testimonials.sub}</p>
         </div>
 
-        <div className="testimonials-grid">
+        <div className={styles.grid}>
           {t.testimonials.quotes.map((q) => (
-            <figure className="testimonial" key={q.name}>
-              <div className="testimonial-stars" aria-label="5 / 5">★★★★★</div>
+            <figure className={styles.card} key={q.name}>
+              <div className={styles.stars} aria-label="5 / 5">
+                ★★★★★
+              </div>
               <blockquote>{q.body}</blockquote>
               <figcaption>
-                <span className="testimonial-name">{q.name}</span>
-                <span className="testimonial-place mono">{q.place}</span>
+                <span className={styles.name}>{q.name}</span>
+                <span className={`${styles.place} mono`}>{q.place}</span>
               </figcaption>
             </figure>
           ))}

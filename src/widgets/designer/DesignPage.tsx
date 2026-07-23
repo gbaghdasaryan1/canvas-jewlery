@@ -32,11 +32,17 @@ export function DesignPage() {
             CAIRN
           </Link>
           <nav className="design-switch" aria-label="Design mode">
-            <Link className="design-switch-btn on" to="/mountains" aria-current="page">{t.designer.modeMountains}</Link>
-            <Link className="design-switch-btn" to="/maps">{t.designer.modeMaps}</Link>
+            <Link className="design-switch-btn on" to="/mountains" aria-current="page">
+              {t.designer.modeMountains}
+            </Link>
+            <Link className="design-switch-btn" to="/maps">
+              {t.designer.modeMaps}
+            </Link>
           </nav>
           <LanguageSwitcher />
-          <Link className="design-back" to="/">{t.nav.home}</Link>
+          <Link className="design-back" to="/">
+            {t.nav.home}
+          </Link>
         </div>
       </header>
 

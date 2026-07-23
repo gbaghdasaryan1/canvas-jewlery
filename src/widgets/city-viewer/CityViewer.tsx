@@ -5,7 +5,13 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { BuildingPolygon } from "@/entities/buildings/api/fetchBuildings";
 import type { StreetLine } from "@/entities/streets/api/fetchStreets";
-import { METALS, isRing, type JewelryType, type Metal, type Shape } from "@/entities/ring/model/types";
+import {
+  METALS,
+  isRing,
+  type JewelryType,
+  type Metal,
+  type Shape,
+} from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
 import { buildRingBandMesh, ringBandDims } from "@/shared/lib/ringGeometry";
 import { EngravingText } from "@/shared/ui/EngravingText";
@@ -101,9 +107,24 @@ interface CityViewerProps {
 }
 
 export function CityViewer({
-  buildings, streets, shape, lat, lng, areaKm, widthMm, thicknessMm, reliefMm,
-  hangs = [], hangSize = 1, hangRotation = 0, hangHorizontal = false, solidFloor = true,
-  jewelryType = "pendant", ringRotation = 0, engraving = "", metal = "silver",
+  buildings,
+  streets,
+  shape,
+  lat,
+  lng,
+  areaKm,
+  widthMm,
+  thicknessMm,
+  reliefMm,
+  hangs = [],
+  hangSize = 1,
+  hangRotation = 0,
+  hangHorizontal = false,
+  solidFloor = true,
+  jewelryType = "pendant",
+  ringRotation = 0,
+  engraving = "",
+  metal = "silver",
 }: CityViewerProps) {
   const ring = isRing(jewelryType);
 
@@ -135,7 +156,8 @@ export function CityViewer({
   // Orientation: rotate the inner content (buildings + streets) about the plate
   // centre while the base + frame stay fixed. Ring yaws its band instead.
   const contentYaw = ring ? 0 : (ringRotation * Math.PI) / 180;
-  const yc = Math.cos(contentYaw), ys = Math.sin(contentYaw);
+  const yc = Math.cos(contentYaw),
+    ys = Math.sin(contentYaw);
   const rot = (x: number, z: number) =>
     contentYaw ? { x: x * yc - z * ys, z: x * ys + z * yc } : { x, z };
 
@@ -172,7 +194,10 @@ export function CityViewer({
       const pts: Array<{ x: number; y: number }> = [];
       for (const [la, lo] of b.ring) {
         const { x, z } = rot(nx(lo), nz(la));
-        if (!inside(x, z)) { allIn = false; break; }
+        if (!inside(x, z)) {
+          allIn = false;
+          break;
+        }
         // ExtrudeGeometry + rotateX(-π/2) maps shape (x, y) → world (x, -y),
         // so shape.y = -worldZ.
         pts.push({ x: x * WORLD, y: -z * WORLD });
@@ -183,9 +208,14 @@ export function CityViewer({
       const color = buildingColor(b.height);
       if (b.tower) {
         // Landmark tower: stack tapered slices of the footprint (spire).
-        let cx = 0, cy = 0;
-        for (const p of pts) { cx += p.x; cy += p.y; }
-        cx /= pts.length; cy /= pts.length;
+        let cx = 0,
+          cy = 0;
+        for (const p of pts) {
+          cx += p.x;
+          cy += p.y;
+        }
+        cx /= pts.length;
+        cy /= pts.length;
         for (const { t0, t1, s } of TOWER_PROFILE) {
           const sh = new THREE.Shape(
             pts.map((p) => new THREE.Vector2(cx + (p.x - cx) * s, cy + (p.y - cy) * s)),
@@ -228,24 +258,44 @@ export function CityViewer({
       for (let i = 1; i < st.pts.length; i++) {
         const aPt = rot(nx(st.pts[i - 1][1]), nz(st.pts[i - 1][0]));
         const bPt = rot(nx(st.pts[i][1]), nz(st.pts[i][0]));
-        let ax = aPt.x, az = aPt.z;
-        let bx = bPt.x, bz = bPt.z;
+        let ax = aPt.x,
+          az = aPt.z;
+        let bx = bPt.x,
+          bz = bPt.z;
         // Clip segments at the outline: roads end exactly at the plate edge
         // instead of poking past it (or leaving gaps short of it).
-        const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
+        const aIn = streetInside(ax, az),
+          bIn = streetInside(bx, bz);
         if (!aIn && !bIn) continue;
-        if (!bIn) { const p = streetClip(ax, az, bx, bz); bx = p.x; bz = p.z; }
-        else if (!aIn) { const p = streetClip(bx, bz, ax, az); ax = p.x; az = p.z; }
-        const dx = (bx - ax) * WORLD, dz = (bz - az) * WORLD;
+        if (!bIn) {
+          const p = streetClip(ax, az, bx, bz);
+          bx = p.x;
+          bz = p.z;
+        } else if (!aIn) {
+          const p = streetClip(bx, bz, ax, az);
+          ax = p.x;
+          az = p.z;
+        }
+        const dx = (bx - ax) * WORLD,
+          dz = (bz - az) * WORLD;
         const len = Math.hypot(dx, dz);
         if (len === 0) continue;
-        const ox = (-dz / len) * half, oz = (dx / len) * half;
+        const ox = (-dz / len) * half,
+          oz = (dx / len) * half;
         const base = pos.length / 3;
         pos.push(
-          ax * WORLD + ox, y, az * WORLD + oz,
-          ax * WORLD - ox, y, az * WORLD - oz,
-          bx * WORLD + ox, y, bz * WORLD + oz,
-          bx * WORLD - ox, y, bz * WORLD - oz,
+          ax * WORLD + ox,
+          y,
+          az * WORLD + oz,
+          ax * WORLD - ox,
+          y,
+          az * WORLD - oz,
+          bx * WORLD + ox,
+          y,
+          bz * WORLD + oz,
+          bx * WORLD - ox,
+          y,
+          bz * WORLD - oz,
         );
         for (let k = 0; k < 4; k++) col.push(c.r, c.g, c.b);
         idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
@@ -280,7 +330,9 @@ export function CityViewer({
     return geo;
   }, [outline, plateH]);
   const rimGeo = useMemo(() => {
-    const pts = [...outline, outline[0]].map((p) => new THREE.Vector3(p.x * WORLD, 0.01, p.z * WORLD));
+    const pts = [...outline, outline[0]].map(
+      (p) => new THREE.Vector3(p.x * WORLD, 0.01, p.z * WORLD),
+    );
     return new THREE.BufferGeometry().setFromPoints(pts);
   }, [outline]);
   const frameGeo = useMemo(() => {
@@ -351,9 +403,7 @@ export function CityViewer({
       <directionalLight position={[-10, 2, 4]} intensity={0.5} color={0xd0e0ff} />
       <directionalLight position={[-1, 10, -12]} intensity={1.1} color={0xffe8d0} />
       <SceneEnvironment />
-      {solidFloor && (
-        <mesh geometry={groundGeo} position={[0, -0.01, 0]} material={metalMat} />
-      )}
+      {solidFloor && <mesh geometry={groundGeo} position={[0, -0.01, 0]} material={metalMat} />}
       <mesh geometry={frameGeo} material={metalMat} />
       {ringBand && (
         <mesh
@@ -365,8 +415,8 @@ export function CityViewer({
       )}
       {/* Laser engraving — inside the band for a ring, on the flat back plate
           otherwise. Preview-only; the mark is a post-cast laser step. */}
-      {ring
-        ? ringBand && (
+      {ring ? (
+        ringBand && (
           // Same inside-band engraving as RingViewer (mountains): the text is
           // wrapped around the band's inner wall via curveRadius. Wrapped in the
           // band's yaw so it tracks ringRotation.
@@ -380,16 +430,16 @@ export function CityViewer({
             />
           </group>
         )
-        : (
-          <EngravingText
-            text={engraving}
-            position={[0, -plateH - WORLD * 0.004, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            fontSize={WORLD * 0.085}
-            maxWidth={WORLD * 0.82}
-            color="#3a4048"
-          />
-        )}
+      ) : (
+        <EngravingText
+          text={engraving}
+          position={[0, -plateH - WORLD * 0.004, 0]}
+          rotation={[Math.PI / 2, 0, 0]}
+          fontSize={WORLD * 0.085}
+          maxWidth={WORLD * 0.82}
+          color="#3a4048"
+        />
+      )}
       <lineLoop geometry={rimGeo}>
         <lineBasicMaterial color={RIM} />
       </lineLoop>

@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { buildDXF, buildProjectJSON, buildSVG, downloadCanvasPNG, downloadText } from "@/features/pendant-export/exporters";
+import {
+  buildDXF,
+  buildProjectJSON,
+  buildSVG,
+  downloadCanvasPNG,
+  downloadText,
+} from "@/features/pendant-export/exporters";
 import { downloadGeometrySTL } from "@/features/pendant-export/stl3d";
 import { buildPendant3D } from "@/entities/pendant/lib/pendant3d";
 import { usePendant } from "../model/store";
@@ -80,9 +86,7 @@ export function Toolbar() {
         break;
       }
       case "stl": {
-        const geos = importedStl
-          ? [importedStl.geometry]
-          : buildPendant3D(design, silhouette);
+        const geos = importedStl ? [importedStl.geometry] : buildPendant3D(design, silhouette);
         downloadGeometrySTL(geos, `${base}-pendant.stl`);
         if (!importedStl) geos.forEach((g) => g.dispose());
         break;
@@ -102,18 +106,10 @@ export function Toolbar() {
 
   return (
     <>
-      <ToolButton
-        $active={viewMode === "2d"}
-        onClick={() => setViewMode("2d")}
-        title="2D editor"
-      >
+      <ToolButton $active={viewMode === "2d"} onClick={() => setViewMode("2d")} title="2D editor">
         2D
       </ToolButton>
-      <ToolButton
-        $active={viewMode === "3d"}
-        onClick={() => setViewMode("3d")}
-        title="3D preview"
-      >
+      <ToolButton $active={viewMode === "3d"} onClick={() => setViewMode("3d")} title="3D preview">
         3D
       </ToolButton>
       <ToolDivider />
@@ -141,10 +137,7 @@ export function Toolbar() {
       </ToolButton>
       <ToolDivider />
       <MenuWrap ref={menuRef}>
-        <PrimaryButton
-          onClick={() => setMenuOpen((v) => !v)}
-          disabled={!hasDesign && !importedStl}
-        >
+        <PrimaryButton onClick={() => setMenuOpen((v) => !v)} disabled={!hasDesign && !importedStl}>
           Export ▾
         </PrimaryButton>
         {menuOpen && (

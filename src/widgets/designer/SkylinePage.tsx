@@ -44,11 +44,17 @@ export function SkylinePage() {
             CAIRN
           </Link>
           <nav className="design-switch" aria-label="Design mode">
-            <Link className="design-switch-btn" to="/mountains">{t.designer.modeMountains}</Link>
-            <Link className="design-switch-btn on" to="/maps" aria-current="page">{t.designer.modeMaps}</Link>
+            <Link className="design-switch-btn" to="/mountains">
+              {t.designer.modeMountains}
+            </Link>
+            <Link className="design-switch-btn on" to="/maps" aria-current="page">
+              {t.designer.modeMaps}
+            </Link>
           </nav>
           <LanguageSwitcher />
-          <Link className="design-back" to="/">{t.nav.home}</Link>
+          <Link className="design-back" to="/">
+            {t.nav.home}
+          </Link>
         </div>
       </header>
 

@@ -1,0 +1,48 @@
+.final {
+  padding: 84px 0;
+  text-align: center;
+  background: var(--card);
+  border-top: 1px solid var(--paper-line);
+}
+.finalInner :global(.home-h2) {
+  margin-bottom: 8px;
+}
+.final :global(.eyebrow) {
+  margin-bottom: 6px;
+}
+.final :global(.btn-primary) {
+  margin-top: 22px;
+}
+.guarantee {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+  margin-top: 22px;
+}
+.guarantee span {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.foot {
+  border-top: 1px solid var(--paper-line);
+  padding: 30px 0 56px;
+  color: var(--ink-3);
+  font-size: 12px;
+  background: var(--paper);
+}
+.footInner {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.foot :global(.home-brand) {
+  font-size: 15px;
+  letter-spacing: 0.16em;
+}
+.foot :global(.mono) {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}

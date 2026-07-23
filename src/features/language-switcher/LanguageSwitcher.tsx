@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LANGS, LANG_LABELS, useLocale } from "@/shared/i18n";
+import styles from "./LanguageSwitcher.module.css";
 
 interface LanguageSwitcherProps {
   /** "light" (default, on paper) or "dark" (on the ink designer chrome). */
@@ -31,27 +32,38 @@ export function LanguageSwitcher({ variant = "light" }: LanguageSwitcherProps) {
   }, [open]);
 
   return (
-    <div ref={switcherRef} className={`lang-switch lang-switch--${variant}`}>
+    <div ref={switcherRef} className={`lang-switch ${styles.root} ${styles[variant]}`}>
       <button
         type="button"
-        className="lang-trigger"
+        className={styles.trigger}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Language"
         onClick={() => setOpen((value) => !value)}
       >
         {LANG_LABELS[lang]}
-        <svg className="lang-chevron" viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+          className={styles.chevron}
+          viewBox="0 0 12 12"
+          width="10"
+          height="10"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
           <path d="m3 4.5 3 3 3-3" />
         </svg>
       </button>
       {open && (
-        <div className="lang-menu" role="listbox" aria-label="Language options">
+        <div className={styles.menu} role="listbox" aria-label="Language options">
           {LANGS.map((l) => (
             <button
               key={l}
               type="button"
-              className={`lang-option ${lang === l ? "on" : ""}`}
+              className={`${styles.option} ${lang === l ? styles.on : ""}`}
               role="option"
               aria-selected={lang === l}
               onClick={() => {

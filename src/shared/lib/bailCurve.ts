@@ -14,11 +14,7 @@ export class DropBailCurve extends THREE.Curve<THREE.Vector3> {
   getPoint(t: number, target = new THREE.Vector3()): THREE.Vector3 {
     const a = t * Math.PI * 2;
     const s = Math.sin(a / 2);
-    return target.set(
-      Math.cos(a) * this.r,
-      0,
-      Math.sin(a) * s * s * this.r * 1.15,
-    );
+    return target.set(Math.cos(a) * this.r, 0, Math.sin(a) * s * s * this.r * 1.15);
   }
 }
 
@@ -48,8 +44,14 @@ export interface BailMeshParams {
  * the result is a standard multi-shell STL (slicers/casting prep union it).
  */
 export function buildBailMesh({
-  hang, width, depth, base, frameHeightMm = FRAME_HEIGHT_MM,
-  hangSize = 1, hangRotation = 0, hangHorizontal = false,
+  hang,
+  width,
+  depth,
+  base,
+  frameHeightMm = FRAME_HEIGHT_MM,
+  hangSize = 1,
+  hangRotation = 0,
+  hangHorizontal = false,
 }: BailMeshParams): RingMeshData {
   const r = width * 0.095 * hangSize;
   const outLen = Math.hypot(hang.x, hang.z) || 1;

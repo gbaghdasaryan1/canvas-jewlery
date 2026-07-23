@@ -7,10 +7,9 @@ interface PanelProps {
 }
 
 /** Framed surface with a small mono caption used across the studio. */
-export function Panel({ label, className = "", children }: PanelProps) {
+export function Panel({ className = "", children }: PanelProps) {
   return (
     <div className={`panel ${className}`}>
-      {label && <div className="cap">{label}</div>}
       {children}
     </div>
   );

@@ -1,0 +1,106 @@
+/* Controls column for the mountains/maps designer. `.field` + range sliders
+   stay global (shared with SkylineDesigner's render-layers field). The `.on`
+   state class is global (shared across segmented controls). */
+
+.ctl {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ctlGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 20px;
+}
+@media (max-width: 600px) {
+  .ctlGrid {
+    gap: 18px 16px;
+  }
+}
+@media (max-width: 460px) {
+  .ctlGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* — Segmented controls (worn-as / form) — */
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(28, 32, 38, 0.05);
+  border: 1px solid var(--paper-line);
+}
+.segBtn {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-3);
+  transition: 0.15s;
+}
+.segBtn:hover {
+  color: var(--ink-1);
+}
+.segBtn:global(.on) {
+  background: var(--card);
+  color: var(--ink-1);
+  box-shadow: 0 2px 8px -3px rgba(24, 28, 34, 0.4);
+}
+.segBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bronze);
+}
+
+/* — Hang-point cycle button — */
+.hangCycle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border-radius: 11px;
+  border: 1px solid var(--paper-line);
+  background: var(--card);
+  cursor: pointer;
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-1);
+  transition: 0.15s;
+}
+.hangCycle:hover {
+  border-color: var(--bronze);
+}
+.hangCycleIco {
+  color: var(--bronze);
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* — Engraving text input — */
+.engraveInput {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--paper-line);
+  background: var(--card);
+  color: var(--ink-1);
+  font-family: var(--body);
+  font-size: 14px;
+  outline: none;
+  transition: 0.15s;
+}
+.engraveInput::placeholder {
+  color: var(--ink-3);
+}
+.engraveInput:focus-visible {
+  border-color: var(--bronze);
+  box-shadow: 0 0 0 3px rgba(201, 138, 94, 0.18);
+}

@@ -22,14 +22,20 @@ interface ReliefPreviewProps {
 function roadWidth(cls: string): number {
   switch (cls) {
     case "motorway":
-    case "trunk": return 3.0;
-    case "primary": return 2.5;
-    case "secondary": return 2.0;
-    case "tertiary": return 1.7;
+    case "trunk":
+      return 3.0;
+    case "primary":
+      return 2.5;
+    case "secondary":
+      return 2.0;
+    case "tertiary":
+      return 1.7;
     case "residential":
     case "unclassified":
-    case "living_street": return 1.2;
-    default: return 1.0;
+    case "living_street":
+      return 1.2;
+    default:
+      return 1.0;
   }
 }
 
@@ -58,20 +64,27 @@ export function ReliefPreview({
     const N = GRID;
     const span = mountains.max - mountains.min || 1;
     const img = ctx.createImageData(S, S);
-    const lx = -0.6, ly = -0.7, lz = 0.8;
+    const lx = -0.6,
+      ly = -0.7,
+      lz = 0.8;
 
     for (let py = 0; py < S; py++)
       for (let px = 0; px < S; px++) {
-        const gx = (px / S) * (N - 1), gy = (py / S) * (N - 1);
-        const x0 = Math.floor(gx), y0 = Math.floor(gy);
-        const x1 = Math.min(x0 + 1, N - 1), y1 = Math.min(y0 + 1, N - 1);
-        const tx = gx - x0, ty = gy - y0;
+        const gx = (px / S) * (N - 1),
+          gy = (py / S) * (N - 1);
+        const x0 = Math.floor(gx),
+          y0 = Math.floor(gy);
+        const x1 = Math.min(x0 + 1, N - 1),
+          y1 = Math.min(y0 + 1, N - 1);
+        const tx = gx - x0,
+          ty = gy - y0;
         const e =
           (H[y0 * N + x0] + (H[y0 * N + x1] - H[y0 * N + x0]) * tx) * (1 - ty) +
           (H[y1 * N + x0] + (H[y1 * N + x1] - H[y1 * N + x0]) * tx) * ty;
         const ex = H[y0 * N + x1] - H[y0 * N + x0];
         const ey = H[y1 * N + x0] - H[y0 * N + x0];
-        let nx = (-ex / span) * 6, ny = (-ey / span) * 6;
+        let nx = (-ex / span) * 6,
+          ny = (-ey / span) * 6;
         const il = Math.hypot(nx, ny, 1);
         const sh = Math.max(0, (nx * lx + ny * ly + 1 * lz) / il);
         const t = (e - mountains.min) / span;
@@ -92,9 +105,12 @@ export function ReliefPreview({
       const lev = mountains.min + (span * L) / levels;
       for (let py = 0; py < S - 2; py += 2)
         for (let px = 0; px < S - 2; px += 2) {
-          const gx = (px / S) * (N - 1), gy = (py / S) * (N - 1);
-          const xi = Math.min(Math.floor(gx), N - 2), yi = Math.min(Math.floor(gy), N - 2);
-          const a = H[yi * N + xi], b = H[yi * N + xi + 1];
+          const gx = (px / S) * (N - 1),
+            gy = (py / S) * (N - 1);
+          const xi = Math.min(Math.floor(gx), N - 2),
+            yi = Math.min(Math.floor(gy), N - 2);
+          const a = H[yi * N + xi],
+            b = H[yi * N + xi + 1];
           if ((a - lev) * (b - lev) < 0) ctx.fillRect(px, py, 1.2, 1.2);
         }
     }
@@ -119,7 +135,8 @@ export function ReliefPreview({
         for (const b of buildings) {
           ctx.beginPath();
           for (let i = 0; i < b.ring.length; i++) {
-            const X = sx(b.ring[i][1]), Y = sy(b.ring[i][0]);
+            const X = sx(b.ring[i][1]),
+              Y = sy(b.ring[i][0]);
             if (i === 0) ctx.moveTo(X, Y);
             else ctx.lineTo(X, Y);
           }
@@ -137,7 +154,8 @@ export function ReliefPreview({
         const trace = (st: StreetLine) => {
           ctx.beginPath();
           for (let i = 0; i < st.pts.length; i++) {
-            const X = sx(st.pts[i][1]), Y = sy(st.pts[i][0]);
+            const X = sx(st.pts[i][1]),
+              Y = sy(st.pts[i][0]);
             if (i === 0) ctx.moveTo(X, Y);
             else ctx.lineTo(X, Y);
           }
@@ -146,9 +164,17 @@ export function ReliefPreview({
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.strokeStyle = "rgba(10,13,17,0.6)";
-        for (const st of streets) { trace(st); ctx.lineWidth = (roadWidth(st.cls) + 1.3) * scale; ctx.stroke(); }
+        for (const st of streets) {
+          trace(st);
+          ctx.lineWidth = (roadWidth(st.cls) + 1.3) * scale;
+          ctx.stroke();
+        }
         ctx.strokeStyle = "rgba(238,241,245,0.92)";
-        for (const st of streets) { trace(st); ctx.lineWidth = roadWidth(st.cls) * scale; ctx.stroke(); }
+        for (const st of streets) {
+          trace(st);
+          ctx.lineWidth = roadWidth(st.cls) * scale;
+          ctx.stroke();
+        }
         ctx.restore();
       }
     }

@@ -1,0 +1,85 @@
+.section {
+  background: var(--card);
+  border-top: 1px solid var(--paper-line);
+}
+.grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 44px;
+  align-items: start;
+}
+.head {
+  position: sticky;
+  top: 96px;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.item {
+  border-bottom: 1px solid var(--paper-line);
+}
+.item summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--ink-1);
+}
+.item summary::-webkit-details-marker {
+  display: none;
+}
+.mark {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.mark::before,
+.mark::after {
+  content: "";
+  position: absolute;
+  background: var(--bronze);
+  border-radius: 2px;
+}
+.mark::before {
+  left: 0;
+  top: 7px;
+  width: 16px;
+  height: 2px;
+}
+.mark::after {
+  left: 7px;
+  top: 0;
+  width: 2px;
+  height: 16px;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
+}
+.item[open] .mark::after {
+  transform: scaleY(0);
+  opacity: 0;
+}
+.item p {
+  margin: 0 0 18px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .head {
+    position: static;
+  }
+}

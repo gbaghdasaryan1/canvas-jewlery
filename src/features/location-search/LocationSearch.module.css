@@ -1,0 +1,316 @@
+/* Location search: text field + Google Places autocomplete + preset dropdown.
+   Base is the dark scaffold; the app renders inside `:global(.design-app)`
+   (light editorial), so the light overrides are what's actually seen. State
+   classes `.open` / `.placeholder` / `.on` stay global. `.search-msg` stays
+   global (shared with SkylineDesigner). */
+
+.loc {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Search field — leading icon + inline Find */
+.findbarWrap {
+  position: relative;
+}
+.findbar {
+  position: relative;
+  margin-top: 0;
+  display: flex;
+  gap: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.findbar input {
+  flex: 1 1 220px;
+  min-width: 0;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ivory);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  outline: none;
+}
+.findbar input::placeholder {
+  color: var(--faint);
+}
+.findbar input:focus {
+  border-color: var(--gold);
+}
+.findbarIco {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  display: flex;
+  pointer-events: none;
+}
+.findbarGo {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  bottom: 6px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 9px;
+  background: var(--ink-1);
+  color: var(--paper);
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.findbarGo:hover {
+  background: #2b3038;
+}
+.findbarGo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Search autocomplete (Google Places predictions) */
+.acMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  scrollbar-width: thin;
+}
+.acOption {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mist);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.acOption:hover {
+  background: var(--panel-2);
+  color: var(--ivory);
+}
+.acIco {
+  flex: none;
+  display: flex;
+  color: var(--gold);
+}
+.acText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.acMain {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acSub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Preset dropdown (custom select) */
+.presetField {
+  position: relative;
+  margin-top: 12px;
+}
+.presetTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--ivory);
+  cursor: pointer;
+  outline: none;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.presetTrigger:hover {
+  border-color: var(--gold);
+}
+.presetField:global(.open) .presetTrigger {
+  border-color: var(--gold);
+}
+.presetTrigger:focus-visible {
+  border-color: var(--gold);
+}
+.presetCurrent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.presetCurrent:global(.placeholder) {
+  color: var(--faint);
+}
+.presetCaret {
+  display: flex;
+  flex: none;
+  color: var(--faint);
+  transition: transform 0.18s ease;
+}
+.presetField:global(.open) .presetCaret {
+  transform: rotate(180deg);
+}
+.presetMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  max-height: 264px;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  scrollbar-width: thin;
+}
+.presetOption {
+  display: block;
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mist);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.presetOption:hover {
+  background: var(--panel-2);
+  color: var(--ivory);
+}
+.presetOption:global(.on) {
+  color: var(--ink);
+  background: var(--gold);
+}
+
+/* ---- Light editorial theme (the live context) ---- */
+:global(.design-app) .acMenu {
+  background: var(--card);
+  border-color: var(--paper-line);
+  box-shadow: 0 16px 40px rgba(28, 32, 38, 0.16);
+}
+:global(.design-app) .acOption {
+  color: var(--ink-2);
+}
+:global(.design-app) .acOption:hover {
+  background: var(--paper-2);
+  color: var(--ink-1);
+}
+:global(.design-app) .acIco {
+  color: var(--bronze);
+}
+:global(.design-app) .acSub {
+  color: var(--ink-3);
+}
+
+:global(.design-app) .presetTrigger {
+  background: var(--card);
+  border-color: var(--paper-line);
+  color: var(--ink-1);
+}
+:global(.design-app) .presetTrigger:hover,
+:global(.design-app) .presetField:global(.open) .presetTrigger {
+  border-color: var(--bronze);
+}
+:global(.design-app) .presetCurrent:global(.placeholder) {
+  color: var(--ink-3);
+}
+:global(.design-app) .presetCaret {
+  color: var(--ink-3);
+}
+:global(.design-app) .presetMenu {
+  background: var(--card);
+  border-color: var(--paper-line);
+  box-shadow: 0 16px 40px rgba(28, 32, 38, 0.16);
+}
+:global(.design-app) .presetOption {
+  color: var(--ink-2);
+}
+:global(.design-app) .presetOption:hover {
+  background: var(--paper-2);
+  color: var(--ink-1);
+}
+:global(.design-app) .presetOption:global(.on) {
+  background: var(--ink-1);
+  color: var(--paper);
+}
+
+/* search field — light */
+:global(.design-app) .findbar input {
+  flex: 1;
+  width: 100%;
+  padding: 13px 88px 13px 42px;
+  font-family: var(--body);
+  font-size: 15px;
+  border-radius: 12px;
+  background: var(--card);
+  border-color: var(--paper-line);
+  color: var(--ink-1);
+}
+:global(.design-app) .findbar input::placeholder {
+  color: var(--ink-3);
+}
+:global(.design-app) .findbar input:focus {
+  border-color: var(--bronze);
+}
+
+/* Prevent iOS zoom-on-focus — search field must be >= 16px */
+@media (max-width: 700px) {
+  .findbar input {
+    font-size: 16px;
+  }
+}
+@media (max-width: 560px) {
+  :global(.design-app) .findbar input {
+    font-size: 16px;
+  }
+}
+@media (max-width: 420px) {
+  .findbar input {
+    flex-basis: 140px;
+  }
+}

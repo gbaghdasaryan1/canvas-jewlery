@@ -38,7 +38,14 @@ export function buildSVG(design: PendantDesign, sil: SilhouetteInfo | null): str
 export function buildDXF(design: PendantDesign, sil: SilhouetteInfo | null): string {
   const outline = pendantOutline(design, sil);
   const { hole } = design.config;
-  const lines: string[] = ["999", "CAIRN pendant export — DXF placeholder", "0", "SECTION", "2", "ENTITIES"];
+  const lines: string[] = [
+    "999",
+    "CAIRN pendant export — DXF placeholder",
+    "0",
+    "SECTION",
+    "2",
+    "ENTITIES",
+  ];
   const polyline = (ring: Vec2[]) => {
     lines.push("0", "POLYLINE", "8", "PENDANT", "66", "1", "70", "1");
     for (const p of ring) {
@@ -48,10 +55,16 @@ export function buildDXF(design: PendantDesign, sil: SilhouetteInfo | null): str
   };
   outline.forEach(polyline);
   lines.push(
-    "0", "CIRCLE", "8", "HOLE",
-    "10", hole.x.toFixed(3),
-    "20", (-hole.y).toFixed(3),
-    "40", (hole.diameter / 2).toFixed(3),
+    "0",
+    "CIRCLE",
+    "8",
+    "HOLE",
+    "10",
+    hole.x.toFixed(3),
+    "20",
+    (-hole.y).toFixed(3),
+    "40",
+    (hole.diameter / 2).toFixed(3),
   );
   lines.push("0", "ENDSEC", "0", "EOF");
   return lines.join("\n");

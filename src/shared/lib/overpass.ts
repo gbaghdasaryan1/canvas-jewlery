@@ -24,11 +24,17 @@ let preferred: string | null = null;
 try {
   const saved = localStorage.getItem(PREF_KEY);
   if (saved && ENDPOINTS.includes(saved)) preferred = saved;
-} catch { /* SSR / storage blocked — session-only memory */ }
+} catch {
+  /* SSR / storage blocked — session-only memory */
+}
 
 function rememberWinner(url: string) {
   preferred = url;
-  try { localStorage.setItem(PREF_KEY, url); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(PREF_KEY, url);
+  } catch {
+    /* ignore */
+  }
 }
 
 export interface OverpassWay {
@@ -87,7 +93,9 @@ export function overpass(query: string, signal?: AbortSignal): Promise<OverpassR
     };
 
     // Caller cancelled (e.g. React Query unsubscribed): stop all mirrors.
-    signal?.addEventListener("abort", () => finish(null, new DOMException("Aborted", "AbortError")));
+    signal?.addEventListener("abort", () =>
+      finish(null, new DOMException("Aborted", "AbortError")),
+    );
 
     const launch = () => {
       if (settled || next >= order.length) return;
@@ -106,7 +114,8 @@ export function overpass(query: string, signal?: AbortSignal): Promise<OverpassR
           inFlight--;
           if (settled) return;
           lastError = err;
-          if (next < order.length) launch(); // a failure frees a slot — bring the next mirror in now
+          if (next < order.length)
+            launch(); // a failure frees a slot — bring the next mirror in now
           else if (inFlight === 0) finish(null, lastError);
         })
         .finally(() => clearTimeout(kill));

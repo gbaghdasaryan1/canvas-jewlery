@@ -4,6 +4,7 @@ import { useT } from "@/shared/i18n";
 import { PRESETS, type Preset } from "@/shared/config/presets";
 import { useGoogleMaps } from "@/shared/lib/googleMaps";
 import { useDebouncedValue } from "@/shared/lib/useDebouncedValue";
+import styles from "./LocationSearch.module.css";
 
 interface LocationSearchProps {
   /** Preset chips to offer (defaults to all). */
@@ -152,18 +153,30 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
   }
 
   return (
-    <div className="loc">
-      <div className="findbar-wrap" ref={searchRef}>
-        <div className="findbar">
-          <span className="findbar-ico" aria-hidden>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <div className={styles.loc}>
+      <div className={styles.findbarWrap} ref={searchRef}>
+        <div className={styles.findbar}>
+          <span className={styles.findbarIco} aria-hidden>
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-3.2-3.2" />
             </svg>
           </span>
           <input
             value={q}
-            onChange={(e) => { setQ(e.target.value); setSearchOpen(true); }}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setSearchOpen(true);
+            }}
             onFocus={() => setSearchOpen(true)}
             onKeyDown={(e) => e.key === "Enter" && search()}
             placeholder={placeholder ?? t.designer.searchMountainsPlaceholder}
@@ -173,31 +186,42 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
             role="combobox"
             aria-autocomplete="list"
           />
-          <button className="findbar-go" onClick={search} disabled={busy}>
+          <button className={styles.findbarGo} onClick={search} disabled={busy}>
             {busy ? "…" : t.designer.find}
           </button>
         </div>
         {searchOpen && predictions.length > 0 && (
-          <div className="ac-menu" role="listbox" aria-label={t.designer.find}>
+          <div className={styles.acMenu} role="listbox" aria-label={t.designer.find}>
             {predictions.map((p) => (
               <button
                 key={p.place_id}
                 type="button"
                 role="option"
                 aria-selected={false}
-                className="ac-option"
+                className={styles.acOption}
                 onClick={() => pickPrediction(p)}
               >
-                <span className="ac-ico" aria-hidden>
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <span className={styles.acIco} aria-hidden>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M12 21s-7-6.4-7-11a7 7 0 0 1 14 0c0 4.6-7 11-7 11Z" />
                     <circle cx="12" cy="10" r="2.5" />
                   </svg>
                 </span>
-                <span className="ac-text">
-                  <span className="ac-main">{p.structured_formatting?.main_text ?? p.description}</span>
+                <span className={styles.acText}>
+                  <span className={styles.acMain}>
+                    {p.structured_formatting?.main_text ?? p.description}
+                  </span>
                   {p.structured_formatting?.secondary_text && (
-                    <span className="ac-sub">{p.structured_formatting.secondary_text}</span>
+                    <span className={styles.acSub}>{p.structured_formatting.secondary_text}</span>
                   )}
                 </span>
               </button>
@@ -207,32 +231,41 @@ export function LocationSearch({ presets = PRESETS, placeholder }: LocationSearc
       </div>
       {msg && <div className="search-msg mono">{msg}</div>}
 
-      <div className={`preset-field ${presetOpen ? "open" : ""}`} ref={presetRef}>
+      <div className={`${styles.presetField} ${presetOpen ? "open" : ""}`} ref={presetRef}>
         <button
           type="button"
-          className="preset-trigger mono"
+          className={`${styles.presetTrigger} mono`}
           aria-haspopup="listbox"
           aria-expanded={presetOpen}
           onClick={() => setPresetOpen((v) => !v)}
         >
-          <span className={`preset-current ${activePreset ? "" : "placeholder"}`}>
+          <span className={`${styles.presetCurrent} ${activePreset ? "" : "placeholder"}`}>
             {activePreset?.name ?? t.designer.presetPrompt}
           </span>
-          <span className="preset-caret" aria-hidden>
-            <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <span className={styles.presetCaret} aria-hidden>
+            <svg
+              viewBox="0 0 12 12"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="m3 4.5 3 3 3-3" />
             </svg>
           </span>
         </button>
         {presetOpen && (
-          <div className="preset-menu" role="listbox" aria-label={t.designer.presetPrompt}>
+          <div className={styles.presetMenu} role="listbox" aria-label={t.designer.presetPrompt}>
             {presets.map((p) => (
               <button
                 key={p.name}
                 type="button"
                 role="option"
                 aria-selected={activePreset?.name === p.name}
-                className={`preset-option ${activePreset?.name === p.name ? "on" : ""}`}
+                className={`${styles.presetOption} ${activePreset?.name === p.name ? "on" : ""}`}
                 onClick={() => {
                   selectPreset(p.name);
                   setPresetOpen(false);

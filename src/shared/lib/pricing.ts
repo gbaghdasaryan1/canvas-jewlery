@@ -36,10 +36,18 @@ export const METAL_PRICE_FACTOR: Record<Metal, number> = {
 export function meshVolumeMm3({ positions, indices }: RingMeshData): number {
   let v6 = 0;
   for (let t = 0; t < indices.length; t += 3) {
-    const i = indices[t] * 3, j = indices[t + 1] * 3, k = indices[t + 2] * 3;
-    const ax = positions[i], ay = positions[i + 1], az = positions[i + 2];
-    const bx = positions[j], by = positions[j + 1], bz = positions[j + 2];
-    const cx = positions[k], cy = positions[k + 1], cz = positions[k + 2];
+    const i = indices[t] * 3,
+      j = indices[t + 1] * 3,
+      k = indices[t + 2] * 3;
+    const ax = positions[i],
+      ay = positions[i + 1],
+      az = positions[i + 2];
+    const bx = positions[j],
+      by = positions[j + 1],
+      bz = positions[j + 2];
+    const cx = positions[k],
+      cy = positions[k + 1],
+      cz = positions[k + 2];
     v6 += ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx);
   }
   return Math.abs(v6) / 6;

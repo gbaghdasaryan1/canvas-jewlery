@@ -27,59 +27,59 @@ You are building the backend for **Cairn Jewelry Studio** — a bespoke jewelry 
 
 ### `users`
 
-| Column      | Type                          | Notes                    |
-|-------------|-------------------------------|--------------------------|
-| id          | UUID PK                       |                          |
-| email       | varchar(255) UNIQUE NOT NULL  |                          |
-| password    | varchar(255) NOT NULL         | bcrypt hashed            |
-| name        | varchar(255)                  |                          |
-| phone       | varchar(50)                   |                          |
-| role        | enum('customer','admin')      | DEFAULT 'customer'       |
-| createdAt   | timestamptz                   |                          |
-| updatedAt   | timestamptz                   |                          |
-| deletedAt   | timestamptz                   | soft delete              |
+| Column    | Type                         | Notes              |
+| --------- | ---------------------------- | ------------------ |
+| id        | UUID PK                      |                    |
+| email     | varchar(255) UNIQUE NOT NULL |                    |
+| password  | varchar(255) NOT NULL        | bcrypt hashed      |
+| name      | varchar(255)                 |                    |
+| phone     | varchar(50)                  |                    |
+| role      | enum('customer','admin')     | DEFAULT 'customer' |
+| createdAt | timestamptz                  |                    |
+| updatedAt | timestamptz                  |                    |
+| deletedAt | timestamptz                  | soft delete        |
 
 ### `designs`
 
-| Column      | Type                                          | Notes                              |
-|-------------|-----------------------------------------------|------------------------------------|
-| id          | UUID PK                                       |                                    |
-| userId      | UUID FK → users                               | nullable — guest designs           |
-| type        | enum('mountains','skyline','pendant')           |                                    |
-| name        | varchar(255)                                  | place name or custom label         |
-| snapshot    | jsonb                                         | full design config object          |
-| stlUrl      | varchar(500)                                  | S3 URL to STL file                 |
-| previewUrl  | varchar(500)                                  | S3 URL to preview PNG              |
-| metalType   | enum('silver','gold','platinum')              |                                    |
-| shapeType   | enum('rectangle','heart','circle','freeform') |                                    |
-| pricedAmd   | integer                                       | price in AMD at time of save       |
-| weightGrams | numeric(8,3)                                  |                                    |
-| createdAt   | timestamptz                                   |                                    |
-| updatedAt   | timestamptz                                   |                                    |
+| Column      | Type                                          | Notes                        |
+| ----------- | --------------------------------------------- | ---------------------------- |
+| id          | UUID PK                                       |                              |
+| userId      | UUID FK → users                               | nullable — guest designs     |
+| type        | enum('mountains','skyline','pendant')         |                              |
+| name        | varchar(255)                                  | place name or custom label   |
+| snapshot    | jsonb                                         | full design config object    |
+| stlUrl      | varchar(500)                                  | S3 URL to STL file           |
+| previewUrl  | varchar(500)                                  | S3 URL to preview PNG        |
+| metalType   | enum('silver','gold','platinum')              |                              |
+| shapeType   | enum('rectangle','heart','circle','freeform') |                              |
+| pricedAmd   | integer                                       | price in AMD at time of save |
+| weightGrams | numeric(8,3)                                  |                              |
+| createdAt   | timestamptz                                   |                              |
+| updatedAt   | timestamptz                                   |                              |
 
 ### `orders`
 
-| Column          | Type                                                                        | Notes                        |
-|-----------------|-----------------------------------------------------------------------------|------------------------------|
-| id              | UUID PK                                                                     |                              |
-| orderNumber     | varchar(20) UNIQUE                                                          | e.g. `CRN-2026-0001`         |
-| userId          | UUID FK → users                                                             | nullable — guest orders      |
-| status          | enum('pending','confirmed','in_production','shipped','delivered','cancelled') |                            |
-| totalAmd        | integer                                                                     |                              |
-| currency        | varchar(10)                                                                 | DEFAULT 'AMD'                |
-| customerNote    | text                                                                        |                              |
-| shippingAddress | jsonb                                                                       | {name, phone, city, address} |
-| trackingNumber  | varchar(100)                                                                |                              |
-| confirmedAt     | timestamptz                                                                 |                              |
-| shippedAt       | timestamptz                                                                 |                              |
-| deliveredAt     | timestamptz                                                                 |                              |
-| createdAt       | timestamptz                                                                 |                              |
-| updatedAt       | timestamptz                                                                 |                              |
+| Column          | Type                                                                          | Notes                        |
+| --------------- | ----------------------------------------------------------------------------- | ---------------------------- |
+| id              | UUID PK                                                                       |                              |
+| orderNumber     | varchar(20) UNIQUE                                                            | e.g. `CRN-2026-0001`         |
+| userId          | UUID FK → users                                                               | nullable — guest orders      |
+| status          | enum('pending','confirmed','in_production','shipped','delivered','cancelled') |                              |
+| totalAmd        | integer                                                                       |                              |
+| currency        | varchar(10)                                                                   | DEFAULT 'AMD'                |
+| customerNote    | text                                                                          |                              |
+| shippingAddress | jsonb                                                                         | {name, phone, city, address} |
+| trackingNumber  | varchar(100)                                                                  |                              |
+| confirmedAt     | timestamptz                                                                   |                              |
+| shippedAt       | timestamptz                                                                   |                              |
+| deliveredAt     | timestamptz                                                                   |                              |
+| createdAt       | timestamptz                                                                   |                              |
+| updatedAt       | timestamptz                                                                   |                              |
 
 ### `order_items`
 
 | Column      | Type                             | Notes |
-|-------------|----------------------------------|-------|
+| ----------- | -------------------------------- | ----- |
 | id          | UUID PK                          |       |
 | orderId     | UUID FK → orders                 |       |
 | designId    | UUID FK → designs                |       |
@@ -90,26 +90,26 @@ You are building the backend for **Cairn Jewelry Studio** — a bespoke jewelry 
 
 ### `refresh_tokens`
 
-| Column    | Type         | Notes          |
-|-----------|--------------|----------------|
-| id        | UUID PK      |                |
-| userId    | UUID FK      |                |
-| token     | varchar(512) | bcrypt hashed  |
-| expiresAt | timestamptz  |                |
-| createdAt | timestamptz  |                |
+| Column    | Type         | Notes         |
+| --------- | ------------ | ------------- |
+| id        | UUID PK      |               |
+| userId    | UUID FK      |               |
+| token     | varchar(512) | bcrypt hashed |
+| expiresAt | timestamptz  |               |
+| createdAt | timestamptz  |               |
 
 ### `uploads`
 
-| Column    | Type                                          | Notes     |
-|-----------|-----------------------------------------------|-----------|
-| id        | UUID PK                                       |           |
-| userId    | UUID FK                                       | nullable  |
-| key       | varchar(500)                                  | S3 key    |
-| url       | varchar(500)                                  |           |
-| mimeType  | varchar(100)                                  |           |
-| sizeBytes | integer                                       |           |
-| purpose   | enum('pendant-image','stl','preview')         |           |
-| createdAt | timestamptz                                   |           |
+| Column    | Type                                  | Notes    |
+| --------- | ------------------------------------- | -------- |
+| id        | UUID PK                               |          |
+| userId    | UUID FK                               | nullable |
+| key       | varchar(500)                          | S3 key   |
+| url       | varchar(500)                          |          |
+| mimeType  | varchar(100)                          |          |
+| sizeBytes | integer                               |          |
+| purpose   | enum('pendant-image','stl','preview') |          |
+| createdAt | timestamptz                           |          |
 
 ---
 
@@ -206,7 +206,7 @@ POST   /pricing/estimate       body: { volumeMm3: number, metal: 'silver'|'gold'
 Mirror the frontend formula exactly — same constants, same calculation:
 
 ```typescript
-const SILVER_DENSITY = 10.49;        // g/cm³
+const SILVER_DENSITY = 10.49; // g/cm³
 const AMD_PER_GRAM_SILVER = 4000;
 const METAL_PRICE_FACTOR = { silver: 1, gold: 3.2, platinum: 4.0 };
 
@@ -255,22 +255,22 @@ All transitions beyond `pending → cancelled` are admin-only.
 
 Enqueue jobs on status transitions, process in a dedicated worker:
 
-| Trigger              | Template             | Data                                  |
-|----------------------|----------------------|---------------------------------------|
-| `order.confirmed`    | `order-confirmed`    | orderNumber, items, totalAmd, ETA     |
-| `order.shipped`      | `order-shipped`      | orderNumber, trackingNumber           |
-| `order.cancelled`    | `order-cancelled`    | orderNumber, reason                   |
+| Trigger           | Template          | Data                              |
+| ----------------- | ----------------- | --------------------------------- |
+| `order.confirmed` | `order-confirmed` | orderNumber, items, totalAmd, ETA |
+| `order.shipped`   | `order-shipped`   | orderNumber, trackingNumber       |
+| `order.cancelled` | `order-cancelled` | orderNumber, reason               |
 
 Templates live in `src/notifications/templates/*.hbs`.
 
 ### Redis Usage
 
-| Purpose                    | Key pattern                    | TTL    |
-|----------------------------|--------------------------------|--------|
-| Admin stats cache          | `cairn:stats`                  | 60 s   |
-| Order number counter       | `cairn:order-seq:YYYY`         | —      |
-| Rate limit (auth)          | `rl:auth:{ip}`                 | 15 min |
-| BullMQ backing store       | BullMQ default keys            | —      |
+| Purpose              | Key pattern            | TTL    |
+| -------------------- | ---------------------- | ------ |
+| Admin stats cache    | `cairn:stats`          | 60 s   |
+| Order number counter | `cairn:order-seq:YYYY` | —      |
+| Rate limit (auth)    | `rl:auth:{ip}`         | 15 min |
+| BullMQ backing store | BullMQ default keys    | —      |
 
 ---
 

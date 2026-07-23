@@ -163,7 +163,9 @@ export const SegButton = styled.button<{ $active?: boolean }>`
   background: ${(p) => (p.$active ? "rgba(170, 180, 192, 0.16)" : "var(--panel-2)")};
   color: ${(p) => (p.$active ? "var(--champagne)" : "var(--mist)")};
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
   &:hover {
     border-color: var(--gold);
   }
@@ -193,7 +195,10 @@ const buttonBase = css`
   border-radius: 9px;
   cursor: pointer;
   font-size: 12px;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    color 0.15s;
   &:disabled {
     opacity: 0.4;
     cursor: default;
@@ -256,7 +261,9 @@ export const DropZone = styled.div<{ $active?: boolean; $disabled?: boolean }>`
   color: var(--mist);
   font-size: 12px;
   line-height: 1.5;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
   strong {
     color: var(--champagne);
     font-weight: 600;

@@ -1,6 +1,13 @@
 import { ENGRAVING_MAX, useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
-import { hangAxisLabel, hangPlaceLabel, isRing, nextHangPlace, type Shape } from "@/entities/ring/model/types";
+import {
+  hangAxisLabel,
+  hangPlaceLabel,
+  isRing,
+  nextHangPlace,
+  type Shape,
+} from "@/entities/ring/model/types";
+import styles from "./RingControls.module.css";
 
 const capitalize = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
@@ -44,7 +51,12 @@ interface RingControlsProps {
   showEngraving?: boolean;
 }
 
-export function RingControls({ areaMin = 0.3, areaMax = 50, reliefMax = 4.8, showEngraving = true }: RingControlsProps) {
+export function RingControls({
+  areaMin = 0.3,
+  areaMax = 50,
+  reliefMax = 4.8,
+  showEngraving = true,
+}: RingControlsProps) {
   const s = useDesigner();
   const t = useT();
   const d = t.designer;
@@ -61,20 +73,24 @@ export function RingControls({ areaMin = 0.3, areaMax = 50, reliefMax = 4.8, sho
 
   // Translate a hang label (compass words → dictionary; degrees/"&" kept).
   const dir = d.dir as Record<string, string>;
-  const trHang = (label: string) => label.split(" ").map((w) => dir[w] ?? w).join(" ");
+  const trHang = (label: string) =>
+    label
+      .split(" ")
+      .map((w) => dir[w] ?? w)
+      .join(" ");
 
   return (
-    <div className="ctl">
+    <div className={styles.ctl}>
       <div className="field">
         <label>{d.wornAs}</label>
-        <div className="seg" role="radiogroup" aria-label={d.wornAs}>
+        <div className={styles.seg} role="radiogroup" aria-label={d.wornAs}>
           {JEWELRY.map((j) => (
             <button
               key={j.id}
               type="button"
               role="radio"
               aria-checked={s.jewelryType === j.id}
-              className={`seg-btn ${s.jewelryType === j.id ? "on" : ""}`}
+              className={`${styles.segBtn} ${s.jewelryType === j.id ? "on" : ""}`}
               onClick={() => s.setJewelryType(j.id)}
             >
               {j.label}
@@ -85,14 +101,14 @@ export function RingControls({ areaMin = 0.3, areaMax = 50, reliefMax = 4.8, sho
 
       <div className="field">
         <label>{d.form}</label>
-        <div className="seg" role="radiogroup" aria-label={d.form}>
+        <div className={styles.seg} role="radiogroup" aria-label={d.form}>
           {SHAPES.map((sh) => (
             <button
               key={sh.id}
               type="button"
               role="radio"
               aria-checked={s.shape === sh.id}
-              className={`seg-btn ${s.shape === sh.id ? "on" : ""}`}
+              className={`${styles.segBtn} ${s.shape === sh.id ? "on" : ""}`}
               onClick={() => s.setShape(sh.id)}
             >
               {sh.label}
@@ -121,31 +137,55 @@ export function RingControls({ areaMin = 0.3, areaMax = 50, reliefMax = 4.8, sho
               through 8 sides/corners; a bracelet rotates its parallel pair. */}
           <button
             type="button"
-            className="hang-cycle"
+            className={styles.hangCycle}
             onClick={() => s.setHangPlace(nextHangPlace(s.hangPlace, s.jewelryType))}
           >
-            <span className="hang-cycle-ico" aria-hidden>↻</span>
+            <span className={styles.hangCycleIco} aria-hidden>
+              ↻
+            </span>
             {capitalize(
-              trHang(s.jewelryType === "bracelet" ? hangAxisLabel(s.hangPlace) : hangPlaceLabel(s.hangPlace)),
+              trHang(
+                s.jewelryType === "bracelet"
+                  ? hangAxisLabel(s.hangPlace)
+                  : hangPlaceLabel(s.hangPlace),
+              ),
             )}
           </button>
         </div>
       )}
 
-      <div className="ctl-grid">
-        <Range label={d.reliefDepth} value={`${s.relief.toFixed(1)} ${d.mm}`} min={0.4} max={reliefMax} step={0.2} current={s.relief} onChange={s.setRelief} />
-        <Range label={d.sampleArea} value={`${s.areaKm} ${d.km}`} min={areaMin} max={areaMax} step={0.1} current={s.areaKm} onChange={s.setAreaKm} />
+      <div className={styles.ctlGrid}>
+        <Range
+          label={d.reliefDepth}
+          value={`${s.relief.toFixed(1)} ${d.mm}`}
+          min={0.4}
+          max={reliefMax}
+          step={0.2}
+          current={s.relief}
+          onChange={s.setRelief}
+        />
+        <Range
+          label={d.sampleArea}
+          value={`${s.areaKm} ${d.km}`}
+          min={areaMin}
+          max={areaMax}
+          step={0.1}
+          current={s.areaKm}
+          onChange={s.setAreaKm}
+        />
       </div>
 
       {showEngraving && (
         <div className="field">
           <label>
             {isRing(s.jewelryType) ? d.engravingInside : d.engravingBack}
-            <b>{s.engraving.length}/{ENGRAVING_MAX}</b>
+            <b>
+              {s.engraving.length}/{ENGRAVING_MAX}
+            </b>
           </label>
           <input
             type="text"
-            className="engrave-input"
+            className={styles.engraveInput}
             maxLength={ENGRAVING_MAX}
             value={s.engraving}
             onChange={(e) => s.setEngraving(e.target.value)}

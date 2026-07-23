@@ -21,7 +21,9 @@ export function Readout({ lat, lng, areaKm, mountains }: ReadoutProps) {
       <div className="row">
         <span>Relief (min–max)</span>
         <span>
-          {mountains ? `${Math.round(mountains.min)}–${Math.round(mountains.max)} m (Δ${relief})` : "—"}
+          {mountains
+            ? `${Math.round(mountains.min)}–${Math.round(mountains.max)} m (Δ${relief})`
+            : "—"}
         </span>
       </div>
       <div className="row">
@@ -34,10 +36,16 @@ export function Readout({ lat, lng, areaKm, mountains }: ReadoutProps) {
         <span>Source</span>
         <span className="src">
           <span className={`dot ${mountains?.source === "dem" ? "" : "demo"}`} />
-          {mountains ? (mountains.source === "dem" ? "Live DEM (Copernicus)" : "Demo mountains (offline)") : "—"}
+          {mountains
+            ? mountains.source === "dem"
+              ? "Live DEM (Copernicus)"
+              : "Demo mountains (offline)"
+            : "—"}
         </span>
       </div>
-      {flat && <div className="flat-warn mono">Nearly flat here — try somewhere with more relief.</div>}
+      {flat && (
+        <div className="flat-warn mono">Nearly flat here — try somewhere with more relief.</div>
+      )}
     </div>
   );
 }

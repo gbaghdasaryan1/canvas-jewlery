@@ -1,7 +1,6 @@
 import { useJsApiLoader, type Libraries } from "@react-google-maps/api";
 
-export const GOOGLE_MAPS_API_KEY: string =
-  import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
+export const GOOGLE_MAPS_API_KEY: string = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? "";
 
 // "places" powers the search-box autocomplete. Kept as a stable module-level
 // reference so the loader doesn't warn about a changing `libraries` array.

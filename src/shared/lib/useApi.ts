@@ -39,7 +39,8 @@ export function useApi(): UseApi {
       setState({ loading: false, error: null });
       return data;
     } catch (e) {
-      const err = e instanceof ApiError ? e : new ApiError(0, (e as Error)?.message ?? "Request failed");
+      const err =
+        e instanceof ApiError ? e : new ApiError(0, (e as Error)?.message ?? "Request failed");
       setState({ loading: false, error: err });
       throw err;
     }

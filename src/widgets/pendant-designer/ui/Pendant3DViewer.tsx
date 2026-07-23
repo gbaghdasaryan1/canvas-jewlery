@@ -16,7 +16,8 @@ const ViewerHost = styled.div`
 /** Studio gradient + key-light bloom env map — same treatment as
  *  widgets/ring-viewer so pendants read as the same silver. */
 function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
-  const W = 128, H = 512;
+  const W = 128,
+    H = 512;
   const c = document.createElement("canvas");
   c.width = W;
   c.height = H;

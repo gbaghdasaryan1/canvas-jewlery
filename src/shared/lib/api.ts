@@ -9,7 +9,10 @@ export const API_BASE: string = (import.meta.env.VITE_API_BASE ?? "").replace(/\
 
 /** Error carrying the HTTP status so callers can branch (e.g. 401 → bad OTP). */
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -47,13 +50,21 @@ export async function apiGet<T>(path: string, config?: AxiosRequestConfig): Prom
 }
 
 /** POST a JSON body. */
-export async function apiPostJson<T>(path: string, body: unknown, config?: AxiosRequestConfig): Promise<T> {
+export async function apiPostJson<T>(
+  path: string,
+  body: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
   const res = await http.post<T>(path, body, config);
   return res.data;
 }
 
 /** POST multipart form-data (axios sets the boundary Content-Type from the FormData). */
-export async function apiPostForm<T>(path: string, form: FormData, config?: AxiosRequestConfig): Promise<T> {
+export async function apiPostForm<T>(
+  path: string,
+  form: FormData,
+  config?: AxiosRequestConfig,
+): Promise<T> {
   const res = await http.post<T>(path, form, config);
   return res.data;
 }

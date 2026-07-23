@@ -24,8 +24,7 @@ export const en = {
   hero: {
     eyebrow: "Bespoke topographic jewelry",
     title: { l1: "Wear the Place", l2: "That Made ", em: "You" },
-    lead:
-      "We turn the real topography of a place you love — a summit, a coastline, a city block — into a cast-metal piece you can wear. You design it in about a minute; we hand-finish it in recycled silver, gold, or platinum.",
+    lead: "We turn the real topography of a place you love — a summit, a coastline, a city block — into a cast-metal piece you can wear. You design it in about a minute; we hand-finish it in recycled silver, gold, or platinum.",
     ctaPrimary: "Design yours — free to try",
     ctaSecondary: "See the gallery",
     trust: [
@@ -46,7 +45,13 @@ export const en = {
     eyebrow: "The idea behind Cairn",
     title: "Every Place Tells a Story",
     opening: "Some places change our lives.",
-    lines: ["A first date.", "A wedding.", "A childhood home.", "A dream vacation.", "A mountain you conquered."],
+    lines: [
+      "A first date.",
+      "A wedding.",
+      "A childhood home.",
+      "A dream vacation.",
+      "A mountain you conquered.",
+    ],
   },
 
   occasions: {
@@ -65,9 +70,21 @@ export const en = {
     eyebrow: "How it's made",
     title: "From elevation to heirloom",
     steps: [
-      { n: "01", title: "You choose the place", body: "Anywhere with real relief. We pull topographic elevation for the exact patch you frame on the map." },
-      { n: "02", title: "We mill the mountains", body: "The heightfield is wrapped into a band and CNC-cut in wax, preserving every ridge and valley at wearable scale." },
-      { n: "03", title: "Cast in precious metal", body: "Lost-wax cast in recycled gold, silver or platinum, then hand-finished. A summit you can hold." },
+      {
+        n: "01",
+        title: "You choose the place",
+        body: "Anywhere with real relief. We pull topographic elevation for the exact patch you frame on the map.",
+      },
+      {
+        n: "02",
+        title: "We mill the mountains",
+        body: "The heightfield is wrapped into a band and CNC-cut in wax, preserving every ridge and valley at wearable scale.",
+      },
+      {
+        n: "03",
+        title: "Cast in precious metal",
+        body: "Lost-wax cast in recycled gold, silver or platinum, then hand-finished. A summit you can hold.",
+      },
     ],
   },
 
@@ -88,9 +105,21 @@ export const en = {
     sub: "Every piece is cast in recycled precious metal, then hand-finished. Your exact price updates live as you design — no surprises.",
     cta: "See your price — design yours",
     metals: [
-      { name: "Recycled sterling silver", note: "Our signature", blurb: "Bright, cool and everyday-wearable. The most accessible way to start." },
-      { name: "18k recycled gold", note: "Warm heirloom", blurb: "A softer, warmer light on every ridge — for a piece meant to be passed on." },
-      { name: "Platinum", note: "Forever", blurb: "The densest, most durable finish we cast. Understated and permanent." },
+      {
+        name: "Recycled sterling silver",
+        note: "Our signature",
+        blurb: "Bright, cool and everyday-wearable. The most accessible way to start.",
+      },
+      {
+        name: "18k recycled gold",
+        note: "Warm heirloom",
+        blurb: "A softer, warmer light on every ridge — for a piece meant to be passed on.",
+      },
+      {
+        name: "Platinum",
+        note: "Forever",
+        blurb: "The densest, most durable finish we cast. Understated and permanent.",
+      },
     ],
   },
 
@@ -107,9 +136,21 @@ export const en = {
     title: "Kept close, every day",
     sub: "The pieces that mean the most are the ones tied to a place.",
     quotes: [
-      { body: "I gave my wife the mountain we hiked on our honeymoon. She hasn't taken it off since.", name: "Daniel R.", place: "Interlaken piece" },
-      { body: "It's the only jewelry I own that means something. People always ask about it.", name: "Mariam A.", place: "Yerevan skyline" },
-      { body: "Ordered the coastline where we got engaged. The detail is unreal — every cove is there.", name: "Sophie L.", place: "Amalfi coast" },
+      {
+        body: "I gave my wife the mountain we hiked on our honeymoon. She hasn't taken it off since.",
+        name: "Daniel R.",
+        place: "Interlaken piece",
+      },
+      {
+        body: "It's the only jewelry I own that means something. People always ask about it.",
+        name: "Mariam A.",
+        place: "Yerevan skyline",
+      },
+      {
+        body: "Ordered the coastline where we got engaged. The detail is unreal — every cove is there.",
+        name: "Sophie L.",
+        place: "Amalfi coast",
+      },
     ],
   },
 
@@ -117,12 +158,30 @@ export const en = {
     eyebrow: "Good to know",
     title: "Questions, answered",
     items: [
-      { q: "How is each piece made?", a: "You frame a place on a real map. We pull its true elevation, turn that heightfield into a wearable relief, cast it in recycled precious metal by lost-wax casting, and hand-finish it." },
-      { q: "What does it cost?", a: "Your exact price appears live as you design — it depends on the size and the metal you choose. Recycled sterling silver is the most accessible option; gold and platinum cost more." },
-      { q: "How long does it take to arrive?", a: "Each piece is made to order in about 3–4 weeks, then shipped worldwide, fully insured." },
-      { q: "Can I choose any place on Earth?", a: "Almost anywhere with real relief — a mountain, a coastline, a lake, or a whole city block. If it has topography, we can cast it." },
-      { q: "Which metals can I choose?", a: "Recycled sterling silver, 18k recycled gold, and platinum. All are reclaimed, not newly mined." },
-      { q: "What if it isn't right?", a: "We offer 30-day returns, and shipping is insured both ways. Designing is always free — you only pay when you order." },
+      {
+        q: "How is each piece made?",
+        a: "You frame a place on a real map. We pull its true elevation, turn that heightfield into a wearable relief, cast it in recycled precious metal by lost-wax casting, and hand-finish it.",
+      },
+      {
+        q: "What does it cost?",
+        a: "Your exact price appears live as you design — it depends on the size and the metal you choose. Recycled sterling silver is the most accessible option; gold and platinum cost more.",
+      },
+      {
+        q: "How long does it take to arrive?",
+        a: "Each piece is made to order in about 3–4 weeks, then shipped worldwide, fully insured.",
+      },
+      {
+        q: "Can I choose any place on Earth?",
+        a: "Almost anywhere with real relief — a mountain, a coastline, a lake, or a whole city block. If it has topography, we can cast it.",
+      },
+      {
+        q: "Which metals can I choose?",
+        a: "Recycled sterling silver, 18k recycled gold, and platinum. All are reclaimed, not newly mined.",
+      },
+      {
+        q: "What if it isn't right?",
+        a: "We offer 30-day returns, and shipping is insured both ways. Designing is always free — you only pay when you order.",
+      },
     ],
   },
 
@@ -143,7 +202,8 @@ export const en = {
     modeMountains: "Mountains",
     modeMaps: "Maps",
     // caption above the 3D preview
-    previewCaption: (form: string, type: string, metal: string) => `Your ${form} ${type} · ${metal}`,
+    previewCaption: (form: string, type: string, metal: string) =>
+      `Your ${form} ${type} · ${metal}`,
     skylineCaption: (type: string, metal: string) => `Your skyline ${type} · ${metal}`,
     madeToOrder: "made to order in 3–4 weeks",
     priceLabel: "price",
@@ -154,7 +214,8 @@ export const en = {
     reRead: "↻ Re-read mountains",
     noCity: "No buildings or streets here — try a city spot.",
     fetchingOsm: "Fetching buildings & streets from OpenStreetMap…",
-    osmBusy: "OpenStreetMap is busy — some data may be missing. Try a smaller area or re-pick the spot.",
+    osmBusy:
+      "OpenStreetMap is busy — some data may be missing. Try a smaller area or re-pick the spot.",
     stlPreview: "Preview",
     stlShow: "Show",
     stlHide: "Hide",
@@ -205,8 +266,10 @@ export const en = {
     verifyEyebrow: "Verify",
     close: "Close",
     title: "Confirm your number",
-    summary: (place: string, form: string, metal: string) => `Ordering your ${place} ${form} in ${metal}.`,
-    skylineSummary: (place: string, form: string, metal: string) => `Ordering your ${place} skyline ${form} in ${metal}.`,
+    summary: (place: string, form: string, metal: string) =>
+      `Ordering your ${place} ${form} in ${metal}.`,
+    skylineSummary: (place: string, form: string, metal: string) =>
+      `Ordering your ${place} skyline ${form} in ${metal}.`,
     fallbackSummary: "We'll text you a code to verify it's really you.",
     phoneLabel: "Phone number",
     sendCode: "Send code",
@@ -220,7 +283,8 @@ export const en = {
     resend: "Resend code",
     resendIn: (s: number) => `Resend code in ${s}s`,
     doneTitle: "Order received",
-    doneBody: "Thank you — we've got your piece and your number. Our studio will reach out shortly to confirm details and payment.",
+    doneBody:
+      "Thank you — we've got your piece and your number. Our studio will reach out shortly to confirm details and payment.",
     done: "Done",
     errValidPhone: "Enter a valid phone number.",
     errSendFailed: "Couldn't send the code. Try again.",

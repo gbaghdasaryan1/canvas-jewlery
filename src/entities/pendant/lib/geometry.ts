@@ -142,10 +142,7 @@ export function autoFit(config: PendantConfig, sil: SilhouetteInfo): ObjectTrans
     for (let i = 0; i < 80; i++) {
       const hw = (b.width * scale) / 2;
       const hh = (b.height * scale) / 2;
-      const worst = Math.max(
-        Math.hypot(hw, cy - hh),
-        Math.hypot(hw, cy + hh),
-      );
+      const worst = Math.max(Math.hypot(hw, cy - hh), Math.hypot(hw, cy + hh));
       if (worst <= R) break;
       scale *= 0.97;
     }
@@ -170,12 +167,7 @@ export function pendantOutline(design: PendantDesign, sil: SilhouetteInfo | null
       const contour = mainContourMm(sil, design.object);
       const body = offsetPolygon(contour, Math.max(0.2, config.border));
       const r = config.hole.diameter / 2;
-      const tab = circlePolygon(
-        config.hole.x,
-        config.hole.y,
-        r + Math.max(1, config.border),
-        48,
-      );
+      const tab = circlePolygon(config.hole.x, config.hole.y, r + Math.max(1, config.border), 48);
       const merged = unionPolygons([...body, tab]);
       return merged.sort((a, b) => polygonArea(b) - polygonArea(a));
     }

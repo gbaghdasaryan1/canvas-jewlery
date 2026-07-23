@@ -20,7 +20,7 @@
   --paper: #f3f4f6;
   --paper-2: #e8eaee;
   --card: #ffffff;
-  --paper-line: rgba(28, 32, 38, 0.10);
+  --paper-line: rgba(28, 32, 38, 0.1);
   --ink-1: #1c2026; /* headings on light */
   --ink-2: #4d545e; /* body on light */
   --ink-3: #8a919b; /* muted on light */

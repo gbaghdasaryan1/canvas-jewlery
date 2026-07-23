@@ -83,8 +83,10 @@ export async function fetchBuildings(
 ): Promise<BuildingPolygon[]> {
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
-  const s = lat - dLat / 2, n = lat + dLat / 2;
-  const w = lng - dLng / 2, e = lng + dLng / 2;
+  const s = lat - dLat / 2,
+    n = lat + dLat / 2;
+  const w = lng - dLng / 2,
+    e = lng + dLng / 2;
 
   const bbox = `${s},${w},${n},${e}`;
   // Buildings, plus statue/monument WAYS (often untagged as buildings) and
@@ -150,13 +152,15 @@ export async function fetchBuildings(
   let kept = outlines;
   if (parts.length) {
     const centroids = parts.map((p) => {
-      let la = 0, lo = 0;
-      for (const [a, b] of p.ring) { la += a; lo += b; }
+      let la = 0,
+        lo = 0;
+      for (const [a, b] of p.ring) {
+        la += a;
+        lo += b;
+      }
       return [la / p.ring.length, lo / p.ring.length] as [number, number];
     });
-    kept = outlines.filter(
-      (o) => !centroids.some(([la, lo]) => pointInRing(la, lo, o.ring)),
-    );
+    kept = outlines.filter((o) => !centroids.some(([la, lo]) => pointInRing(la, lo, o.ring)));
   }
   return [...kept, ...parts, ...points];
 }

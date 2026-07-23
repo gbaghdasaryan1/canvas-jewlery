@@ -4,6 +4,7 @@ import { ApiError } from "@/shared/lib/api";
 import { useT, type Dict } from "@/shared/i18n";
 import { createOrder, requestOtp, verifyOtp } from "./api/orderApi";
 import type { OrderPayload } from "./model/types";
+import styles from "./OrderModal.module.css";
 
 interface OrderModalProps {
   open: boolean;
@@ -58,7 +59,9 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [open]);
 
   // Escape closes; Tab is trapped inside the dialog for keyboard users.
@@ -151,19 +154,30 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
   }
 
   return createPortal(
-    <div className="om-backdrop" onMouseDown={() => !busy && onClose()}>
-      <div ref={modalRef} className="om-modal" role="dialog" aria-modal="true" aria-label={o.title} onMouseDown={(e) => e.stopPropagation()}>
-        <button className="om-x" onClick={onClose} disabled={busy} aria-label={o.close}>×</button>
+    <div className={styles.backdrop} onMouseDown={() => !busy && onClose()}>
+      <div
+        ref={modalRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-label={o.title}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <button className={styles.x} onClick={onClose} disabled={busy} aria-label={o.close}>
+          ×
+        </button>
 
         {step === "phone" && (
           <>
-            <div className="om-eyebrow mono">{o.eyebrow}</div>
-            <h3 className="om-title">{o.title}</h3>
-            <p className="om-sub">{summary ?? o.fallbackSummary}</p>
-            <label className="om-label mono" htmlFor="om-phone">{o.phoneLabel}</label>
+            <div className={`${styles.eyebrow} mono`}>{o.eyebrow}</div>
+            <h3 className={styles.title}>{o.title}</h3>
+            <p className={styles.sub}>{summary ?? o.fallbackSummary}</p>
+            <label className={`${styles.label} mono`} htmlFor="om-phone">
+              {o.phoneLabel}
+            </label>
             <input
               id="om-phone"
-              className="om-input mono"
+              className={`${styles.input} mono`}
               type="tel"
               inputMode="tel"
               autoComplete="tel"
@@ -173,8 +187,12 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
               onKeyDown={(e) => e.key === "Enter" && sendCode()}
               autoFocus
             />
-            {error && <div className="om-error mono">{error}</div>}
-            <button className="btn-primary lg om-submit" onClick={sendCode} disabled={busy}>
+            {error && <div className={`${styles.error} mono`}>{error}</div>}
+            <button
+              className={`btn-primary lg ${styles.submit}`}
+              onClick={sendCode}
+              disabled={busy}
+            >
               {busy ? o.sending : o.sendCode}
             </button>
           </>
@@ -182,17 +200,25 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
 
         {step === "otp" && (
           <>
-            <div className="om-eyebrow mono">{o.verifyEyebrow}</div>
-            <h3 className="om-title">{o.enterCodeTitle}</h3>
-            <p className="om-sub">
+            <div className={`${styles.eyebrow} mono`}>{o.verifyEyebrow}</div>
+            <h3 className={styles.title}>{o.enterCodeTitle}</h3>
+            <p className={styles.sub}>
               {o.sentTo} <b>{normalizePhone(phone)}</b>.{" "}
-              <button className="om-link mono" onClick={() => setStep("phone")} disabled={busy}>{o.change}</button>
+              <button
+                className={`${styles.link} mono`}
+                onClick={() => setStep("phone")}
+                disabled={busy}
+              >
+                {o.change}
+              </button>
             </p>
-            <label className="om-label mono" htmlFor="om-code">{o.codeLabel}</label>
+            <label className={`${styles.label} mono`} htmlFor="om-code">
+              {o.codeLabel}
+            </label>
             <input
               id="om-code"
               ref={codeRef}
-              className="om-input mono om-code"
+              className={`${styles.input} mono ${styles.code}`}
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
@@ -202,12 +228,16 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
               onChange={(e) => setCode(e.target.value.replace(/[^\d]/g, ""))}
               onKeyDown={(e) => e.key === "Enter" && verifyAndOrder()}
             />
-            {error && <div className="om-error mono">{error}</div>}
-            <button className="btn-primary lg om-submit" onClick={verifyAndOrder} disabled={busy}>
+            {error && <div className={`${styles.error} mono`}>{error}</div>}
+            <button
+              className={`btn-primary lg ${styles.submit}`}
+              onClick={verifyAndOrder}
+              disabled={busy}
+            >
               {busy ? o.placing : o.verifyOrder}
             </button>
             <button
-              className="om-link mono om-resend"
+              className={`${styles.link} mono ${styles.resend}`}
               onClick={sendCode}
               disabled={busy || resendIn > 0}
             >
@@ -217,11 +247,15 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
         )}
 
         {step === "done" && (
-          <div className="om-done">
-            <div className="om-check" aria-hidden>✓</div>
-            <h3 className="om-title">{o.doneTitle}</h3>
-            <p className="om-sub">{o.doneBody}</p>
-            <button className="btn-primary lg om-submit" onClick={onClose}>{o.done}</button>
+          <div className={styles.done}>
+            <div className={styles.check} aria-hidden>
+              ✓
+            </div>
+            <h3 className={styles.title}>{o.doneTitle}</h3>
+            <p className={styles.sub}>{o.doneBody}</p>
+            <button className={`btn-primary lg ${styles.submit}`} onClick={onClose}>
+              {o.done}
+            </button>
           </div>
         )}
       </div>

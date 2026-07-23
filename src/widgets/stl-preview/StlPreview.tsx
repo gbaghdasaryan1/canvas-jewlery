@@ -42,9 +42,18 @@ function PrintMesh({ metal, engraving = "", ...meshInput }: StlPreviewProps) {
     return { geo, cy, minY: geo.boundingBox!.min.y };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    meshInput.shape, meshInput.heightNorm, meshInput.width, meshInput.relief, meshInput.thickness,
-    meshInput.jewelryType, meshInput.hangPlace, meshInput.hangSize, meshInput.hangRotation,
-    meshInput.hangHorizontal, meshInput.ringRotation, meshInput.exportMesh,
+    meshInput.shape,
+    meshInput.heightNorm,
+    meshInput.width,
+    meshInput.relief,
+    meshInput.thickness,
+    meshInput.jewelryType,
+    meshInput.hangPlace,
+    meshInput.hangSize,
+    meshInput.hangRotation,
+    meshInput.hangHorizontal,
+    meshInput.ringRotation,
+    meshInput.exportMesh,
   ]);
 
   useEffect(() => () => built?.geo.dispose(), [built]);

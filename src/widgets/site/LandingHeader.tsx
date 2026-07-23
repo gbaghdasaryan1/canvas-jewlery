@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useT } from "@/shared/i18n";
 import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
+import styles from "./LandingHeader.module.css";
 
 function BrandMark() {
   return (
@@ -26,22 +27,26 @@ export function LandingHeader() {
 
   return (
     <>
-      <div className="promobar" role="status" aria-live="polite">
-        <span key={`${promo}`} className="promobar-msg">{promo}</span>
+      <div className={styles.promobar} role="status" aria-live="polite">
+        <span key={`${promo}`} className={styles.promobarMsg}>
+          {promo}
+        </span>
       </div>
-      <header className="home-top">
+      <header className={styles.top}>
         <div className="wrap">
           <Link className="home-brand" to="/">
             <BrandMark />
             CAIRN
           </Link>
-          <nav className="home-nav">
+          <nav className={styles.nav}>
             <a href="#how">{t.nav.how}</a>
             <a href="#gallery">{t.nav.gallery}</a>
             <a href="#faq">{t.nav.faq}</a>
           </nav>
           <LanguageSwitcher />
-          <Link className="btn-primary" to="/mountains">{t.nav.designYours}</Link>
+          <Link className="btn-primary" to="/mountains">
+            {t.nav.designYours}
+          </Link>
         </div>
       </header>
     </>

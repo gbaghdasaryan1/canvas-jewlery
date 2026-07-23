@@ -6,9 +6,11 @@ const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v
 function pointInRing(lat: number, lng: number, ring: Array<[number, number]>): boolean {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const yi = ring[i][0], xi = ring[i][1];
-    const yj = ring[j][0], xj = ring[j][1];
-    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
+    const yi = ring[i][0],
+      xi = ring[i][1];
+    const yj = ring[j][0],
+      xj = ring[j][1];
+    if (yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }
   }
@@ -36,10 +38,15 @@ export function rasterizeBuildings(
 
   for (const b of buildings) {
     // Limit the scan to the footprint's bounding box of grid cells.
-    let mnLa = Infinity, mxLa = -Infinity, mnLo = Infinity, mxLo = -Infinity;
+    let mnLa = Infinity,
+      mxLa = -Infinity,
+      mnLo = Infinity,
+      mxLo = -Infinity;
     for (const [la, lo] of b.ring) {
-      if (la < mnLa) mnLa = la; if (la > mxLa) mxLa = la;
-      if (lo < mnLo) mnLo = lo; if (lo > mxLo) mxLo = lo;
+      if (la < mnLa) mnLa = la;
+      if (la > mxLa) mxLa = la;
+      if (lo < mnLo) mnLo = lo;
+      if (lo > mxLo) mxLo = lo;
     }
     const r0 = clamp(Math.floor(((mnLa - south) / dLat) * (gridN - 1)), 0, gridN - 1);
     const r1 = clamp(Math.ceil(((mxLa - south) / dLat) * (gridN - 1)), 0, gridN - 1);

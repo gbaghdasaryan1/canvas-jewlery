@@ -7,17 +7,24 @@ import {
   type JewelryType,
   type Shape,
 } from "@/entities/ring/model/types";
-import { buildRingBandMesh, ringBandDims, mergeMeshData, type RingMeshData } from "@/shared/lib/ringGeometry";
+import {
+  buildRingBandMesh,
+  ringBandDims,
+  mergeMeshData,
+  type RingMeshData,
+} from "@/shared/lib/ringGeometry";
 import { rotateHeightField } from "@/shared/lib/heightField";
 import { buildBailMesh } from "@/shared/lib/bailCurve";
 
 /** Rotate a mesh's positions about the vertical (Y) axis, in place. */
 function yawInPlace(mesh: RingMeshData, degrees: number): void {
   const rad = (degrees * Math.PI) / 180;
-  const c = Math.cos(rad), s = Math.sin(rad);
+  const c = Math.cos(rad),
+    s = Math.sin(rad);
   const pos = mesh.positions;
   for (let i = 0; i < pos.length; i += 3) {
-    const x = pos[i], z = pos[i + 2];
+    const x = pos[i],
+      z = pos[i + 2];
     pos[i] = x * c + z * s;
     pos[i + 2] = -x * s + z * c;
   }
@@ -51,8 +58,18 @@ export interface ExportMeshInput {
  */
 export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
   const {
-    shape, heightNorm, width, relief, thickness,
-    jewelryType, hangPlace, hangSize, hangRotation, hangHorizontal, ringRotation, exportMesh,
+    shape,
+    heightNorm,
+    width,
+    relief,
+    thickness,
+    jewelryType,
+    hangPlace,
+    hangSize,
+    hangRotation,
+    hangHorizontal,
+    ringRotation,
+    exportMesh,
   } = input;
 
   const usingExportMesh = !!exportMesh;
@@ -62,13 +79,16 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
   // Orientation: rotate the relief field (not the mesh) so the frame + outline
   // stay put and only the inner design turns. Rings have no frame and yaw the
   // whole plaque below instead, so they keep the field unrotated here.
-  const field = heightNorm && !isRing(jewelryType)
-    ? rotateHeightField(heightNorm, ringRotation)
-    : heightNorm;
+  const field =
+    heightNorm && !isRing(jewelryType) ? rotateHeightField(heightNorm, ringRotation) : heightNorm;
   let mesh =
     exportMesh?.() ??
     (field
-      ? buildShapeMesh(shape, field, toShapeParams(shape, { width, relief, thickness }, undefined, framed))
+      ? buildShapeMesh(
+          shape,
+          field,
+          toShapeParams(shape, { width, relief, thickness }, undefined, framed),
+        )
       : null);
   if (!mesh) return null;
 
@@ -93,19 +113,22 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
   // Pendant → one bail at the chosen point; bracelet → two parallel bails
   // (left + right) so it links into a chain on both sides. Ring → handled above.
   for (const hang of hangAnchors(shape, jewelryType, hangPlace)) {
-    mesh = mergeMeshData(mesh, buildBailMesh({
-      hang,
-      width,
-      depth: width,
-      base: Math.max(0.5, thickness),
-      // The skyline's vector mesh raises its frame to the relief depth (base +
-      // relief), not the relief plaque's fixed frame — centre the bail on that
-      // wall so it doesn't float above a shallow (e.g. streets) frame.
-      frameHeightMm: exportMesh ? relief : undefined,
-      hangSize,
-      hangRotation,
-      hangHorizontal,
-    }));
+    mesh = mergeMeshData(
+      mesh,
+      buildBailMesh({
+        hang,
+        width,
+        depth: width,
+        base: Math.max(0.5, thickness),
+        // The skyline's vector mesh raises its frame to the relief depth (base +
+        // relief), not the relief plaque's fixed frame — centre the bail on that
+        // wall so it doesn't float above a shallow (e.g. streets) frame.
+        frameHeightMm: exportMesh ? relief : undefined,
+        hangSize,
+        hangRotation,
+        hangHorizontal,
+      }),
+    );
   }
   return mesh;
 }

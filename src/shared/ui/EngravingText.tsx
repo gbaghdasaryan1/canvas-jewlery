@@ -29,7 +29,13 @@ interface EngravingTextProps {
  * Shared by RingViewer and CityViewer so both previews render it the same.
  */
 export function EngravingText({
-  text, position, fontSize, color = "#20242a", rotation = [0, 0, 0], maxWidth, curveRadius,
+  text,
+  position,
+  fontSize,
+  color = "#20242a",
+  rotation = [0, 0, 0],
+  maxWidth,
+  curveRadius,
 }: EngravingTextProps) {
   const value = text.trim();
   if (!value) return null;

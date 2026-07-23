@@ -110,7 +110,8 @@ export function chaikinSmooth(poly: Vec2[], iterations: number): Vec2[] {
   return pts;
 }
 
-const toPC = (rings: Vec2[][]): Polygon => rings.map((r) => r.map((p) => [p.x, p.y] as [number, number]));
+const toPC = (rings: Vec2[][]): Polygon =>
+  rings.map((r) => r.map((p) => [p.x, p.y] as [number, number]));
 const outerRingsFromPC = (mp: MultiPolygon): Vec2[][] =>
   mp.map((poly) => poly[0].map(([x, y]) => ({ x, y })));
 

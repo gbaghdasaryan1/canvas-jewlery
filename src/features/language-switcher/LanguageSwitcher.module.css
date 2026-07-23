@@ -1,0 +1,107 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  border-radius: 999px;
+}
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 76px;
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  transition: 0.15s;
+}
+.chevron {
+  flex: none;
+  display: block;
+  opacity: 0.7;
+}
+
+.light {
+  background: rgba(28, 32, 38, 0.05);
+  border: 1px solid var(--paper-line);
+}
+.light .trigger {
+  color: var(--ink-3);
+}
+.light .trigger:hover,
+.light .trigger:focus-visible {
+  color: var(--ink-1);
+  outline: none;
+}
+
+.dark {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+}
+.dark .trigger {
+  color: var(--faint);
+}
+.dark .trigger:hover,
+.dark .trigger:focus-visible {
+  color: var(--ivory);
+  outline: none;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1100;
+  min-width: 100%;
+  padding: 5px;
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 12px 28px rgba(28, 32, 38, 0.16);
+}
+.dark .menu {
+  border-color: var(--line);
+  background: var(--panel);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-align: left;
+  cursor: pointer;
+}
+.option:hover,
+.option:focus-visible {
+  background: var(--paper-2);
+  color: var(--ink-1);
+  outline: none;
+}
+.option.on {
+  color: var(--ink-1);
+  font-weight: 700;
+}
+.dark .option {
+  color: var(--faint);
+}
+.dark .option:hover,
+.dark .option:focus-visible {
+  background: var(--panel-2);
+  color: var(--ivory);
+}
+.dark .option.on {
+  color: var(--ivory);
+}

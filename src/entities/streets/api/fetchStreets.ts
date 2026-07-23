@@ -20,8 +20,10 @@ export async function fetchStreets(
 ): Promise<StreetLine[]> {
   const dLat = areaKm / 111;
   const dLng = areaKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
-  const s = lat - dLat / 2, n = lat + dLat / 2;
-  const w = lng - dLng / 2, e = lng + dLng / 2;
+  const s = lat - dLat / 2,
+    n = lat + dLat / 2;
+  const w = lng - dLng / 2,
+    e = lng + dLng / 2;
 
   // Drivable + walkable roads; skip footway/path noise for a clean map look.
   const query =

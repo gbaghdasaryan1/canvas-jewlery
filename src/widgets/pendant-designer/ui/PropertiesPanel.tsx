@@ -85,19 +85,11 @@ export function PropertiesPanel() {
         <SectionTitle>View</SectionTitle>
         <ToggleRow>
           Pendant outline
-          <input
-            type="checkbox"
-            checked={showOutline}
-            onChange={() => toggleView("showOutline")}
-          />
+          <input type="checkbox" checked={showOutline} onChange={() => toggleView("showOutline")} />
         </ToggleRow>
         <ToggleRow>
           Object contour
-          <input
-            type="checkbox"
-            checked={showContour}
-            onChange={() => toggleView("showContour")}
-          />
+          <input type="checkbox" checked={showContour} onChange={() => toggleView("showContour")} />
         </ToggleRow>
         <ToggleRow>
           Original image

@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-import { Circle, Group, Image as KonvaImage, Layer, Line, Path, Stage, Transformer, useStrictMode } from "react-konva";
+import {
+  Circle,
+  Group,
+  Image as KonvaImage,
+  Layer,
+  Line,
+  Path,
+  Stage,
+  Transformer,
+  useStrictMode,
+} from "react-konva";
 import styled from "styled-components";
 import { polygonBounds } from "@/shared/lib/geo2d";
-import {
-  objectOriginPx,
-  outlinePathMm,
-  pendantOutline,
-} from "@/entities/pendant/lib/geometry";
+import { objectOriginPx, outlinePathMm, pendantOutline } from "@/entities/pendant/lib/geometry";
 import { usePendant } from "../model/store";
 import { registerStage } from "../model/stageRegistry";
 
@@ -56,9 +62,7 @@ function useContainerSize(): [React.RefObject<HTMLDivElement>, { w: number; h: n
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(() =>
-      setSize({ w: el.clientWidth, h: el.clientHeight }),
-    );
+    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -95,10 +99,7 @@ export function PendantCanvas() {
 
   const { config, object } = design;
   const outline = useMemo(() => pendantOutline(design, silhouette), [design, silhouette]);
-  const outlinePath = useMemo(
-    () => outlinePathMm(outline, config.hole),
-    [outline, config.hole],
-  );
+  const outlinePath = useMemo(() => outlinePathMm(outline, config.hole), [outline, config.hole]);
   const origin = useMemo(
     () => (silhouette ? objectOriginPx(silhouette) : { x: 0, y: 0 }),
     [silhouette],
@@ -130,10 +131,7 @@ export function PendantCanvas() {
       const margin = 48;
       const scale = Math.max(
         MIN_ZOOM,
-        Math.min(
-          MAX_ZOOM,
-          Math.min((w - margin * 2) / b.width, (h - margin * 2) / b.height),
-        ),
+        Math.min(MAX_ZOOM, Math.min((w - margin * 2) / b.width, (h - margin * 2) / b.height)),
       );
       setView(scale, w / 2 - b.cx * scale, h / 2 - b.cy * scale);
     },

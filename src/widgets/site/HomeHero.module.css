@@ -1,0 +1,122 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(78vh, 760px);
+  overflow: hidden;
+}
+
+/* Slider — parent holding every slide's two blocks. */
+.slider {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* One slide = two blocks (left + right), each half the banner width. */
+.slide {
+  flex: 0 0 100%;
+  display: flex;
+  height: 100%;
+}
+.block {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+.block :global(.contour-art) {
+  width: 100%;
+  height: 100%;
+}
+
+/* Legibility scrim behind the centred brand — darker in the middle. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      58% 72% at 50% 50%,
+      rgba(243, 244, 246, 0.9) 0%,
+      rgba(243, 244, 246, 0.62) 48%,
+      rgba(243, 244, 246, 0.12) 100%
+    ),
+    linear-gradient(0deg, rgba(243, 244, 246, 0.4), rgba(243, 244, 246, 0) 40%);
+}
+
+/* Brand line — absolutely centred over the slider. */
+.brand {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(720px, 90vw);
+  text-align: center;
+  padding: 0 20px;
+  z-index: 1;
+}
+.title {
+  font-family: var(--display);
+  font-weight: 400;
+  color: var(--ink-1);
+  font-size: clamp(40px, 6.4vw, 74px);
+  line-height: 0.99;
+  letter-spacing: -0.015em;
+  margin: 14px 0 0;
+}
+.title em {
+  font-style: italic;
+  color: var(--bronze);
+}
+.lead {
+  margin: 20px auto 0;
+  max-width: 42ch;
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+  justify-content: center;
+}
+
+/* Slider dots */
+.dots {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 9px;
+  z-index: 2;
+}
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--ink-3);
+  background: transparent;
+  transition: 0.2s;
+}
+.dot.on {
+  background: var(--ink-1);
+  border-color: var(--ink-1);
+  transform: scale(1.15);
+}
+@media (max-width: 860px) {
+  .hero {
+    min-height: 66vh;
+  }
+}

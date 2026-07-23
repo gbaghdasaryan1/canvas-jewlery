@@ -2,11 +2,7 @@ import type { Vec2 } from "@/shared/lib/geo2d";
 import type { SilhouetteInfo } from "@/entities/pendant/model/types";
 
 export type SegmentationStage =
-  | "loading-model"
-  | "removing-background"
-  | "detecting-object"
-  | "vectorizing"
-  | "done";
+  "loading-model" | "removing-background" | "detecting-object" | "vectorizing" | "done";
 
 export interface SegmentationProgress {
   stage: SegmentationStage;
@@ -30,10 +26,7 @@ export interface DetectedObject {
  *  the whole pipeline. */
 export interface ImageSegmentationService {
   /** AI background removal. Returns a transparent-PNG data URL. */
-  removeBackground(
-    file: Blob,
-    onProgress?: (p: SegmentationProgress) => void,
-  ): Promise<string>;
+  removeBackground(file: Blob, onProgress?: (p: SegmentationProgress) => void): Promise<string>;
   /** Contour detection on the cutout: main object, noise filtered, smoothed. */
   detectMainObject(): Promise<DetectedObject>;
   /** Filled black-on-white silhouette of the detected contours (data URL). */
@@ -41,8 +34,5 @@ export interface ImageSegmentationService {
   /** Vectorize the silhouette; returns an SVG path `d` in mask-pixel space. */
   generateSVG(): Promise<string>;
   /** Full pipeline: upload → cutout → contours → silhouette → SVG. */
-  process(
-    file: File,
-    onProgress?: (p: SegmentationProgress) => void,
-  ): Promise<SilhouetteInfo>;
+  process(file: File, onProgress?: (p: SegmentationProgress) => void): Promise<SilhouetteInfo>;
 }

@@ -49,7 +49,19 @@ const MIN_BUILDING_MM = 0.25; // castability floor for tiny buildings
  * plate (standard multi-shell STL; slicers and casting prep union them).
  */
 export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
-  const { buildings, streets, shape, lat, lng, areaKm, widthMm, baseMm, reliefMm, solidFloor = true, contentYawDeg = 0 } = input;
+  const {
+    buildings,
+    streets,
+    shape,
+    lat,
+    lng,
+    areaKm,
+    widthMm,
+    baseMm,
+    reliefMm,
+    solidFloor = true,
+    contentYawDeg = 0,
+  } = input;
   if (!buildings?.length && !streets?.length) return null;
   // Same soft-knee vertical scale as the canvas (see makeHeightScale).
   const heightScale = makeHeightScale(buildings?.map((b) => b.height) ?? []);
@@ -85,7 +97,8 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
   // Applied to building/street coords only, so the base + frame stay put and
   // the rotated content is clipped by the fixed outline.
   const yaw = (contentYawDeg * Math.PI) / 180;
-  const yc = Math.cos(yaw), ys = Math.sin(yaw);
+  const yc = Math.cos(yaw),
+    ys = Math.sin(yaw);
   const rot = (x: number, z: number): Pt =>
     yaw ? { x: x * yc - z * ys, z: x * ys + z * yc } : { x, z };
 
@@ -125,9 +138,14 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
         // Landmark tower: stacked tapered slices (see TOWER_PROFILE).
         // Spires stay strict (no half-spires at the plate edge).
         if (!allIn) continue;
-        let cx = 0, cz = 0;
-        for (const p of pts) { cx += p.x; cz += p.z; }
-        cx /= pts.length; cz /= pts.length;
+        let cx = 0,
+          cz = 0;
+        for (const p of pts) {
+          cx += p.x;
+          cz += p.z;
+        }
+        cx /= pts.length;
+        cz /= pts.length;
         for (let i = 0; i < TOWER_PROFILE.length; i++) {
           const { t0, t1, s } = TOWER_PROFILE[i];
           const sliced = pts.map((p) => ({ x: cx + (p.x - cx) * s, z: cz + (p.z - cz) * s }));
@@ -155,16 +173,28 @@ export function buildCityMesh(input: CityMeshInput): RingMeshData | null {
       for (let i = 1; i < st.pts.length; i++) {
         const aPt = rot(nx(st.pts[i - 1][1]), nz(st.pts[i - 1][0]));
         const bPt = rot(nx(st.pts[i][1]), nz(st.pts[i][0]));
-        let ax = aPt.x, az = aPt.z;
-        let bx = bPt.x, bz = bPt.z;
-        const aIn = streetInside(ax, az), bIn = streetInside(bx, bz);
+        let ax = aPt.x,
+          az = aPt.z;
+        let bx = bPt.x,
+          bz = bPt.z;
+        const aIn = streetInside(ax, az),
+          bIn = streetInside(bx, bz);
         if (!aIn && !bIn) continue;
-        if (!bIn) { const p = streetClip(ax, az, bx, bz); bx = p.x; bz = p.z; }
-        else if (!aIn) { const p = streetClip(bx, bz, ax, az); ax = p.x; az = p.z; }
-        const dx = bx - ax, dz = bz - az;
+        if (!bIn) {
+          const p = streetClip(ax, az, bx, bz);
+          bx = p.x;
+          bz = p.z;
+        } else if (!aIn) {
+          const p = streetClip(bx, bz, ax, az);
+          ax = p.x;
+          az = p.z;
+        }
+        const dx = bx - ax,
+          dz = bz - az;
         const len = Math.hypot(dx, dz);
         if (len === 0) continue;
-        const ox = (-dz / len) * half, oz = (dx / len) * half;
+        const ox = (-dz / len) * half,
+          oz = (dx / len) * half;
         prism(
           [
             { x: ax + ox, z: az + oz },
