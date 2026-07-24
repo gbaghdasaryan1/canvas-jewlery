@@ -1,15 +1,15 @@
 import { ENGRAVING_MAX, useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
 import {
-  hangAxisLabel,
-  hangPlaceLabel,
+  // hangAxisLabel,
+  // hangPlaceLabel,
   isRing,
   nextHangPlace,
   type Shape,
 } from "@/entities/ring/model/types";
 import styles from "./RingControls.module.css";
 
-const capitalize = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+// const capitalize = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 interface RangeProps {
   label: string;
@@ -76,12 +76,12 @@ export function RingControls({
   ];
 
   // Translate a hang label (compass words → dictionary; degrees/"&" kept).
-  const dir = d.dir as Record<string, string>;
-  const trHang = (label: string) =>
-    label
-      .split(" ")
-      .map((w) => dir[w] ?? w)
-      .join(" ");
+  // const dir = d.dir as Record<string, string>;
+  // const trHang = (label: string) =>
+  //   label
+  //     .split(" ")
+  //     .map((w) => dir[w] ?? w)
+  //     .join(" ");
 
   return (
     <div className={styles.ctl}>
