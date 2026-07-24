@@ -61,7 +61,7 @@ function makeEnvMap(gl: THREE.WebGLRenderer): THREE.Texture {
 /** Reflection map for the metal. Drop the liquid-metal photo here (served from
     /public) to have the piece mirror it; absent, the procedural studio gradient
     is used instead. */
-const REFLECTION_URL = "/textures/liquid-metal.jpg";
+const REFLECTION_URL = "/textures/liquid-silver.jpg";
 
 export function SceneEnvironment() {
   const { gl, scene, invalidate } = useThree();

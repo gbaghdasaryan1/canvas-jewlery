@@ -10,6 +10,7 @@ export const en = {
     how: "How it's made",
     materials: "Materials",
     gallery: "Products",
+    prices: "Prices",
     faq: "FAQ",
     designYours: "Design yours",
     home: "Home",
@@ -193,9 +194,25 @@ export const en = {
     guarantee: ["Made to order in 1–2 weeks"],
   },
 
+  priceList: {
+    eyebrow: "Price list",
+    title: "Simple, honest pricing",
+    sub: "Every piece is cast in recycled 925 silver and made to order. One price per form — the exact figure is confirmed as you design.",
+    priceFrom: (p: string) => `from ${p}`,
+    cta: "Design yours",
+    note: "Prices include handcrafted production անդ shipping.",
+    items: [
+      { type: "pendant", note: "Your landscape in relief, on a chain." },
+      { type: "ring", note: "Your place wrapped around the band." },
+      { type: "bracelet", note: "Linked relief plates for the wrist." },
+    ] as { type: "pendant" | "ring" | "bracelet"; note: string }[],
+  },
+
   footer: {
     tagline: "Bespoke topographic jewelry",
     mapData: "Map data © Google Maps and Mapbox.",
+    contact: "Contact",
+    follow: "Follow",
   },
 
   designer: {

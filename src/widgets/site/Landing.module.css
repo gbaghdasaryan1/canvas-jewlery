@@ -46,3 +46,25 @@
   font-size: 11px;
   letter-spacing: 0.04em;
 }
+.footContact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.footHead {
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+.footContact a {
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.footContact a:hover {
+  color: var(--ink-1);
+}
+.footMapData {
+  margin-top: 14px;
+}

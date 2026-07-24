@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import * as THREE from "three";
 import { Text } from "@react-three/drei";
 
 interface EngravingTextProps {
@@ -22,11 +24,18 @@ interface EngravingTextProps {
   curveRadius?: number;
 }
 
+// Italic slant. troika doesn't synthesize an oblique from a regular font and no
+// italic face is bundled, so we shear the text horizontally instead: x' = x +
+// tan(θ)·y slants the vertical strokes to the right like a true italic.
+const ITALIC_SHEAR = Math.tan((12 * Math.PI) / 180);
+
 /**
  * A text label laid onto a surface to preview a laser engraving — the back of a
  * pendant/bracelet (flat) or the inside of a ring band (curved). Purely visual:
  * the actual mark is a post-cast laser step, so this never enters the STL.
  * Shared by RingViewer and CityViewer so both previews render it the same.
+ *
+ * Always rendered italic (via a horizontal shear — see ITALIC_SHEAR).
  */
 export function EngravingText({
   text,
@@ -38,6 +47,15 @@ export function EngravingText({
   curveRadius,
 }: EngravingTextProps) {
   const value = text.trim();
+
+  // Shear matrix applied via a non-auto-updating group wrapping the Text, so the
+  // italic slant composes on top of each variant's own position/rotation.
+  const italicMatrix = useMemo(() => {
+    const m = new THREE.Matrix4();
+    m.set(1, ITALIC_SHEAR, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    return m;
+  }, []);
+
   if (!value) return null;
 
   // Ring: wrap the engraving around the band's inner cylinder. troika bends
@@ -48,38 +66,42 @@ export function EngravingText({
   if (curveRadius != null) {
     return (
       <group position={position} rotation={[Math.PI / 2, 0, 0]}>
-        <Text
-          // curveRadius is a valid troika-three-text prop (r3f sets it on the
-          // mesh) but isn't in drei's Text typings — cast it through.
-          {...({ curveRadius } as Record<string, unknown>)}
-          fontSize={fontSize}
-          color={color}
-          anchorX="center"
-          anchorY="middle"
-          letterSpacing={0.02}
-        >
-          {value}
-        </Text>
+        <group matrixAutoUpdate={false} matrix={italicMatrix}>
+          <Text
+            // curveRadius is a valid troika-three-text prop (r3f sets it on the
+            // mesh) but isn't in drei's Text typings — cast it through.
+            {...({ curveRadius } as Record<string, unknown>)}
+            fontSize={fontSize}
+            color={color}
+            anchorX="center"
+            anchorY="middle"
+            letterSpacing={0.02}
+          >
+            {value}
+          </Text>
+        </group>
       </group>
     );
   }
 
   return (
-    <Text
-      position={position}
-      rotation={rotation}
-      fontSize={fontSize}
-      maxWidth={maxWidth}
-      whiteSpace={maxWidth == null ? "nowrap" : "normal"}
-      lineHeight={1.15}
-      letterSpacing={0.02}
-      color={color}
-      anchorX="center"
-      anchorY="middle"
-      textAlign="center"
-      overflowWrap="break-word"
-    >
-      {value}
-    </Text>
+    <group position={position} rotation={rotation}>
+      <group matrixAutoUpdate={false} matrix={italicMatrix}>
+        <Text
+          fontSize={fontSize}
+          maxWidth={maxWidth}
+          whiteSpace={maxWidth == null ? "nowrap" : "normal"}
+          lineHeight={1.15}
+          letterSpacing={0.02}
+          color={color}
+          anchorX="center"
+          anchorY="middle"
+          textAlign="center"
+          overflowWrap="break-word"
+        >
+          {value}
+        </Text>
+      </group>
+    </group>
   );
 }

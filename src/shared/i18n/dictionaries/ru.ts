@@ -8,6 +8,7 @@ export const ru: Dict = {
     how: "Как это делается",
     materials: "Материалы",
     gallery: "Продукты",
+    prices: "Цены",
     faq: "Вопросы",
     designYours: "Создать своё",
     home: "На главную",
@@ -195,9 +196,25 @@ export const ru: Dict = {
     guarantee: ["Изготовление 3–4 недели"],
   },
 
+  priceList: {
+    eyebrow: "Прайс-лист",
+    title: "Простые и честные цены",
+    sub: "В стоимость входят ручная работа и доставка.",
+    priceFrom: (p: string) => `от ${p}`,
+    cta: "Создать своё",
+    note: "Цены включают ручную работу и застрахованную доставку по миру. Золото и платина — по запросу.",
+    items: [
+      { type: "pendant", note: "Ваш ландшафт в рельефе, на цепочке." },
+      { type: "ring", note: "Ваше место, обёрнутое вокруг кольца." },
+      { type: "bracelet", note: "Связанные рельефные пластины на запястье." },
+    ] as { type: "pendant" | "ring" | "bracelet"; note: string }[],
+  },
+
   footer: {
     tagline: "Топографические украшения на заказ",
     mapData: "Данные карт © Google Maps и Mapbox.",
+    contact: "Контакты",
+    follow: "Мы в соцсетях",
   },
 
   designer: {

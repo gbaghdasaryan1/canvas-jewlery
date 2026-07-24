@@ -3,22 +3,26 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useDesigner } from "@/app/store";
 import { useT } from "@/shared/i18n";
 import { LanguageSwitcher } from "@/features/language-switcher/LanguageSwitcher";
-import type { Shape } from "@/entities/ring/model/types";
+import type { JewelryType, Shape } from "@/entities/ring/model/types";
 import { Designer } from "./Designer";
 import { BrandMark } from "../site/LandingHeader";
 
 const VALID_SHAPES = new Set(["rectangle", "circle"]);
+const VALID_TYPES = new Set(["pendant", "ring", "bracelet"]);
 
 /** The standalone design experience at /mountains. */
 export function DesignPage() {
   const setShape = useDesigner((s) => s.setShape);
+  const setJewelryType = useDesigner((s) => s.setJewelryType);
   const t = useT();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const q = searchParams.get("shape");
     if (q && VALID_SHAPES.has(q)) setShape(q as Shape);
-  }, [setShape, searchParams]);
+    const ty = searchParams.get("type");
+    if (ty && VALID_TYPES.has(ty)) setJewelryType(ty as JewelryType);
+  }, [setShape, setJewelryType, searchParams]);
 
   return (
     <div className="design-app">

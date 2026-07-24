@@ -26,6 +26,7 @@ export function LandingHeader() {
           <nav className={styles.nav}>
             <a href="#how">{t.nav.how}</a>
             <a href="#gallery">{t.nav.gallery}</a>
+            <a href="#prices">{t.nav.prices}</a>
             <a href="#faq">{t.nav.faq}</a>
           </nav>
           <LanguageSwitcher />
