@@ -74,7 +74,7 @@ const LAYER_OPTIONS: { mode: LayerMode; icon: JSX.Element }[] = [
   },
 ];
 
-const STREETS_RELIEF_MM = 1.15;
+const STREETS_RELIEF_MM = 1.1;
 const DEFAULT_RELIEF_MM = 2; // caps at the maps relief max (see RingControls reliefMax)
 const MAPS_RELIEF_MAX = 2;
 
@@ -319,6 +319,9 @@ export function SkylineDesigner() {
               areaMax={5}
               reliefMax={MAPS_RELIEF_MAX}
               showEngraving={canEngrave}
+              // Streets pieces use a fixed relief (STREETS_RELIEF_MM) — hide the
+              // slider so it can't be changed.
+              showRelief={layerMode !== "streets"}
             />
           </Step>
         </div>

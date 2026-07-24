@@ -49,6 +49,9 @@ interface RingControlsProps {
   /** Show the engraving input. Hidden for streets-only maps pieces, which are
       hollow and have no solid back to laser-engrave. */
   showEngraving?: boolean;
+  /** Show the "Relief depth" slider. Hidden for streets-only maps pieces, whose
+      relief is fixed by the caller. */
+  showRelief?: boolean;
 }
 
 export function RingControls({
@@ -56,6 +59,7 @@ export function RingControls({
   areaMax = 50,
   reliefMax = 4.8,
   showEngraving = true,
+  showRelief = true,
 }: RingControlsProps) {
   const s = useDesigner();
   const t = useT();
@@ -143,27 +147,23 @@ export function RingControls({
             <span className={styles.hangCycleIco} aria-hidden>
               ↻
             </span>
-            {capitalize(
-              trHang(
-                s.jewelryType === "bracelet"
-                  ? hangAxisLabel(s.hangPlace)
-                  : hangPlaceLabel(s.hangPlace),
-              ),
-            )}
+
           </button>
         </div>
       )}
 
       <div className={styles.ctlGrid}>
-        <Range
-          label={d.reliefDepth}
-          value={`${s.relief.toFixed(1)} ${d.mm}`}
-          min={0.4}
-          max={reliefMax}
-          step={0.2}
-          current={s.relief}
-          onChange={s.setRelief}
-        />
+        {showRelief && (
+          <Range
+            label={d.reliefDepth}
+            value={`${s.relief.toFixed(1)} ${d.mm}`}
+            min={0.4}
+            max={reliefMax}
+            step={0.2}
+            current={s.relief}
+            onChange={s.setRelief}
+          />
+        )}
         <Range
           label={d.sampleArea}
           value={`${s.areaKm} ${d.km}`}

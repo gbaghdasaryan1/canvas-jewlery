@@ -220,7 +220,7 @@ export const hy: Dict = {
     step1CityTitle: "Ընտրիր քաղաքը",
     step2Title: "Ձև և ավարտ",
     step2MountainsHint: "Ընտրիր՝ ինչպես կրել և ձևը, ապա ճշգրտիր ռելիեֆը։",
-    step2CityHint: "Ընտրիր՝ ինչ ցույց տալ, ձևը, ապա ճշգրտիր ռելիեֆը։",
+    step2CityHint: "Ընտրիր՝ ինչպես կրել և ձևը, ապա ճշգրտիր հասցեն:",
 
     searchMountainsPlaceholder: "Փնտրիր վայր — օր. Մատերհորն",
     searchCityPlaceholder: "Փնտրիր քաղաք — օր. Երևան, Մանհեթեն, Հոնկոնգ…",
@@ -269,6 +269,7 @@ export const hy: Dict = {
     change: "Փոխել",
     codeLabel: "6-նիշանոց կոդ",
     verifyOrder: "Հաստատել և պատվիրել",
+    placeOrder: "Պատվիրել",
     placing: "Պատվիրվում է…",
     resend: "Ուղարկել կրկին",
     resendIn: (s: number) => `Կրկին ${s}վ-ից`,

@@ -4,7 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { buildExportMesh, type ExportMeshInput } from "@/features/stl-export/buildExportMesh";
 import { METALS, isRing, type Metal } from "@/entities/ring/model/types";
-import { ringBandDims } from "@/shared/lib/ringGeometry";
+import { ringBandDims, ringBandSink } from "@/shared/lib/ringGeometry";
 import { EngravingText } from "@/shared/ui/EngravingText";
 import { CameraDirector, SceneEnvironment } from "@/widgets/ring-viewer/RingViewer";
 
@@ -73,10 +73,11 @@ function PrintMesh({ metal, engraving = "", ...meshInput }: StlPreviewProps) {
 
   const { width } = meshInput;
   // Ring band geometry (only meaningful for a ring) — the engraving wraps its
-  // inner wall. The band is fused with its top at the plate base and its centre
-  // dropped by outerR, so in the centred mesh the inner wall sits here:
+  // inner wall. The band is fused with its crest sunk into the plate base (see
+  // buildExportMesh), so in the centred mesh the inner wall sits here:
   const dims = ringBandDims(width);
-  const outerR = dims.innerR + dims.wall;
+  const dropY =
+    dims.innerR + dims.wall - ringBandSink(width, Math.max(0.5, meshInput.thickness));
 
   return (
     <>
@@ -87,7 +88,7 @@ function PrintMesh({ metal, engraving = "", ...meshInput }: StlPreviewProps) {
         <group rotation={[0, -(meshInput.ringRotation * Math.PI) / 180, 0]}>
           <EngravingText
             text={engraving}
-            position={[0, -outerR - built.cy + dims.innerR - width * 0.006, 0]}
+            position={[0, -dropY - built.cy + dims.innerR - width * 0.006, 0]}
             curveRadius={dims.innerR}
             fontSize={Math.max(0.9, dims.innerR * 0.3)}
             color="#2b3038"

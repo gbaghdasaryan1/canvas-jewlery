@@ -21,6 +21,12 @@ interface OrderModalProps {
 
 type Step = "phone" | "otp" | "done";
 
+// OTP verification is disabled for now: the phone step submits the order
+// directly with no SMS code. Flip back to true to restore the /otp/request →
+// /otp/verify flow (all of that code is kept below, just bypassed). When
+// disabled the order is created with an empty verification token.
+const OTP_ENABLED = false;
+
 // Loose E.164 check: optional +, 8–15 digits once separators are stripped.
 function normalizePhone(raw: string): string {
   const trimmed = raw.trim();
@@ -113,6 +119,11 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
       setError(o.errValidPhone);
       return;
     }
+    // OTP disabled: skip the SMS code and place the order straight from the phone.
+    if (!OTP_ENABLED) {
+      await placeOrder(normalizePhone(phone), "");
+      return;
+    }
     setBusy(true);
     try {
       const res = await requestOtp(normalizePhone(phone));
@@ -120,6 +131,26 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
       setResendIn(res.expiresInSec && res.expiresInSec < 120 ? res.expiresInSec : 45);
     } catch (e) {
       setError(messageFor(e, o.errSendFailed, o));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Build the payload and create the order with an already-verified phone
+  // (verificationToken is empty when OTP is disabled). Shared by the direct
+  // phone-step submit and the OTP-verify path.
+  async function placeOrder(p: string, verificationToken: string) {
+    const payload = buildPayload();
+    if (!payload) {
+      setError(o.errNotReady);
+      return;
+    }
+    setBusy(true);
+    try {
+      await createOrder(p, verificationToken, payload);
+      setStep("done");
+    } catch (e) {
+      setError(messageFor(e, o.errOrderFailed, o));
     } finally {
       setBusy(false);
     }
@@ -133,24 +164,20 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
     }
     const p = normalizePhone(phone);
     setBusy(true);
+    let verificationToken: string;
     try {
-      const { verificationToken } = await verifyOtp(p, code.trim());
-      const payload = buildPayload();
-      if (!payload) {
-        setError(o.errNotReady);
-        return;
-      }
-      await createOrder(p, verificationToken, payload);
-      setStep("done");
+      ({ verificationToken } = await verifyOtp(p, code.trim()));
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) {
         setError(o.errBadCode);
       } else {
         setError(messageFor(e, o.errOrderFailed, o));
       }
-    } finally {
       setBusy(false);
+      return;
     }
+    setBusy(false);
+    await placeOrder(p, verificationToken);
   }
 
   return createPortal(
@@ -193,7 +220,7 @@ export function OrderModal({ open, onClose, summary, buildPayload }: OrderModalP
               onClick={sendCode}
               disabled={busy}
             >
-              {busy ? o.sending : o.sendCode}
+              {OTP_ENABLED ? (busy ? o.sending : o.sendCode) : busy ? o.placing : o.placeOrder}
             </button>
           </>
         )}

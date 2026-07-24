@@ -6,6 +6,7 @@ import {
   FRAME_HEIGHT_MM,
   buildRingBandMesh,
   ringBandDims,
+  ringBandSink,
   type SlabParams,
 } from "@/shared/lib/ringGeometry";
 import { rotateHeightField } from "@/shared/lib/heightField";
@@ -201,13 +202,14 @@ function RingMesh({
     if (!ring) return null;
     const dims = ringBandDims(params.width);
     const { positions, indices } = buildRingBandMesh(dims);
-    const topLocalY = dims.innerR + dims.wall;
+    // Crest raised into the plate by `sink` so band and plaque read as one solid.
+    const topLocalY = dims.innerR + dims.wall - ringBandSink(params.width, params.base);
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geo.setIndex(new THREE.BufferAttribute(indices, 1));
     geo.computeVertexNormals();
     return { geo, topLocalY, innerR: dims.innerR };
-  }, [ring, params.width]);
+  }, [ring, params.width, params.base]);
   useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
 
   // Pendant bail: a HORIZONTAL water-drop loop protruding from the outer

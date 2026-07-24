@@ -228,7 +228,7 @@ export const en = {
     step1CityTitle: "Choose your city",
     step2Title: "Shape & finish",
     step2MountainsHint: "Pick how it's worn and its form, then fine-tune the relief.",
-    step2CityHint: "Choose what to show, its form, then fine-tune the relief.",
+    step2CityHint: "Choose how to wear it and the shape, then specify the address.",
 
     searchMountainsPlaceholder: "Search a place — e.g. Matterhorn",
     searchCityPlaceholder: "Search a city — e.g. Yerevan, Manhattan, Hong Kong…",
@@ -279,6 +279,7 @@ export const en = {
     change: "Change",
     codeLabel: "6-digit code",
     verifyOrder: "Verify & place order",
+    placeOrder: "Place order",
     placing: "Placing order…",
     resend: "Resend code",
     resendIn: (s: number) => `Resend code in ${s}s`,

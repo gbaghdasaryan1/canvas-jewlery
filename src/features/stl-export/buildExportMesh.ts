@@ -10,6 +10,7 @@ import {
 import {
   buildRingBandMesh,
   ringBandDims,
+  ringBandSink,
   mergeMeshData,
   type RingMeshData,
 } from "@/shared/lib/ringGeometry";
@@ -100,8 +101,10 @@ export function buildExportMesh(input: ExportMeshInput): RingMeshData | null {
   if (isRing(jewelryType)) {
     const dims = ringBandDims(width);
     const band = buildRingBandMesh(dims);
-    const outerR = dims.innerR + dims.wall;
-    for (let i = 1; i < band.positions.length; i += 3) band.positions[i] -= outerR;
+    // Raise the crest into the plate by `sink` so the two shells overlap and the
+    // cast reads as one piece, matching both viewers.
+    const dropY = dims.innerR + dims.wall - ringBandSink(width, Math.max(0.5, thickness));
+    for (let i = 1; i < band.positions.length; i += 3) band.positions[i] -= dropY;
     if (usingExportMesh) {
       yawInPlace(band, -ringRotation);
     } else {

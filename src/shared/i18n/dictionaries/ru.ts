@@ -229,7 +229,7 @@ export const ru: Dict = {
     step1CityTitle: "Выберите город",
     step2Title: "Форма и отделка",
     step2MountainsHint: "Выберите способ ношения и форму, затем настройте рельеф.",
-    step2CityHint: "Выберите, что показать, форму, затем настройте рельеф.",
+    step2CityHint: "Выберите способ ношения и форму, затем укажите адрес.",
 
     searchMountainsPlaceholder: "Найдите место — напр. Маттерхорн",
     searchCityPlaceholder: "Найдите город — напр. Ереван, Манхэттен, Гонконг…",
@@ -277,6 +277,7 @@ export const ru: Dict = {
     change: "Изменить",
     codeLabel: "Код из 6 цифр",
     verifyOrder: "Подтвердить и заказать",
+    placeOrder: "Оформить заказ",
     placing: "Оформляем заказ…",
     resend: "Отправить код снова",
     resendIn: (s: number) => `Повторно через ${s}с`,

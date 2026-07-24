@@ -13,7 +13,7 @@ import {
   type Shape,
 } from "@/entities/ring/model/types";
 import { DropBailCurve } from "@/shared/lib/bailCurve";
-import { buildRingBandMesh, ringBandDims } from "@/shared/lib/ringGeometry";
+import { buildRingBandMesh, ringBandDims, ringBandSink } from "@/shared/lib/ringGeometry";
 import { EngravingText } from "@/shared/ui/EngravingText";
 import { CameraDirector, SceneEnvironment } from "@/widgets/ring-viewer/RingViewer";
 import {
@@ -360,6 +360,9 @@ export function CityViewer({
     return { geo, outerR: dims.innerR + dims.wall, innerR: dims.innerR };
   }, [ring]);
   useEffect(() => () => ringBand?.geo.dispose(), [ringBand]);
+  // Band centre: crest at the plate bottom, raised by `sink` so the shank fuses
+  // into the plate instead of hanging off it by a single tangent line.
+  const bandY = ringBand ? -plateH - ringBand.outerR + ringBandSink(WORLD, plateH) : 0;
 
   // Pendant bail — the same drop loop RingViewer shows on the metal piece,
   // here in the map's plate silver so the hang point previews in this view
@@ -408,7 +411,7 @@ export function CityViewer({
       {ringBand && (
         <mesh
           geometry={ringBand.geo}
-          position={[0, -plateH - ringBand.outerR, 0]}
+          position={[0, bandY, 0]}
           rotation={[0, -(ringRotation * Math.PI) / 180, 0]}
           material={metalMat}
         />
@@ -423,7 +426,7 @@ export function CityViewer({
           <group rotation={[0, -(ringRotation * Math.PI) / 180, 0]}>
             <EngravingText
               text={engraving}
-              position={[0, -plateH - ringBand.outerR + ringBand.innerR - WORLD * 0.006, 0]}
+              position={[0, bandY + ringBand.innerR - WORLD * 0.006, 0]}
               curveRadius={ringBand.innerR}
               fontSize={Math.max(1, ringBand.innerR * 0.3)}
               color="#3a4048"

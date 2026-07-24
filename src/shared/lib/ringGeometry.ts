@@ -464,6 +464,16 @@ export const ringBandDims = (width: number) => ({
   bandWidth: width * 0.21,
 });
 
+/**
+ * How far the shank's crest is raised INTO the plaque base (mm). Seated exactly
+ * at the base the band only touches along a tangent line, so it reads as a
+ * circle hanging off the plate; sinking it a little fuses the two into one
+ * piece. Capped at 60% of the plate thickness so it never pokes through the
+ * relief on a thin plate. Shared by both viewers and the exported solid.
+ */
+export const ringBandSink = (width: number, baseThickness: number) =>
+  Math.min(width * 0.05, baseThickness * 0.6);
+
 export interface RingBandParams {
   /** inner radius of the finger hole, in mm */
   innerR: number;
